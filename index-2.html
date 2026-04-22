@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dhia Rekik — AI Engineer</title>
+<meta name="description" content="The engineer behind intelligent systems. AI / ML, built right.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #000000;
+    --bg-2: #0a0a0a;
+    --surface: #111111;
+    --text: #f5f5f7;
+    --text-muted: #86868b;
+    --text-dim: #6e6e73;
+    --border: rgba(255,255,255,0.1);
+    --accent: #0a84ff;
+    --accent-2: #5e5ce6;
+    --gradient-1: linear-gradient(135deg, #ff6b9d 0%, #c471ed 50%, #12c2e9 100%);
+    --gradient-2: linear-gradient(135deg, #f093fb 0%, #4facfe 100%);
+    --gradient-3: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    --gradient-4: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; background: var(--bg); }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  ::selection { background: var(--accent); color: white; }
+  img, svg { display: block; max-width: 100%; }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    height: 48px;
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background: rgba(0, 0, 0, 0.72);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-inner {
+    max-width: 1024px;
+    width: 100%;
+    padding: 0 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    align-items: center;
+  }
+
+  .nav-links a {
+    font-size: 0.78rem;
+    color: var(--text);
+    opacity: 0.85;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .nav-links a:hover { opacity: 1; }
+
+  .nav-controls { display: flex; gap: 0.4rem; align-items: center; }
+
+  .ctrl {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.65rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    font-family: var(--sans);
+  }
+  .ctrl:hover { background: rgba(255,255,255,0.15); }
+  .ctrl svg { width: 14px; height: 14px; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 120px 22px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-orb {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(94, 92, 230, 0.4) 0%, rgba(10, 132, 255, 0.2) 30%, transparent 60%);
+    filter: blur(40px);
+    z-index: 0;
+    animation: orbFloat 12s ease-in-out infinite;
+  }
+
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+    50% { transform: translate(-50%, -55%) scale(1.05); opacity: 0.8; }
+  }
+
+  .hero-content { position: relative; z-index: 2; }
+
+  .hero-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.1s forwards;
+  }
+
+  .hero h1 {
+    font-size: clamp(3.2rem, 9vw, 7.5rem);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    margin-bottom: 1.5rem;
+    max-width: 1000px;
+  }
+
+  .hero h1 .line {
+    display: block;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 1s forwards;
+  }
+  .hero h1 .line:nth-child(1) { animation-delay: 0.2s; }
+  .hero h1 .line:nth-child(2) { animation-delay: 0.4s; }
+
+  .gradient-1 {
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero-sub {
+    font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    opacity: 0;
+    animation: fadeUp 1s 0.6s forwards;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 1s 0.8s forwards;
+  }
+
+  .btn {
+    padding: 0.7rem 1.5rem;
+    border-radius: 980px;
+    font-family: var(--sans);
+    font-size: 0.92rem;
+    font-weight: 400;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+  }
+
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #0070dd; }
+
+  .btn-secondary { background: transparent; color: var(--accent); border: 1px solid transparent; }
+  .btn-secondary:hover { text-decoration: underline; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    opacity: 0;
+    animation: fadeUp 1s 1.2s forwards;
+  }
+  .scroll-indicator::after {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 32px;
+    background: linear-gradient(to bottom, var(--text-dim), transparent);
+    margin: 0.6rem auto 0;
+  }
+
+  /* FEATURE SECTIONS */
+  .feature {
+    min-height: 90vh;
+    padding: 120px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+    color: var(--accent);
+  }
+
+  .feature-title {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+    max-width: 900px;
+  }
+
+  .feature-sub {
+    font-size: clamp(1.1rem, 1.6vw, 1.4rem);
+    color: var(--text-muted);
+    max-width: 640px;
+    line-height: 1.45;
+    letter-spacing: -0.005em;
+    margin-bottom: 3rem;
+  }
+
+  /* Brain visual */
+  .brain-visual {
+    width: min(500px, 90vw);
+    height: min(500px, 90vw);
+    position: relative;
+    margin-top: 1rem;
+  }
+
+  .brain-visual .layer { position: absolute; inset: 0; border-radius: 50%; }
+
+  .brain-visual .l1 {
+    background: radial-gradient(circle, rgba(94, 92, 230, 0.5), transparent 65%);
+    filter: blur(60px);
+    animation: pulseGlow 6s ease-in-out infinite;
+  }
+  .brain-visual .l2 {
+    background: conic-gradient(from 0deg, #ff6b9d, #c471ed, #12c2e9, #ff6b9d);
+    filter: blur(30px);
+    opacity: 0.6;
+    animation: rotate 30s linear infinite;
+    inset: 15%;
+  }
+  .brain-visual .l3 {
+    background: radial-gradient(circle, rgba(0,0,0,0.8), transparent 70%);
+    inset: 20%;
+    filter: blur(20px);
+  }
+  .brain-visual .l4 {
+    background: var(--gradient-1);
+    inset: 35%;
+    box-shadow: 0 0 100px rgba(196, 113, 237, 0.5);
+    animation: pulseScale 4s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.7; } }
+  @keyframes rotate { to { transform: rotate(360deg); } }
+  @keyframes pulseScale { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+  /* CAPABILITIES GRID */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    max-width: 1100px;
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .feature-card {
+    background: linear-gradient(180deg, #1c1c1e 0%, #0c0c0e 100%);
+    border-radius: 22px;
+    padding: 2.5rem 2rem;
+    text-align: left;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.4s, border-color 0.4s;
+  }
+  .feature-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.18);
+  }
+
+  .feature-card-icon {
+    width: 50px; height: 50px;
+    border-radius: 14px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+  }
+  .feature-card:nth-child(1) .feature-card-icon { background: var(--gradient-1); }
+  .feature-card:nth-child(2) .feature-card-icon { background: var(--gradient-2); }
+  .feature-card:nth-child(3) .feature-card-icon { background: var(--gradient-3); }
+  .feature-card:nth-child(4) .feature-card-icon { background: var(--gradient-4); }
+  .feature-card:nth-child(5) .feature-card-icon { background: var(--gradient-1); }
+  .feature-card:nth-child(6) .feature-card-icon { background: var(--gradient-2); }
+
+  .feature-card h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.6rem;
+  }
+
+  .feature-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+
+  .feature-card .tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .feature-card .tools span {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    padding: 0.25rem 0.7rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 100px;
+  }
+
+  /* ========== PROJECTS (GitHub) ========== */
+  .projects {
+    padding: 120px 22px;
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  #projectsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin: 3rem 0;
+    text-align: left;
+  }
+
+  .project-card {
+    background: linear-gradient(180deg, #1c1c1e 0%, #0c0c0e 100%);
+    border-radius: 22px;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    transition: transform 0.4s, border-color 0.4s;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+    min-height: 220px;
+  }
+  .project-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.18);
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--gradient-1);
+  }
+  .project-card:nth-child(2)::before { background: var(--gradient-2); }
+  .project-card:nth-child(3)::before { background: var(--gradient-3); }
+  .project-card:nth-child(4)::before { background: var(--gradient-4); }
+
+  .project-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .project-icon-wrap {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .project-icon-wrap svg {
+    width: 18px; height: 18px;
+    fill: var(--text);
+  }
+  .project-stats {
+    display: flex;
+    gap: 0.8rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .project-stats span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .project-stats svg {
+    width: 13px; height: 13px;
+    fill: var(--text-muted);
+  }
+
+  .project-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+  .project-card .desc {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin-bottom: 1.2rem;
+    flex-grow: 1;
+  }
+
+  .project-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+  .lang-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+    margin-right: 0.3rem;
+  }
+  .lang-Python { background: #3572A5; }
+  .lang-JavaScript { background: #f1e05a; }
+  .lang-TypeScript { background: #3178c6; }
+  .lang-Jupyter { background: #DA5B0B; }
+  .lang-HTML { background: #e34c26; }
+
+  .project-arrow {
+    margin-left: auto;
+    color: var(--accent);
+    font-size: 1.1rem;
+    transition: transform 0.2s;
+  }
+  .project-card:hover .project-arrow { transform: translateX(4px); }
+
+  .projects-empty {
+    padding: 3rem;
+    color: var(--text-muted);
+    background: linear-gradient(180deg, #1c1c1e 0%, #0c0c0e 100%);
+    border-radius: 22px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .projects-loading {
+    padding: 3rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .spinner {
+    display: inline-block;
+    width: 24px; height: 24px;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 1rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .projects-cta {
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  /* SPECS */
+  .specs {
+    padding: 120px 22px;
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .specs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 4rem 2rem;
+    margin-top: 4rem;
+    text-align: center;
+  }
+
+  .spec-item .num {
+    font-size: clamp(3.5rem, 6vw, 5rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 0.5rem;
+  }
+  .spec-item .label {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  /* EXPERIENCE */
+  .experience {
+    padding: 120px 22px;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  .exp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+  .exp-row {
+    background: linear-gradient(180deg, #1c1c1e 0%, #0c0c0e 100%);
+    border-radius: 22px;
+    padding: 2.5rem;
+    border: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    gap: 2rem;
+    align-items: start;
+    transition: border-color 0.4s;
+  }
+  .exp-row:hover { border-color: rgba(255,255,255,0.18); }
+
+  .exp-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+  .exp-info h4 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.4rem;
+  }
+  .exp-info .org {
+    color: var(--accent);
+    font-size: 0.9rem;
+    margin-bottom: 0.9rem;
+  }
+  .exp-info p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .exp-badge {
+    font-size: 0.7rem;
+    padding: 0.35rem 0.8rem;
+    background: rgba(10, 132, 255, 0.15);
+    color: var(--accent);
+    border-radius: 100px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* STACK */
+  .stack-block {
+    padding: 100px 22px;
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .stack-cats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+    text-align: left;
+  }
+
+  .stack-cat {
+    background: linear-gradient(180deg, #1c1c1e 0%, #0c0c0e 100%);
+    border-radius: 22px;
+    padding: 2rem;
+    border: 1px solid var(--border);
+  }
+  .stack-cat h5 {
+    font-size: 0.78rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 1.2rem;
+    font-weight: 500;
+  }
+  .stack-cat-items { display: flex; flex-direction: column; gap: 0.65rem; }
+  .stack-cat-items span { font-size: 1rem; color: var(--text); }
+
+  /* CONTACT */
+  .contact {
+    padding: 140px 22px;
+    text-align: center;
+    background: radial-gradient(ellipse at top, rgba(94, 92, 230, 0.18), transparent 50%);
+  }
+  .contact h2 {
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 1.5rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .contact p {
+    color: var(--text-muted);
+    font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+    max-width: 580px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.45;
+  }
+  .contact-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 1.5rem 22px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--text-muted); text-decoration: none; margin: 0 0.4rem; }
+  footer a:hover { color: var(--accent); }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* Light mode */
+  body.light {
+    background: #fbfbfd;
+    color: #1d1d1f;
+    --text: #1d1d1f;
+    --text-muted: #6e6e73;
+    --text-dim: #86868b;
+    --border: rgba(0,0,0,0.08);
+  }
+  body.light .feature-card,
+  body.light .exp-row,
+  body.light .stack-cat,
+  body.light .project-card,
+  body.light .projects-empty {
+    background: white;
+    border-color: rgba(0,0,0,0.06);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  body.light .feature-card:hover,
+  body.light .exp-row:hover,
+  body.light .project-card:hover { border-color: rgba(0,0,0,0.12); }
+  body.light nav {
+    background: rgba(251,251,253,0.72);
+    border-bottom-color: rgba(0,0,0,0.1);
+  }
+  body.light .ctrl { background: rgba(0,0,0,0.08); color: #1d1d1f; }
+  body.light .ctrl:hover { background: rgba(0,0,0,0.15); }
+  body.light .feature-card .tools span,
+  body.light .project-icon-wrap { background: rgba(0,0,0,0.05); }
+  body.light .exp-badge { background: rgba(10,132,255,0.1); }
+  body.light .hero-orb {
+    background: radial-gradient(circle, rgba(94, 92, 230, 0.25) 0%, rgba(10, 132, 255, 0.12) 30%, transparent 60%);
+  }
+  body.light .contact {
+    background: radial-gradient(ellipse at top, rgba(94, 92, 230, 0.1), transparent 50%);
+  }
+  body.light .brain-visual .l3 {
+    background: radial-gradient(circle, rgba(255,255,255,0.95), transparent 70%);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .exp-row { grid-template-columns: 1fr; gap: 1rem; padding: 1.5rem; }
+    .exp-badge { justify-self: start; }
+    .feature, .specs, .experience, .stack-block, .contact, .projects { padding: 80px 22px; }
+    .specs-grid { gap: 2.5rem 1.5rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">Dhia Rekik</a>
+    <ul class="nav-links">
+      <li><a href="#capabilities" data-i18n="nav.cap">Capabilities</a></li>
+      <li><a href="#projects" data-i18n="nav.proj">Projects</a></li>
+      <li><a href="#performance" data-i18n="nav.perf">Performance</a></li>
+      <li><a href="#experience" data-i18n="nav.exp">Experience</a></li>
+      <li><a href="#contact" data-i18n="nav.contact">Contact</a></li>
+    </ul>
+    <div class="nav-controls">
+      <button class="ctrl" id="langBtn">EN</button>
+      <button class="ctrl" id="themeBtn" aria-label="Toggle theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIcon">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-orb"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow" data-i18n="hero.eyebrow">Introducing Dhia Rekik</div>
+    <h1>
+      <span class="line" data-i18n="hero.line1">Intelligence,</span>
+      <span class="line gradient-1" data-i18n="hero.line2">engineered.</span>
+    </h1>
+    <p class="hero-sub" data-i18n="hero.sub">
+      AI / ML engineer with 2 years of test &amp; validation experience. Master's in AI from ECE Paris. Built to ship.
+    </p>
+    <div class="hero-cta">
+      <a href="#projects" class="btn btn-primary" data-i18n="hero.cta1">See the projects</a>
+      <a href="mailto:dhiarekik.contact@gmail.com" class="btn btn-secondary" data-i18n="hero.cta2">Get in touch ›</a>
+    </div>
+  </div>
+  <div class="scroll-indicator" data-i18n="hero.scroll">SCROLL</div>
+</section>
+
+<!-- APPROACH -->
+<section class="feature reveal" id="overview">
+  <div class="feature-eyebrow" data-i18n="ov.eye">The approach</div>
+  <h2 class="feature-title">
+    <span data-i18n="ov.t1">A new kind of</span><br>
+    <span class="gradient-1" data-i18n="ov.t2">AI engineer.</span>
+  </h2>
+  <p class="feature-sub" data-i18n="ov.sub">
+    Most build models. Few make sure they actually work. Two years in production QA, then a Master's in AI — that's the difference.
+  </p>
+  <div class="brain-visual">
+    <div class="layer l1"></div>
+    <div class="layer l2"></div>
+    <div class="layer l3"></div>
+    <div class="layer l4"></div>
+  </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section class="feature reveal" id="capabilities">
+  <div class="feature-eyebrow" data-i18n="cap.eye">Capabilities</div>
+  <h2 class="feature-title" data-i18n="cap.title">Six engines. One engineer.</h2>
+  <p class="feature-sub" data-i18n="cap.sub">
+    Each capability honed through real projects. Each project shipped end-to-end.
+  </p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-card-icon">◐</div>
+      <h3 data-i18n="cap.1.t">LLM &amp; NLP</h3>
+      <p data-i18n="cap.1.d">Building conversational AI, prompt engineering, fine-tuning. Production-ready pipelines from tokenizer to deployment.</p>
+      <div class="tools"><span>Hugging Face</span><span>LangChain</span><span>RAG</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">◎</div>
+      <h3 data-i18n="cap.2.t">Multimodal AI</h3>
+      <p data-i18n="cap.2.d">Combining text, audio, and vision. Whisper-powered classification, vision-language models, cross-modal reasoning.</p>
+      <div class="tools"><span>Whisper</span><span>CLIP</span><span>PyTorch</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">◇</div>
+      <h3 data-i18n="cap.3.t">Reinforcement Learning</h3>
+      <p data-i18n="cap.3.d">Designing agents that learn from interaction. Q-learning, reward shaping, policy optimization in real environments.</p>
+      <div class="tools"><span>PyTorch</span><span>Gym</span><span>Q-Learning</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">⌬</div>
+      <h3 data-i18n="cap.4.t">AI Validation</h3>
+      <p data-i18n="cap.4.d">Treating ML systems like production software. Eval frameworks, regression detection, model monitoring at scale.</p>
+      <div class="tools"><span>CI/CD</span><span>TestGuide</span><span>Python</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">⬡</div>
+      <h3 data-i18n="cap.5.t">MLOps &amp; Deploy</h3>
+      <p data-i18n="cap.5.d">From notebook to production. Containerized inference, REST APIs, multi-platform delivery with Docker.</p>
+      <div class="tools"><span>Docker</span><span>Flask</span><span>Jenkins</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">◈</div>
+      <h3 data-i18n="cap.6.t">Test Automation</h3>
+      <p data-i18n="cap.6.d">End-to-end testing pipelines, Selenium, Robot Framework. 300+ anomalies resolved on BMW automotive software.</p>
+      <div class="tools"><span>Robot Framework</span><span>Selenium</span><span>Zuul</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS (LIVE FROM GITHUB) -->
+<section class="projects reveal" id="projects">
+  <div class="feature-eyebrow" data-i18n="proj.eye">Open source</div>
+  <h2 class="feature-title">
+    <span data-i18n="proj.t1">Code that</span><br>
+    <span class="gradient-1" data-i18n="proj.t2">speaks for itself.</span>
+  </h2>
+  <p class="feature-sub" data-i18n="proj.sub">
+    Live from GitHub. Each project shipped, documented, public.
+  </p>
+
+  <div id="projectsGrid">
+    <div class="projects-loading">
+      <div class="spinner"></div>
+      <div data-i18n="proj.loading">Loading projects from GitHub…</div>
+    </div>
+  </div>
+
+  <div class="projects-cta">
+    <a href="https://github.com/dhia-rek" target="_blank" rel="noopener" class="btn btn-secondary">
+      <span data-i18n="proj.viewall">View all repositories on GitHub ›</span>
+    </a>
+  </div>
+</section>
+
+<!-- PERFORMANCE -->
+<section class="specs reveal" id="performance">
+  <div class="feature-eyebrow" data-i18n="perf.eye">Performance</div>
+  <h2 class="feature-title">
+    <span data-i18n="perf.t1">The numbers</span><br>
+    <span class="gradient-1" data-i18n="perf.t2">behind the work.</span>
+  </h2>
+
+  <div class="specs-grid">
+    <div class="spec-item">
+      <div class="num">2+</div>
+      <div class="label" data-i18n="perf.s1">Years engineering experience</div>
+    </div>
+    <div class="spec-item">
+      <div class="num">300+</div>
+      <div class="label" data-i18n="perf.s2">Anomalies resolved on BMW ECUs</div>
+    </div>
+    <div class="spec-item">
+      <div class="num">80%</div>
+      <div class="label" data-i18n="perf.s3">Anomaly resolution rate</div>
+    </div>
+    <div class="spec-item">
+      <div class="num">3</div>
+      <div class="label" data-i18n="perf.s4">AI projects shipped end-to-end</div>
+    </div>
+    <div class="spec-item">
+      <div class="num">700+</div>
+      <div class="label" data-i18n="perf.s5">Products managed in e-commerce platform</div>
+    </div>
+    <div class="spec-item">
+      <div class="num">50+</div>
+      <div class="label" data-i18n="perf.s6">System validation tests executed</div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="experience reveal" id="experience">
+  <div style="text-align: center;">
+    <div class="feature-eyebrow" data-i18n="exp.eye">Experience</div>
+    <h2 class="feature-title" data-i18n="exp.title">A track record. Not a CV.</h2>
+  </div>
+
+  <div class="exp-list">
+    <div class="exp-row">
+      <div class="exp-date">Sep 2024 — Feb 2026</div>
+      <div class="exp-info">
+        <h4 data-i18n="exp.1.r">Test &amp; Validation Engineer</h4>
+        <div class="org">KPIT Engineering · Sfax</div>
+        <p data-i18n="exp.1.d">Validated automotive software for BMW ECUs via Zuul CI/CD. Contributed to evaluating an AI-based reporting system (TestGuide, TraceTronic). Resolved 300+ anomalies at 80% rate.</p>
+      </div>
+      <div class="exp-badge" data-i18n="exp.1.b">Full-time</div>
+    </div>
+
+    <div class="exp-row">
+      <div class="exp-date">Feb 2024 — Aug 2024</div>
+      <div class="exp-info">
+        <h4 data-i18n="exp.2.r">WordPress Developer</h4>
+        <div class="org">Krichen Distribution · Sfax</div>
+        <p data-i18n="exp.2.d">Built and maintained an e-commerce platform managing 700+ products. Automated stock notifications, secure payments, SEO and mobile optimization.</p>
+      </div>
+      <div class="exp-badge" data-i18n="exp.2.b">Freelance</div>
+    </div>
+
+    <div class="exp-row">
+      <div class="exp-date">Feb 2023 — Aug 2023</div>
+      <div class="exp-info">
+        <h4 data-i18n="exp.3.r">Web Developer (Final Year Project)</h4>
+        <div class="org">SAGEMCOM · Tunis</div>
+        <p data-i18n="exp.3.d">Created a web app to automate test configuration and execution via Robot Framework and Selenium. Dockerized for seamless cross-platform deployment.</p>
+      </div>
+      <div class="exp-badge" data-i18n="exp.3.b">Internship</div>
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section class="stack-block reveal" id="stack">
+  <div class="feature-eyebrow" data-i18n="stack.eye">Tech specs</div>
+  <h2 class="feature-title" data-i18n="stack.title">Built on the best.</h2>
+
+  <div class="stack-cats">
+    <div class="stack-cat">
+      <h5 data-i18n="stack.c1">AI / ML</h5>
+      <div class="stack-cat-items">
+        <span>Python</span>
+        <span>PyTorch · TensorFlow</span>
+        <span>Hugging Face</span>
+        <span>Scikit-learn · Pandas</span>
+        <span>LLM · RAG · NLP</span>
+      </div>
+    </div>
+    <div class="stack-cat">
+      <h5 data-i18n="stack.c2">Backend &amp; APIs</h5>
+      <div class="stack-cat-items">
+        <span>Flask</span>
+        <span>REST APIs</span>
+        <span>PostgreSQL · MySQL</span>
+        <span>SQL</span>
+      </div>
+    </div>
+    <div class="stack-cat">
+      <h5 data-i18n="stack.c3">DevOps</h5>
+      <div class="stack-cat-items">
+        <span>Docker</span>
+        <span>Git · GitHub</span>
+        <span>Jenkins · Zuul</span>
+        <span>CI/CD pipelines</span>
+      </div>
+    </div>
+    <div class="stack-cat">
+      <h5 data-i18n="stack.c4">QA &amp; Agile</h5>
+      <div class="stack-cat-items">
+        <span>Robot Framework</span>
+        <span>Selenium · AutoIT</span>
+        <span>Scrum / Agile</span>
+        <span>Jira</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact reveal" id="contact">
+  <h2>
+    <span data-i18n="contact.t1">Let's make</span><br>
+    <span class="gradient-1" data-i18n="contact.t2">something real.</span>
+  </h2>
+  <p data-i18n="contact.sub">
+    Open to AI / ML internships starting June 2026. Paris-based, remote-friendly.
+  </p>
+  <div class="contact-actions">
+    <a href="mailto:dhiarekik.contact@gmail.com" class="btn btn-primary" data-i18n="contact.btn1">Email Dhia</a>
+    <a href="https://linkedin.com/in/dhia-rekik" target="_blank" class="btn btn-secondary" data-i18n="contact.btn2">LinkedIn ›</a>
+  </div>
+</section>
+
+<footer>
+  <div>
+    © 2026 Dhia Rekik ·
+    <a href="https://github.com/dhia-rek" target="_blank">GitHub</a> ·
+    <a href="https://linkedin.com/in/dhia-rekik" target="_blank">LinkedIn</a> ·
+    <a href="mailto:dhiarekik.contact@gmail.com">Email</a>
+  </div>
+</footer>
+
+<script>
+  // ===== Translations =====
+  const translations = {
+    en: {
+      'nav.cap': 'Capabilities', 'nav.proj': 'Projects', 'nav.perf': 'Performance',
+      'nav.exp': 'Experience', 'nav.contact': 'Contact',
+      'hero.eyebrow': 'Introducing Dhia Rekik',
+      'hero.line1': 'Intelligence,', 'hero.line2': 'engineered.',
+      'hero.sub': "AI / ML engineer with 2 years of test & validation experience. Master's in AI from ECE Paris. Built to ship.",
+      'hero.cta1': 'See the projects', 'hero.cta2': 'Get in touch ›', 'hero.scroll': 'SCROLL',
+      'ov.eye': 'The approach',
+      'ov.t1': 'A new kind of', 'ov.t2': 'AI engineer.',
+      'ov.sub': "Most build models. Few make sure they actually work. Two years in production QA, then a Master's in AI — that's the difference.",
+      'cap.eye': 'Capabilities', 'cap.title': 'Six engines. One engineer.',
+      'cap.sub': 'Each capability honed through real projects. Each project shipped end-to-end.',
+      'cap.1.t': 'LLM & NLP',
+      'cap.1.d': 'Building conversational AI, prompt engineering, fine-tuning. Production-ready pipelines from tokenizer to deployment.',
+      'cap.2.t': 'Multimodal AI',
+      'cap.2.d': 'Combining text, audio, and vision. Whisper-powered classification, vision-language models, cross-modal reasoning.',
+      'cap.3.t': 'Reinforcement Learning',
+      'cap.3.d': 'Designing agents that learn from interaction. Q-learning, reward shaping, policy optimization in real environments.',
+      'cap.4.t': 'AI Validation',
+      'cap.4.d': 'Treating ML systems like production software. Eval frameworks, regression detection, model monitoring at scale.',
+      'cap.5.t': 'MLOps & Deploy',
+      'cap.5.d': 'From notebook to production. Containerized inference, REST APIs, multi-platform delivery with Docker.',
+      'cap.6.t': 'Test Automation',
+      'cap.6.d': 'End-to-end testing pipelines, Selenium, Robot Framework. 300+ anomalies resolved on BMW automotive software.',
+      'proj.eye': 'Open source',
+      'proj.t1': 'Code that', 'proj.t2': 'speaks for itself.',
+      'proj.sub': 'Live from GitHub. Each project shipped, documented, public.',
+      'proj.loading': 'Loading projects from GitHub…',
+      'proj.viewall': 'View all repositories on GitHub ›',
+      'proj.empty': 'Projects coming soon — check back!',
+      'proj.error': 'Could not load GitHub projects. Visit my profile directly →',
+      'perf.eye': 'Performance', 'perf.t1': 'The numbers', 'perf.t2': 'behind the work.',
+      'perf.s1': 'Years engineering experience',
+      'perf.s2': 'Anomalies resolved on BMW ECUs',
+      'perf.s3': 'Anomaly resolution rate',
+      'perf.s4': 'AI projects shipped end-to-end',
+      'perf.s5': 'Products managed in e-commerce platform',
+      'perf.s6': 'System validation tests executed',
+      'exp.eye': 'Experience', 'exp.title': 'A track record. Not a CV.',
+      'exp.1.r': 'Test & Validation Engineer',
+      'exp.1.d': 'Validated automotive software for BMW ECUs via Zuul CI/CD. Contributed to evaluating an AI-based reporting system (TestGuide, TraceTronic). Resolved 300+ anomalies at 80% rate.',
+      'exp.1.b': 'Full-time',
+      'exp.2.r': 'WordPress Developer',
+      'exp.2.d': 'Built and maintained an e-commerce platform managing 700+ products. Automated stock notifications, secure payments, SEO and mobile optimization.',
+      'exp.2.b': 'Freelance',
+      'exp.3.r': 'Web Developer (Final Year Project)',
+      'exp.3.d': 'Created a web app to automate test configuration and execution via Robot Framework and Selenium. Dockerized for seamless cross-platform deployment.',
+      'exp.3.b': 'Internship',
+      'stack.eye': 'Tech specs', 'stack.title': 'Built on the best.',
+      'stack.c1': 'AI / ML', 'stack.c2': 'Backend & APIs', 'stack.c3': 'DevOps', 'stack.c4': 'QA & Agile',
+      'contact.t1': "Let's make", 'contact.t2': 'something real.',
+      'contact.sub': 'Open to AI / ML internships starting June 2026. Paris-based, remote-friendly.',
+      'contact.btn1': 'Email Dhia', 'contact.btn2': 'LinkedIn ›',
+    },
+    fr: {
+      'nav.cap': 'Capacités', 'nav.proj': 'Projets', 'nav.perf': 'Performance',
+      'nav.exp': 'Expérience', 'nav.contact': 'Contact',
+      'hero.eyebrow': 'Découvrez Dhia Rekik',
+      'hero.line1': "L'intelligence,", 'hero.line2': 'conçue.',
+      'hero.sub': "Ingénieur IA / ML avec 2 ans d'expérience en test & validation. Master en IA à l'ECE Paris. Conçu pour livrer.",
+      'hero.cta1': 'Voir les projets', 'hero.cta2': 'Me contacter ›', 'hero.scroll': 'DÉFILER',
+      'ov.eye': "L'approche",
+      'ov.t1': 'Un nouveau type', 'ov.t2': "d'ingénieur IA.",
+      'ov.sub': "La plupart construisent des modèles. Peu vérifient qu'ils fonctionnent. Deux ans en QA, puis un Master en IA — c'est la différence.",
+      'cap.eye': 'Capacités', 'cap.title': 'Six moteurs. Un ingénieur.',
+      'cap.sub': 'Chaque capacité affinée par des projets réels. Chaque projet livré de bout en bout.',
+      'cap.1.t': 'LLM & NLP',
+      'cap.1.d': "Conception d'IA conversationnelle, prompt engineering, fine-tuning. Pipelines prêts pour la production.",
+      'cap.2.t': 'IA Multimodale',
+      'cap.2.d': 'Combinaison texte, audio et vision. Classification avec Whisper, vision-language models.',
+      'cap.3.t': 'Apprentissage par Renforcement',
+      'cap.3.d': "Conception d'agents qui apprennent par interaction. Q-learning, reward shaping.",
+      'cap.4.t': 'Validation IA',
+      'cap.4.d': "Traiter les systèmes ML comme du logiciel en production. Frameworks d'évaluation et monitoring.",
+      'cap.5.t': 'MLOps & Déploiement',
+      'cap.5.d': 'Du notebook à la production. Inférence conteneurisée, APIs REST, livraison multi-plateforme.',
+      'cap.6.t': 'Test Automation',
+      'cap.6.d': 'Pipelines de test bout-en-bout, Selenium, Robot Framework. 300+ anomalies résolues sur BMW.',
+      'proj.eye': 'Open source',
+      'proj.t1': 'Du code qui', 'proj.t2': 'parle de lui-même.',
+      'proj.sub': 'En direct depuis GitHub. Chaque projet livré, documenté, public.',
+      'proj.loading': 'Chargement des projets depuis GitHub…',
+      'proj.viewall': 'Voir tous les dépôts sur GitHub ›',
+      'proj.empty': 'Projets bientôt disponibles — revenez vite !',
+      'proj.error': 'Impossible de charger les projets GitHub. Visitez mon profil →',
+      'perf.eye': 'Performance', 'perf.t1': 'Les chiffres', 'perf.t2': 'derrière le travail.',
+      'perf.s1': "Années d'expérience",
+      'perf.s2': 'Anomalies résolues sur ECU BMW',
+      'perf.s3': 'Taux de résolution',
+      'perf.s4': 'Projets IA livrés',
+      'perf.s5': 'Produits gérés sur e-commerce',
+      'perf.s6': 'Tests de validation exécutés',
+      'exp.eye': 'Expérience', 'exp.title': 'Un parcours. Pas un CV.',
+      'exp.1.r': 'Ingénieur Test & Validation',
+      'exp.1.d': "Validation des logiciels automobiles pour ECU BMW via Zuul CI/CD. Participation à l'évaluation d'un système IA (TestGuide, TraceTronic). 300+ anomalies résolues à 80%.",
+      'exp.1.b': 'Temps plein',
+      'exp.2.r': 'Développeur WordPress',
+      'exp.2.d': "Mise en place et maintenance d'une plateforme e-commerce gérant 700+ produits. Notifications automatisées, paiements sécurisés, SEO et mobile.",
+      'exp.2.b': 'Freelance',
+      'exp.3.r': 'Développeur Web (PFE)',
+      'exp.3.d': "Création d'une application web pour automatiser tests via Robot Framework et Selenium. Dockerisée pour déploiement multi-plateforme.",
+      'exp.3.b': 'Stage',
+      'stack.eye': 'Spécifications', 'stack.title': 'Construit avec le meilleur.',
+      'stack.c1': 'IA / ML', 'stack.c2': 'Backend & APIs', 'stack.c3': 'DevOps', 'stack.c4': 'QA & Agile',
+      'contact.t1': 'Construisons', 'contact.t2': 'ensemble.',
+      'contact.sub': 'Ouvert aux stages IA / ML à partir de juin 2026. Basé à Paris, ouvert au remote.',
+      'contact.btn1': 'Email Dhia', 'contact.btn2': 'LinkedIn ›',
+    }
+  };
+
+  // ===== Language =====
+  let lang = localStorage.getItem('lang') || 'en';
+  const langBtn = document.getElementById('langBtn');
+  function setLang(l) {
+    lang = l;
+    localStorage.setItem('lang', l);
+    document.documentElement.lang = l;
+    langBtn.textContent = l.toUpperCase();
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.getAttribute('data-i18n');
+      if (translations[l] && translations[l][k]) el.innerHTML = translations[l][k];
+    });
+  }
+  langBtn.addEventListener('click', () => setLang(lang === 'en' ? 'fr' : 'en'));
+  setLang(lang);
+
+  // ===== Theme =====
+  let theme = localStorage.getItem('theme') || 'dark';
+  const themeBtn = document.getElementById('themeBtn');
+  const themeIcon = document.getElementById('themeIcon');
+  const moon = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  const sun = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>';
+  function setTheme(t) {
+    theme = t;
+    localStorage.setItem('theme', t);
+    document.body.classList.toggle('light', t === 'light');
+    themeIcon.innerHTML = t === 'dark' ? moon : sun;
+  }
+  themeBtn.addEventListener('click', () => setTheme(theme === 'dark' ? 'light' : 'dark'));
+  setTheme(theme);
+
+  // ===== Scroll reveal =====
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ===== Parallax orb =====
+  document.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 30;
+    const y = (e.clientY / window.innerHeight - 0.5) * 30;
+    const orb = document.querySelector('.hero-orb');
+    if (orb) orb.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+  });
+
+  // ===== GitHub fetch =====
+  const GITHUB_USER = 'dhia-rek';
+  const grid = document.getElementById('projectsGrid');
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    const now = new Date();
+    const days = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+    if (days < 1) return lang === 'fr' ? "aujourd'hui" : 'today';
+    if (days < 30) return lang === 'fr' ? `il y a ${days}j` : `${days}d ago`;
+    if (days < 365) return lang === 'fr' ? `il y a ${Math.floor(days/30)}mois` : `${Math.floor(days/30)}mo ago`;
+    return lang === 'fr' ? `il y a ${Math.floor(days/365)}an` : `${Math.floor(days/365)}y ago`;
+  }
+
+  const starSvg = '<svg viewBox="0 0 16 16"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg>';
+  const forkSvg = '<svg viewBox="0 0 16 16"><path d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"/></svg>';
+  const repoSvg = '<svg viewBox="0 0 16 16"><path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"/></svg>';
+
+  function renderRepo(repo) {
+    const lang_class = repo.language ? `lang-${repo.language.replace(/\s+/g,'')}` : '';
+    return `
+      <a href="${repo.html_url}" target="_blank" rel="noopener" class="project-card">
+        <div class="project-header">
+          <div class="project-icon-wrap">${repoSvg}</div>
+          <div class="project-stats">
+            ${repo.stargazers_count > 0 ? `<span>${starSvg}${repo.stargazers_count}</span>` : ''}
+            ${repo.forks_count > 0 ? `<span>${forkSvg}${repo.forks_count}</span>` : ''}
+          </div>
+        </div>
+        <h3>${escapeHtml(repo.name)}</h3>
+        <p class="desc">${escapeHtml(repo.description || '—')}</p>
+        <div class="project-meta">
+          ${repo.language ? `<span><span class="lang-dot ${lang_class}"></span>${escapeHtml(repo.language)}</span>` : ''}
+          <span>${formatDate(repo.pushed_at)}</span>
+          <span class="project-arrow">→</span>
+        </div>
+      </a>
+    `;
+  }
+
+  fetch(`https://api.github.com/users/${GITHUB_USER}/repos?sort=updated&per_page=20`)
+    .then(r => {
+      if (!r.ok) throw new Error('GitHub API error');
+      return r.json();
+    })
+    .then(repos => {
+      // Filter out fork & profile/page repos, sort by stars then pushed_at
+      const filtered = repos
+        .filter(r => !r.fork && !r.private && r.name !== `${GITHUB_USER}.github.io`)
+        .sort((a, b) => {
+          if (b.stargazers_count !== a.stargazers_count) return b.stargazers_count - a.stargazers_count;
+          return new Date(b.pushed_at) - new Date(a.pushed_at);
+        })
+        .slice(0, 6);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="projects-empty">${translations[lang]['proj.empty']}</div>`;
+        return;
+      }
+      grid.innerHTML = filtered.map(renderRepo).join('');
+    })
+    .catch(err => {
+      console.error(err);
+      grid.innerHTML = `<div class="projects-empty"><a href="https://github.com/${GITHUB_USER}" target="_blank" style="color:var(--accent);text-decoration:none;">${translations[lang]['proj.error']}</a></div>`;
+    });
+</script>
+
+</body>
+</html>
