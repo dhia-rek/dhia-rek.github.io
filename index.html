@@ -108,14 +108,6 @@
   <a href="#contact" data-i18n="nav.contact" data-drawer-close>Contact</a>
 </div>
 
-<div class="fluid-bg" aria-hidden="true">
-  <div class="fluid-blob b1"></div>
-  <div class="fluid-blob b2"></div>
-  <div class="fluid-blob b3"></div>
-  <div class="fluid-blob b4"></div>
-  <div class="fluid-blob b5"></div>
-</div>
-
 <section class="hero">
   <canvas id="neuralCanvas" class="neural-canvas" aria-hidden="true"></canvas>
   <div class="hero-content">
@@ -131,9 +123,18 @@
       <span data-i18n="hero.sub-suffix">based in Paris.</span>
     </p>
     <div class="hero-cta">
-      <a href="#projects" class="btn btn-primary" data-i18n="hero.cta1" data-magnetic>See the projects</a>
-      <a href="mailto:dhiarekik.contact@gmail.com" class="btn btn-secondary" data-i18n="hero.cta2" data-magnetic>Get in touch ›</a>
-      <a href="cv/cv-en.pdf" download class="btn btn-ghost" id="cvBtn" data-i18n="hero.cv" data-magnetic>↓ Download CV</a>
+      <a href="#projects" class="btn btn-primary" data-magnetic>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span data-i18n="hero.cta1">See the projects</span>
+      </a>
+      <a href="mailto:dhiarekik.contact@gmail.com" class="btn btn-secondary" data-magnetic>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        <span data-i18n="hero.cta2">Get in touch</span>
+      </a>
+      <a href="cv/cv-en.pdf" download class="btn btn-ghost" id="cvBtn" data-magnetic>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span data-i18n="hero.cv">Download CV</span>
+      </a>
     </div>
   </div>
   <div class="scroll-indicator" data-i18n="hero.scroll">SCROLL</div>
@@ -248,18 +249,30 @@
       <span class="affiliations-label" data-i18n="edu.langs">Languages</span>
       <div class="affiliations-list">
         <div class="affiliation-badge">
-          <span class="lang-flag">🇹🇳</span>
-          <span><strong data-i18n="lang.ar">Arabic</strong> <span data-i18n="lang.native">Native</span></span>
+          <div class="affil-top">
+            <span class="lang-flag">🇹🇳</span>
+            <strong data-i18n="lang.ar">Arabic</strong>
+            <span class="lang-sep">—</span>
+            <span class="lang-level" data-i18n="lang.native">Native</span>
+          </div>
         </div>
         <div class="affiliation-badge">
-          <span class="lang-flag">🇫🇷</span>
-          <span><strong data-i18n="lang.fr">French</strong> <span class="lang-level">C1</span></span>
-          <span class="affiliation-sub">TCF certified</span>
+          <div class="affil-top">
+            <span class="lang-flag">🇫🇷</span>
+            <strong data-i18n="lang.fr">French</strong>
+            <span class="lang-sep">—</span>
+            <span class="lang-level">C1</span>
+          </div>
+          <span class="affiliation-sub" data-i18n="lang.tcf">TCF certified</span>
         </div>
         <div class="affiliation-badge">
-          <span class="lang-flag">🇬🇧</span>
-          <span><strong data-i18n="lang.en">English</strong> <span class="lang-level">B2</span></span>
-          <span class="affiliation-sub">IELTS certified</span>
+          <div class="affil-top">
+            <span class="lang-flag">🇬🇧</span>
+            <strong data-i18n="lang.en">English</strong>
+            <span class="lang-sep">—</span>
+            <span class="lang-level">B2</span>
+          </div>
+          <span class="affiliation-sub" data-i18n="lang.ielts">IELTS certified</span>
         </div>
       </div>
     </div>
