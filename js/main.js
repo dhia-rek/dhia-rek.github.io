@@ -180,6 +180,54 @@
   }
 
   // ===== Module chip click-to-pin (mobile) =====
+  // ===== Availability banner =====
+  const availBanner = document.getElementById('availBanner');
+  const availClose  = document.getElementById('availClose');
+  if (availBanner && !localStorage.getItem('bannerDismissed')) {
+    document.body.classList.add('has-banner');
+    availClose.addEventListener('click', () => {
+      availBanner.classList.add('hidden');
+      document.querySelector('nav').classList.add('banner-gone');
+      document.body.classList.remove('has-banner');
+      localStorage.setItem('bannerDismissed', '1');
+    });
+    window.addEventListener('scroll', () => {
+      const heroH = document.querySelector('.hero')?.offsetHeight || 600;
+      if (window.scrollY > heroH) {
+        availBanner.classList.add('hidden');
+        document.querySelector('nav').classList.add('banner-gone');
+        document.body.classList.remove('has-banner');
+      } else if (!localStorage.getItem('bannerDismissed')) {
+        availBanner.classList.remove('hidden');
+        document.querySelector('nav').classList.remove('banner-gone');
+        document.body.classList.add('has-banner');
+      }
+    }, { passive: true });
+  } else if (availBanner) {
+    availBanner.classList.add('hidden');
+    document.querySelector('nav').classList.add('banner-gone');
+  }
+
+  // ===== Back to top =====
+  const backToTop = document.getElementById('backToTop');
+  if (backToTop) {
+    window.addEventListener('scroll', () => {
+      backToTop.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+    backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
+
+  // ===== Copy email =====
+  const copyEmailBtn = document.getElementById('copyEmailBtn');
+  if (copyEmailBtn) {
+    copyEmailBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText('dhiarekik.contact@gmail.com').then(() => {
+        copyEmailBtn.classList.add('copied');
+        setTimeout(() => copyEmailBtn.classList.remove('copied'), 2000);
+      });
+    });
+  }
+
   document.addEventListener('click', (e) => {
     const chip = e.target.closest('.edu-modules span[data-tip]');
     if (chip) {
