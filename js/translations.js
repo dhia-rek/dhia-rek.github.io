@@ -1,5 +1,6 @@
 window.translations = {
   en: {
+    'banner.text': 'Open to AI engineering internships · June 2026 · Paris / Remote',
     'nav.cap': 'Capabilities', 'nav.proj': 'Projects', 'nav.perf': 'Performance',
     'nav.exp': 'Experience', 'nav.contact': 'Contact',
     'hero.eyebrow': 'Available · June 2026',
@@ -125,6 +126,7 @@ window.translations = {
     'modal.stack': 'Stack',
   },
   fr: {
+    'banner.text': 'Disponible pour un stage en ingénierie IA · Juin 2026 · Paris / Remote',
     'nav.cap': 'Compétences', 'nav.proj': 'Projets', 'nav.perf': 'Performance',
     'nav.exp': 'Expérience', 'nav.contact': 'Contact', 'nav.ship': 'Productions',
     'hero.eyebrow': 'Découvrez Dhia Rekik',
