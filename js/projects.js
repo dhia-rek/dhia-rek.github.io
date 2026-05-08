@@ -3,17 +3,44 @@
   const grid = document.getElementById('projectsGrid');
   if (!grid) return;
 
-  // Optional manual case-study overrides. Add entries keyed by repo name
-  // to enrich the modal with hand-written context.
-  // Example:
-  //   'my-repo': {
-  //     tagline: 'One-line pitch.',
-  //     about: 'Longer description...',
-  //     results: ['Metric 1', 'Metric 2'],
-  //     stack: ['Python', 'PyTorch'],
-  //     demo: 'https://example.com',
-  //   }
-  const CASE_STUDIES = {};
+  const CASE_STUDIES = {
+    'Grid_shooter': {
+      tagline: 'Train a REINFORCE agent to aim, dodge, and survive a staged zombie shooter — built from scratch.',
+      problem: 'Learning reinforcement learning from textbooks only goes so far. To genuinely understand policy gradients you need an environment complex enough to produce real emergent strategy — aiming, dodging, prioritizing threats — but structured enough to see exactly what the agent is learning and why.',
+      solution: 'Built a custom Gymnasium environment: an 8×8 grid zombie shooter with 4 escalating difficulty stages, directional shooting (9 actions), and carefully shaped rewards. Implemented REINFORCE from scratch in PyTorch with entropy bonus to prevent premature convergence and gradient clipping for stability. Zombies unlock progressively — top-only in stage 1, all four directions by stage 3 — giving the policy time to develop basic skills before full chaos. Pygame visualizes training live so you can watch the agent figure out how to aim.',
+      stack: ['Python', 'PyTorch', 'Gymnasium', 'REINFORCE', 'Pygame', 'NumPy'],
+      results: [
+        'Agent learns to aim directionally, dodge, and advance through 4 difficulty stages without any supervision',
+        'Alignment bonus (+0.5) shapes early exploration toward aimed shots before the policy learns anything',
+        'Entropy bonus prevents policy collapse; gradient clipping ensures stable training across long episodes',
+        'Clean separation: game logic, RL algorithm, and renderer are fully decoupled modules',
+      ],
+    },
+    'multi-agent-multi-llm-rag': {
+      tagline: 'Turn a free-text business case into a structured digital transformation roadmap — 6 agents, 3 frameworks, full RAG.',
+      problem: 'Digital transformation frameworks are rich and well-researched but locked in dense PDFs and inaccessible without expert interpretation. Small businesses especially cannot afford consulting fees to apply them — yet the frameworks are precisely what\'s needed to avoid wasted budget and failed rollouts.',
+      solution: 'Built a RAG pipeline over four DT framework PDFs (Wade 2015, Peter 2018/2024, Elia 2024) using FAISS and local MiniLM embeddings — no API calls, no token cost for retrieval. Six specialist agents chain sequentially: Planner extracts intent and writes retrieval queries; Framework Agent classifies passages; Canvas Analysis scores maturity across 7 fields; Strategist synthesizes purpose and risks; Roadmap Generator produces phased KPIs and milestones; Evaluator critiques the output. A Multi-LLM router assigns fast or powerful Gemini tiers per task based on complexity and criticality, with mock fallback when quota is exhausted. Eight eco-responsible optimizations (persistent index, SHA disk cache, capped context, local embeddings) minimize cost and latency.',
+      stack: ['Python', 'FAISS', 'Gemini API', 'sentence-transformers', 'Streamlit', 'FastAPI', 'LangChain', 'pypdf', 'Ollama'],
+      results: [
+        'Full pipeline: free-text business case → structured roadmap with phases, KPIs, owners, milestones, budget',
+        'Multi-LLM routing reduces token cost — fast model handles simple tasks, powerful model only where reasoning is needed',
+        'Runs end-to-end in mock mode without any API key — full UI and architecture explorable offline',
+        'REST API (FastAPI) exposes the pipeline as HTTP endpoints with auto-generated Swagger docs',
+        '8 eco-responsible optimizations including local CPU embeddings and SHA-keyed disk cache',
+      ],
+    },
+    'campus-safety-detection': {
+      tagline: 'Zero-shot CCTV bullying detection — no labeled abnormal data required.',
+      problem: 'Campus CCTV systems demand constant human monitoring — expensive, error-prone, and impossible to scale. Collecting labeled video of real bullying or violence incidents is also impractical due to rarity and sensitivity of such events.',
+      solution: 'Built a zero-shot detection pipeline using CLIP to compare live video frames against natural-language descriptions of anomalies. YOLOv8 crops individual people first, then CLIP scores each crop. Scores are Z-score normalized and Gaussian-smoothed over time to suppress false positives. Audio is independently analyzed with PANNs. A Streamlit dashboard streams live CCTV playback with a real-time anomaly score graph, while a Telegram bot pushes annotated alert frames to subscribers.',
+      stack: ['Python', 'CLIP', 'YOLOv8', 'PyTorch', 'Streamlit', 'Telegram Bot', 'PANNs', 'OpenCV', 'NumPy'],
+      results: [
+        'Anomaly score spikes to 1.771 sustained across 90+ consecutive frames during a bullying event',
+        'Zero labeled abnormal samples needed — pure zero-shot generalization via natural language',
+        'Real-time Telegram alerts with annotated frame screenshots delivered to subscribers instantly',
+      ],
+    },
+  };
 
   let cache = null;
 
@@ -47,6 +74,7 @@
 
   function renderCard(repo) {
     const langClass = repo.language ? `lang-${repo.language.replace(/\s+/g,'')}` : '';
+    const tCard = window.i18n ? window.i18n.t.bind(window.i18n) : (k, fb) => fb || k;
     return `
       <div class="project-card" data-repo="${escapeHtml(repo.name)}">
         <div class="project-header">
@@ -58,10 +86,12 @@
         </div>
         <h3>${escapeHtml(repo.name)}</h3>
         <p class="desc">${escapeHtml(repo.description || '—')}</p>
-        <div class="project-meta">
-          ${repo.language ? `<span><span class="lang-dot ${langClass}"></span>${escapeHtml(repo.language)}</span>` : ''}
-          <span>${formatDate(repo.pushed_at)}</span>
-          <span class="project-arrow">→</span>
+        <div class="project-footer">
+          <div class="project-meta">
+            ${repo.language ? `<span><span class="lang-dot ${langClass}"></span>${escapeHtml(repo.language)}</span>` : ''}
+            <span>${formatDate(repo.pushed_at)}</span>
+          </div>
+          <button class="case-study-btn">${tCard('modal.caseStudy', 'Case Study')} →</button>
         </div>
       </div>
     `;
@@ -75,7 +105,9 @@
     const cs = CASE_STUDIES[repo.name] || {};
 
     const tagline = cs.tagline || repo.description || '—';
-    const aboutText = cs.about || repo.description || '';
+    const problem = cs.problem || '';
+    const solution = cs.solution || '';
+    const aboutText = (!problem && !solution) ? (cs.about || repo.description || '') : '';
     const stack = cs.stack || (repo.topics && repo.topics.length ? repo.topics : []);
     const results = cs.results || [];
     const demoUrl = cs.demo || repo.homepage;
@@ -91,16 +123,18 @@
         <span>${t('modal.updated')}: ${fullDate(repo.pushed_at)}</span>
       </div>
 
+      ${problem ? `<h4>${t('modal.problem')}</h4><p>${escapeHtml(problem)}</p>` : ''}
+      ${solution ? `<h4>${t('modal.solution')}</h4><p>${escapeHtml(solution)}</p>` : ''}
       ${aboutText ? `<h4>${t('modal.about')}</h4><p>${escapeHtml(aboutText)}</p>` : ''}
-
-      ${results.length ? `
-        <h4>${t('modal.results')}</h4>
-        <p>${results.map(r => '• ' + escapeHtml(r)).join('<br>')}</p>
-      ` : ''}
 
       ${stack.length ? `
         <h4>${t('modal.stack')}</h4>
         <div class="topic-list">${stack.map(s => `<span>${escapeHtml(s)}</span>`).join('')}</div>
+      ` : ''}
+
+      ${results.length ? `
+        <h4>${t('modal.results')}</h4>
+        <ul class="modal-results">${results.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
       ` : ''}
 
       <div class="modal-actions">
@@ -139,11 +173,16 @@
     }
     grid.innerHTML = repos.map(renderCard).join('');
     grid.querySelectorAll('.project-card').forEach((card) => {
-      card.addEventListener('click', () => {
-        const name = card.getAttribute('data-repo');
+      const name = card.getAttribute('data-repo');
+      const openThisModal = () => {
         const repo = cache.find(r => r.name === name);
         if (repo) openModal(repo);
+      };
+      card.addEventListener('click', (e) => {
+        if (!e.target.closest('.case-study-btn')) openThisModal();
       });
+      const btn = card.querySelector('.case-study-btn');
+      if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); openThisModal(); });
     });
   }
 

@@ -1272,11 +1272,40 @@ body.light .shipped-icon { background: rgba(0,0,0,0.04); }
   color: var(--text-muted);
   font-family: var(--mono);
 }
+.exp-company-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.35rem;
+}
+.exp-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.exp-logo img { width: 20px; height: 20px; object-fit: contain; }
+.exp-logo-fallback {
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
 .exp-info h4 {
   font-size: 1.4rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0;
 }
 .exp-info .org {
   color: var(--accent);

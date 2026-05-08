@@ -122,8 +122,11 @@ window.translations = {
     'modal.license': 'License',
     'modal.topics': 'Topics',
     'modal.about': 'About this project',
+    'modal.problem': 'The problem',
+    'modal.solution': 'The solution',
     'modal.results': 'Results & highlights',
     'modal.stack': 'Stack',
+    'modal.caseStudy': 'Case Study',
   },
   fr: {
     'banner.text': 'Disponible pour un stage en ingénierie IA · Juin 2026 · Paris / Remote',
@@ -247,7 +250,10 @@ window.translations = {
     'modal.license': 'Licence',
     'modal.topics': 'Tags',
     'modal.about': 'À propos',
+    'modal.problem': 'Le problème',
+    'modal.solution': 'La solution',
     'modal.results': 'Résultats',
     'modal.stack': 'Stack',
+    'modal.caseStudy': 'Étude de cas',
   }
 };
