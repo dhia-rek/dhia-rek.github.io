@@ -208,4 +208,43 @@
       document.querySelectorAll('.edu-modules span.tip-open').forEach(el => el.classList.remove('tip-open'));
     }
   });
+
+  const contactForm = document.getElementById('contactForm');
+  if (contactForm) {
+    const submitBtn = document.getElementById('formSubmit');
+    const statusEl = document.getElementById('formStatus');
+    const submitLabel = submitBtn.querySelector('span');
+
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const t = window.i18n ? window.i18n.t.bind(window.i18n) : (k, fb) => fb || k;
+
+      submitBtn.disabled = true;
+      submitLabel.textContent = t('form.sending', 'Sending…');
+      statusEl.textContent = '';
+      statusEl.className = 'form-status';
+
+      try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(Object.fromEntries(new FormData(contactForm))),
+        });
+        const data = await res.json();
+        if (data.success) {
+          statusEl.textContent = t('form.success', "Message sent — I'll get back to you soon.");
+          statusEl.className = 'form-status success';
+          contactForm.reset();
+        } else {
+          throw new Error(data.message);
+        }
+      } catch {
+        statusEl.textContent = t('form.error', 'Something went wrong. Try emailing directly.');
+        statusEl.className = 'form-status error';
+      } finally {
+        submitBtn.disabled = false;
+        submitLabel.textContent = t('form.send', 'Send message');
+      }
+    });
+  }
 })();
