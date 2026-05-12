@@ -1385,6 +1385,101 @@ body.light .shipped-icon { background: rgba(0,0,0,0.04); }
   max-width: 600px;
 }
 
+/* ===== CONTACT FORM ===== */
+.contact-form {
+  max-width: 560px;
+  margin: 0 auto var(--space-5);
+  text-align: left;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: var(--space-2);
+}
+.form-group:last-of-type { margin-bottom: 0; }
+.form-group label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.form-group input,
+.form-group textarea {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  padding: 0.65rem 0.85rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  width: 100%;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(196,113,237,0.15);
+  background: rgba(255,255,255,0.06);
+}
+.form-group textarea {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.55;
+}
+.form-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  flex-wrap: wrap;
+}
+.form-status {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.form-status.success { color: #30d158; }
+.form-status.error   { color: #ff6b6b; }
+.contact-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 560px;
+  margin: 0 auto var(--space-4);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.contact-divider::before,
+.contact-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+body.light .form-group input,
+body.light .form-group textarea {
+  background: rgba(0,0,0,0.03);
+  border-color: rgba(0,0,0,0.14);
+  color: #1d1d1f;
+}
+body.light .form-group input:focus,
+body.light .form-group textarea:focus {
+  border-color: var(--accent);
+  background: rgba(0,0,0,0.05);
+}
+@media (max-width: 520px) {
+  .form-row { grid-template-columns: 1fr; }
+}
+
 /* ===== BACK TO TOP ===== */
 .back-to-top {
   position: fixed;

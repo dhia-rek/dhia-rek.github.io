@@ -547,6 +547,36 @@
   <p data-i18n="contact.sub">
     Open to AI engineering internships starting June 2026. Paris-based, remote-friendly.
   </p>
+
+  <form class="contact-form" id="contactForm" novalidate>
+    <input type="hidden" name="access_key" value="REPLACE_WITH_YOUR_WEB3FORMS_KEY">
+    <input type="hidden" name="subject" value="Portfolio contact — dhiarekik.me">
+    <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="cfName" data-i18n="form.name">Name</label>
+        <input type="text" id="cfName" name="name" required autocomplete="name" data-i18n-ph="form.name.ph" placeholder="Your name">
+      </div>
+      <div class="form-group">
+        <label for="cfEmail" data-i18n="form.email">Email</label>
+        <input type="email" id="cfEmail" name="email" required autocomplete="email" data-i18n-ph="form.email.ph" placeholder="your@email.com">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="cfMsg" data-i18n="form.msg">Message</label>
+      <textarea id="cfMsg" name="message" rows="4" required data-i18n-ph="form.msg.ph" placeholder="What are you working on?"></textarea>
+    </div>
+    <div class="form-footer">
+      <button type="submit" class="btn btn-primary" id="formSubmit" data-magnetic>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <span data-i18n="form.send">Send message</span>
+      </button>
+      <p class="form-status" id="formStatus" aria-live="polite"></p>
+    </div>
+  </form>
+
+  <div class="contact-divider"><span data-i18n="form.or">or reach out directly</span></div>
+
   <div class="contact-actions">
     <div class="email-group">
       <a href="mailto:dhiarekik.contact@gmail.com" class="btn btn-primary" data-magnetic>
@@ -673,6 +703,9 @@
 <button class="back-to-top" id="backToTop" aria-label="Back to top">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>
 </button>
+
+<!-- Cloudflare Web Analytics — get your token: dash.cloudflare.com → Web Analytics → Add site -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "REPLACE_WITH_YOUR_CF_TOKEN"}'></script>
 
 </body>
 </html>

@@ -23,6 +23,10 @@
       const val = t(key);
       if (val) el.setAttribute('data-tip', val);
     });
+    document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
+      const val = t(el.getAttribute('data-i18n-ph'));
+      if (val) el.setAttribute('placeholder', val);
+    });
     document.documentElement.lang = state.lang;
   }
 
