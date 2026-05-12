@@ -76,8 +76,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
   font-weight: 400;
-  transition: background 0.5s var(--ease-out), color 0.5s var(--ease-out);
+  opacity: 0;
+  transition: background 0.5s var(--ease-out), color 0.5s var(--ease-out), opacity 0.5s var(--ease-out);
 }
+body.loaded { opacity: 1; }
 
 section, footer {
   position: relative;
@@ -198,6 +200,11 @@ nav {
   align-items: center;
   justify-content: center;
   transition: background 0.4s var(--ease-out), border-color 0.4s;
+  animation: navSlideDown 0.6s var(--ease-out) both;
+}
+@keyframes navSlideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: none; opacity: 1; }
 }
 nav.scrolled { background: rgba(0,0,0,0.85); }
 
@@ -2054,6 +2061,7 @@ body.light .nav-mobile-drawer { background: rgba(251,251,253,0.95); }
     transition-duration: 0.01ms !important;
   }
   .neural-canvas { display: none; }
+  body { opacity: 1 !important; }
 }
 
 /* ===== VALEKNAAR CHAT WIDGET ===== */
