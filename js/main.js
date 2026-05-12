@@ -31,7 +31,7 @@
   if (progressBar) {
     window.addEventListener('scroll', () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      progressBar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+      progressBar.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
     }, { passive: true });
   }
 
