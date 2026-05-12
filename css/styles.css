@@ -65,8 +65,7 @@ html {
   background: var(--bg);
   scroll-padding-top: 60px;
 }
-section { content-visibility: auto; contain-intrinsic-size: 1px 800px; }
-.hero { content-visibility: visible; }
+section { content-visibility: visible; }
 
 body {
   font-family: var(--sans);
@@ -260,6 +259,19 @@ nav.scrolled { background: rgba(0,0,0,0.85); }
   transition: transform 0.3s var(--ease-out);
 }
 .nav-links a:hover::after { transform: scaleX(1); }
+.nav-links a.active { opacity: 1; }
+.nav-links a.active::after { transform: scaleX(1); }
+
+#scrollProgress {
+  position: fixed;
+  top: 0; left: 0;
+  width: 0%;
+  height: 2px;
+  background: var(--gradient-1);
+  z-index: 1002;
+  pointer-events: none;
+  transition: width 0.08s linear;
+}
 
 .nav-controls { display: flex; gap: 0.4rem; align-items: center; }
 
@@ -1976,6 +1988,7 @@ body.light .about-chips span { background: rgba(0,0,0,0.02); }
 }
 .nav-mobile-drawer a:last-child { border-bottom: none; }
 .nav-mobile-drawer a:hover { opacity: 1; }
+.nav-mobile-drawer a.active { opacity: 1; color: var(--accent); }
 body.light .nav-mobile-drawer { background: rgba(251,251,253,0.95); }
 
 /* ===== RESPONSIVE ===== */

@@ -25,6 +25,27 @@
   window.addEventListener('scroll', onScrollNav, { passive: true });
   onScrollNav();
 
+  const progressBar = document.getElementById('scrollProgress');
+  if (progressBar) {
+    window.addEventListener('scroll', () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      progressBar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    }, { passive: true });
+  }
+
+  const spyLinks = document.querySelectorAll('.nav-links a[href^="#"], .nav-mobile-drawer a[href^="#"]');
+  if (spyLinks.length) {
+    const spySections = [...new Set([...spyLinks].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean))];
+    const spyObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          spyLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+        }
+      });
+    }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+    spySections.forEach(s => spyObserver.observe(s));
+  }
+
   const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
