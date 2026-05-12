@@ -236,10 +236,11 @@
           statusEl.className = 'form-status success';
           contactForm.reset();
         } else {
-          throw new Error(data.message);
+          statusEl.textContent = data.message || t('form.error', 'Something went wrong.');
+          statusEl.className = 'form-status error';
         }
-      } catch {
-        statusEl.textContent = t('form.error', 'Something went wrong. Try emailing directly.');
+      } catch (err) {
+        statusEl.textContent = err.message || t('form.error', 'Something went wrong. Try emailing directly.');
         statusEl.className = 'form-status error';
       } finally {
         submitBtn.disabled = false;
