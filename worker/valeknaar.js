@@ -70,25 +70,17 @@ INSTRUCTIONS
 - Keep answers short unless the user asks for detail
 - Never invent projects, numbers, or experience not listed above`;
 
-const ALLOWED_ORIGINS = ['https://dhiarekik.me', 'https://www.dhiarekik.me', 'https://dhia-rek.github.io'];
-
-function corsHeaders(origin) {
-  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowed,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
-}
+const CORS = {
+  'Access-Control-Allow-Origin': 'https://dhiarekik.me',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
 
 addEventListener('fetch', event => {
   event.respondWith(handle(event.request));
 });
 
 async function handle(request) {
-  const origin = request.headers.get('Origin') || '';
-  const CORS = corsHeaders(origin);
-
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS });
   }
@@ -106,14 +98,14 @@ async function handle(request) {
 
   const messages = (body.messages || []).slice(-12);
 
-  const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const upstream = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${GROQ_API_KEY}`,
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
+      model: 'gpt-4o-mini',
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       max_tokens: 400,
       temperature: 0.7,
@@ -121,7 +113,7 @@ async function handle(request) {
   });
 
   if (!upstream.ok) {
-    return new Response(JSON.stringify({ reply: "I'm having trouble connecting right now. You can reach Dhia directly at dhiarekik.contact@gmail.com" }), {
+    return new Response(JSON.stringify({ reply: "I'm having trouble connecting right now. Please email Dhia at dhiarekik.contact@gmail.com" }), {
       status: 200,
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
