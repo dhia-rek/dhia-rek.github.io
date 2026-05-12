@@ -1849,9 +1849,11 @@ body.light .about-chips span { background: rgba(0,0,0,0.02); }
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   padding: 1rem 22px 1.5rem;
-  z-index: 999;
+  z-index: 1001;
   flex-direction: column;
   gap: 0.2rem;
+  max-height: calc(100dvh - 52px);
+  overflow-y: auto;
 }
 .nav-mobile-drawer.open { display: flex; }
 .nav-mobile-drawer a {
