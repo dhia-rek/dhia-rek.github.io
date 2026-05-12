@@ -52,9 +52,7 @@
   function formatDate(iso) {
     if (!iso) return '';
     const lang = window.i18n ? window.i18n.lang : 'en';
-    const d = new Date(iso);
-    const now = new Date();
-    const days = Math.floor((now - d) / 86400000);
+    const days = Math.floor((new Date() - new Date(iso)) / 86400000);
     if (days < 1) return lang === 'fr' ? "aujourd'hui" : 'today';
     if (days < 30) return lang === 'fr' ? `il y a ${days}j` : `${days}d ago`;
     if (days < 365) return lang === 'fr' ? `il y a ${Math.floor(days/30)} mois` : `${Math.floor(days/30)}mo ago`;
@@ -63,9 +61,8 @@
 
   function fullDate(iso) {
     if (!iso) return '';
-    const d = new Date(iso);
     const lang = window.i18n ? window.i18n.lang : 'en';
-    return d.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return new Date(iso).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
   const starSvg = '<svg viewBox="0 0 16 16"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg>';
@@ -74,7 +71,7 @@
 
   function renderCard(repo) {
     const langClass = repo.language ? `lang-${repo.language.replace(/\s+/g,'')}` : '';
-    const tCard = window.i18n ? window.i18n.t.bind(window.i18n) : (k, fb) => fb || k;
+    const t = window.i18n ? window.i18n.t.bind(window.i18n) : (k, fb) => fb || k;
     return `
       <div class="project-card" data-repo="${escapeHtml(repo.name)}">
         <div class="project-header">
@@ -91,7 +88,7 @@
             ${repo.language ? `<span><span class="lang-dot ${langClass}"></span>${escapeHtml(repo.language)}</span>` : ''}
             <span>${formatDate(repo.pushed_at)}</span>
           </div>
-          <button class="case-study-btn">${tCard('modal.caseStudy', 'Case Study')} →</button>
+          <button class="case-study-btn">${t('modal.caseStudy', 'Case Study')} →</button>
         </div>
       </div>
     `;
@@ -158,12 +155,8 @@
   function setupModal() {
     const modal = document.getElementById('projectModal');
     if (!modal) return;
-    modal.addEventListener('click', (e) => {
-      if (e.target.closest('[data-modal-close]')) closeModal();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
-    });
+    modal.addEventListener('click', (e) => { if (e.target.closest('[data-modal-close]')) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
   }
 
   function render(repos) {
@@ -178,9 +171,7 @@
         const repo = cache.find(r => r.name === name);
         if (repo) openModal(repo);
       };
-      card.addEventListener('click', (e) => {
-        if (!e.target.closest('.case-study-btn')) openThisModal();
-      });
+      card.addEventListener('click', (e) => { if (!e.target.closest('.case-study-btn')) openThisModal(); });
       const btn = card.querySelector('.case-study-btn');
       if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); openThisModal(); });
     });
@@ -188,7 +179,7 @@
 
   function load() {
     fetch(`https://api.github.com/users/${GITHUB_USER}/repos?sort=updated&per_page=30`)
-      .then((r) => { if (!r.ok) throw new Error('GitHub API error'); return r.json(); })
+      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
       .then((repos) => {
         cache = repos
           .filter((r) => !r.fork && !r.private && r.name !== `${GITHUB_USER}.github.io`)
@@ -199,8 +190,7 @@
           .slice(0, 6);
         render(cache);
       })
-      .catch((err) => {
-        console.error(err);
+      .catch(() => {
         const t = window.i18n ? window.i18n.t.bind(window.i18n) : () => 'Failed to load.';
         grid.innerHTML = `<div class="projects-empty"><a href="https://github.com/${GITHUB_USER}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">${t('proj.error')}</a></div>`;
       });
