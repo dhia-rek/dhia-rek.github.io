@@ -1442,11 +1442,25 @@ body.light .shipped-icon { background: rgba(0,0,0,0.04); }
   flex-wrap: wrap;
 }
 .form-status {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   line-height: 1.4;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  display: none;
 }
-.form-status.success { color: #30d158; }
-.form-status.error   { color: #ff6b6b; }
+.form-status.success {
+  display: block;
+  color: rgba(48,209,88,0.9);
+  background: rgba(48,209,88,0.08);
+  border-color: rgba(48,209,88,0.2);
+}
+.form-status.error {
+  display: block;
+  color: rgba(255,107,107,0.9);
+  background: rgba(255,107,107,0.08);
+  border-color: rgba(255,107,107,0.2);
+}
 .contact-divider {
   display: flex;
   align-items: center;
