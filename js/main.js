@@ -154,7 +154,7 @@
 
   const tw = document.getElementById('typewriter');
   if (tw) {
-    const getList = () => [0,1,2,3,4].map((i) => window.i18n ? window.i18n.t(`typer.${i}`) : '');
+    const getList = () => [0,1,2,3,4,5].map((i) => window.i18n ? window.i18n.t(`typer.${i}`) : '');
     let list = getList();
     let i = 0, j = 0, deleting = false;
     function tick() {
@@ -213,7 +213,7 @@
   const copyEmailBtn = document.getElementById('copyEmailBtn');
   if (copyEmailBtn) {
     copyEmailBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText('dhiarekik.contact@gmail.com').then(() => {
+      navigator.clipboard.writeText('dhia.rekik@icloud.com').then(() => {
         copyEmailBtn.classList.add('copied');
         setTimeout(() => copyEmailBtn.classList.remove('copied'), 2000);
       });

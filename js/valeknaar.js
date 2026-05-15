@@ -123,7 +123,7 @@
       showSuggestions(data.suggestions);
     } catch {
       dots.remove();
-      await aiBubble("I'm having trouble connecting right now. You can reach Dhia directly at dhiarekik.contact@gmail.com");
+      await aiBubble("I'm having trouble connecting right now. You can reach Dhia directly at dhia.rekik@icloud.com");
     } finally {
       input.disabled = false;
       if (isOpen() && !isTouch) input.focus();

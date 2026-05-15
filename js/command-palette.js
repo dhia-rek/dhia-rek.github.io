@@ -11,7 +11,7 @@
     { icon: '⬢', key: 'perf', label: 'Performance',  sub: 'The numbers behind the work', action: () => goto('#performance') },
     { icon: '⬡', key: 'exp',  label: 'Experience',   sub: 'A track record', action: () => goto('#experience') },
     { icon: '◈', key: 'stack',label: 'Tech specs',   sub: 'Tools I use', action: () => goto('#stack') },
-    { icon: '✉', key: 'mail', label: 'Email Dhia',   sub: 'dhiarekik.contact@gmail.com', action: () => location.href = 'mailto:dhiarekik.contact@gmail.com' },
+    { icon: '✉', key: 'mail', label: 'Email Dhia',   sub: 'dhia.rekik@icloud.com', action: () => location.href = 'mailto:dhia.rekik@icloud.com' },
     { icon: '◉', key: 'gh',   label: 'GitHub',       sub: 'github.com/dhia-rek', action: () => open('https://github.com/dhia-rek', '_blank') },
     { icon: '◆', key: 'in',   label: 'LinkedIn',     sub: 'linkedin.com/in/dhia-rekik', action: () => open('https://linkedin.com/in/dhia-rekik', '_blank') },
     { icon: '☼', key: 'theme',label: 'Toggle theme', sub: 'Dark / light',   action: () => document.getElementById('themeBtn').click() },
