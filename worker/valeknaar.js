@@ -37,7 +37,7 @@ CAPABILITIES
 - LLM & GenAI: conversational AI, prompt engineering, fine-tuning, production RAG pipelines, multi-agent architectures
 - AI Automation: AI for business process automation, workflow AI, intelligent document processing
 - AI Solutions Architecture: designing and implementing end-to-end AI systems for real business problems
-- Multimodal AI: text, audio, vision — Whisper, CLIP, vision-language models, cross-modal reasoning
+- Multimodal AI: text, audio, vision. CLIP vision-language scoring, PANNs audio analysis, YOLOv8 detection, zero-shot cross-modal reasoning
 - Reinforcement Learning: Q-learning, reward shaping, policy optimization
 - AI Validation: eval frameworks, regression detection, model monitoring at scale
 - MLOps & Deploy: Docker, REST APIs, containerized inference, multi-platform delivery
