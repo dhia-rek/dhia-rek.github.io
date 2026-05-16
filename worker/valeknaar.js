@@ -8,7 +8,7 @@ IDENTITY
 - Name: Dhia Rekik
 - Role: AI Engineer · LLM & GenAI specialist · AI Solutions Architect
 - Target positions: AI Engineer, AI Solutions Architect, AI Implementation Consultant, AI Transformation Consultant, LLM/GenAI Engineer, AI Product & Automation Engineer
-- Available: internship starting June 2026 (Paris or remote)
+- Available: end-of-studies internship (PFE) in AI starting July 2026 (Paris or remote)
 - Email: dhia.rekik@icloud.com
 - Phone: +33 7 62 60 75 57
 - GitHub: github.com/dhia-rek
@@ -19,9 +19,11 @@ EDUCATION
   Strong applied focus: LLMs, GenAI, AI for business transformation, multi-agent systems, RAG, AI automation, and responsible deployment.
   Modules: Computer Vision for Industry 5.0, Language Models & Business Apps, Gen AI & Diffusion Models, Multi-LLM Architectures, Distributed Systems & Cloud in AI, AI Transformation & Interoperability, Digital Ecosystems & Innovation Platforms, AI for Business Process Automation, Security & Data Protection in AI, Ethics of Digital Technologies, Eco-Responsible AI, Emerging Technologies in AI, Impact & Regulation of AI, Applied Agile & Risk Mgmt, Project Management Certification
 
-• Engineering Degree – Software Engineering | ECE Paris (Graduated)
-  6-year programme: 3-year Bachelor's + 3-year engineering cycle.
-  Final year project at SAGEMCOM, Tunis: web app automating test configuration and execution via Robot Framework and Selenium, Dockerized for cross-platform deployment.
+• Engineering Degree – Software Engineering | ESPRIT, Tunis, Tunisia (2021–2023, Graduated)
+  Software architecture, web development, software quality. Final-year project at SAGEMCOM (web app automating test config/execution via Robot Framework and Selenium, Dockerized).
+
+• Bachelor – Information Science & Technology | ENET'Com, Sfax, Tunisia (2017–2020, Graduated)
+  Foundations of computer science, software development, networks, and information systems.
 
 EXPERIENCE
 1. Test & Validation Engineer (Full-time, 2 years)
@@ -59,10 +61,10 @@ PROJECTS
    Stack: Python, PyTorch, Gymnasium, Pygame
 
 TECH STACK
-AI/ML: Python, PyTorch, HuggingFace, FAISS, Gemini API, Ollama, RAG pipelines
-Backend: FastAPI, Docker, REST APIs
-DevOps: Zuul CI/CD, Kubernetes basics
-QA: Robot Framework, Selenium, TestGuide, TraceTronic
+LLM & GenAI: LangChain, RAG, multi-agent systems, FAISS, Gemini API, Ollama, Hugging Face Transformers, prompt engineering
+ML & Vision: PyTorch, TensorFlow, Scikit-learn, CLIP, YOLOv8, OpenCV, Whisper, Gymnasium (RL), Pandas, NumPy
+Languages: Python, SQL, JavaScript, PHP; Flask, FastAPI, Streamlit
+MLOps/DevOps/QA: Docker, Git, CI/CD (Jenkins, Zuul), Linux, Bash, Robot Framework, Selenium, Pytest, Scrum/Agile, Jira
 
 KEY NUMBERS
 - 2 years engineering experience
