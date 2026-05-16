@@ -177,22 +177,34 @@
     });
   }
 
-  function load() {
-    fetch(`https://api.github.com/users/${GITHUB_USER}/repos?sort=updated&per_page=30`)
-      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
-      .then((repos) => {
-        cache = repos
-          .filter((r) => !r.fork && !r.private && r.name !== `${GITHUB_USER}.github.io`)
-          .sort((a, b) => {
-            if (b.stargazers_count !== a.stargazers_count) return b.stargazers_count - a.stargazers_count;
-            return new Date(b.pushed_at) - new Date(a.pushed_at);
-          })
-          .slice(0, 6);
-        render(cache);
+  function pipeline(repos) {
+    return repos
+      .filter((r) => !r.fork && !r.private && r.name !== `${GITHUB_USER}.github.io`)
+      .sort((a, b) => {
+        if (b.stargazers_count !== a.stargazers_count) return b.stargazers_count - a.stargazers_count;
+        return new Date(b.pushed_at) - new Date(a.pushed_at);
       })
-      .catch(() => {
-        const t = window.i18n ? window.i18n.t.bind(window.i18n) : () => 'Failed to load.';
-        grid.innerHTML = `<div class="projects-empty"><a href="https://github.com/${GITHUB_USER}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">${t('proj.error')}</a></div>`;
+      .slice(0, 6);
+  }
+
+  function showError() {
+    if (cache) return; // already rendered something — never downgrade to an error
+    const t = window.i18n ? window.i18n.t.bind(window.i18n) : () => 'Failed to load.';
+    grid.innerHTML = `<div class="projects-empty"><a href="https://github.com/${GITHUB_USER}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">${t('proj.error')}</a></div>`;
+  }
+
+  function load() {
+    // 1. Committed snapshot first — always renders, even if GitHub is rate-limited or down.
+    fetch('repos.json')
+      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
+      .then((repos) => { cache = pipeline(repos); render(cache); })
+      .catch(() => {})
+      .finally(() => {
+        // 2. Best-effort live refresh on top. If it fails, the snapshot stays.
+        fetch(`https://api.github.com/users/${GITHUB_USER}/repos?sort=updated&per_page=30`)
+          .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
+          .then((repos) => { cache = pipeline(repos); render(cache); })
+          .catch(showError);
       });
   }
 
