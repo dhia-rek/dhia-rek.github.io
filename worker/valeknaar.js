@@ -75,9 +75,15 @@ KEY NUMBERS
 - 13 AI specialization modules at ECE
 - 3 languages: Arabic (native), French C1 (TCF certified), English B2 (IELTS certified)
 
+CERTIFICATIONS
+- Scrum Fundamentals
+- Deep Learning Specialization (Coursera)
+- Machine Learning Specialization (Coursera)
+
 AFFILIATIONS
-- PMI Member (Project Management Institute)
-- IEEE Member
+- IEEE ENET'Com (Alumni, 2018-2020)
+- Lions Club Méditerranéen (Alumni, 2019-2020)
+- PMI Member
 
 PRODUCTION WEBSITES SHIPPED
 1. Echoes Agency — creative agency website, custom WordPress, bespoke design
