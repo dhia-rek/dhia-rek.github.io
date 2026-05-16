@@ -81,8 +81,7 @@ AFFILIATIONS
 
 PRODUCTION WEBSITES SHIPPED
 1. Echoes Agency — creative agency website, custom WordPress, bespoke design
-2. E-commerce platform — 700+ products, growth strategy, automated stock, SEO
-3. Crypto landing page — custom WordPress theme, on-chain widgets, SEO
+2. Krichen Distribution — e-commerce platform, 700+ products, growth strategy, automated stock, SEO
 
 INSTRUCTIONS
 - If someone wants to hire or collaborate, give Dhia's email and phone
