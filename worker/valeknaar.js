@@ -1,6 +1,6 @@
-// Valeknaar — Cloudflare Worker proxy for Dhia Rekik's portfolio chatbot
+// Valeknaar - Cloudflare Worker proxy for Dhia Rekik's portfolio chatbot
 // Deploy at: https://workers.cloudflare.com
-// Set secret: OPENAI_API_KEY via `wrangler secret put OPENAI_API_KEY`
+// Set secret: GROQ_API_KEY via `wrangler secret put GROQ_API_KEY`
 
 const SYSTEM_PROMPT = `You are Valeknaar, the AI assistant on Dhia Rekik's portfolio website (dhiarekik.me). You help visitors learn about Dhia. Be concise (2–4 sentences unless more detail is asked), professional, and friendly. Always respond in the same language as the user (French or English). Do not make up information not listed below.
 
@@ -123,14 +123,14 @@ async function handle(request) {
 
   const messages = (body.messages || []).slice(-12);
 
-  const upstream = await fetch('https://api.openai.com/v1/chat/completions', {
+  const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      'Authorization': `Bearer ${GROQ_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       max_tokens: 400,
       temperature: 0.7,
@@ -138,6 +138,8 @@ async function handle(request) {
   });
 
   if (!upstream.ok) {
+    const errBody = await upstream.text();
+    console.log('Groq error', upstream.status, errBody);
     return new Response(JSON.stringify({ reply: "I'm having trouble connecting right now. Please email Dhia at dhia.rekik@icloud.com" }), {
       status: 200,
       headers: { ...CORS, 'Content-Type': 'application/json' },
