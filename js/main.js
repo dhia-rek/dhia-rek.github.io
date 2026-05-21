@@ -101,7 +101,7 @@
     });
   }
 
-  const CV_FILES = { en: 'cv/cv-en.pdf', fr: 'cv/cv-fr.pdf' };
+  const CV_FILES = { en: 'cv/cv-dhia-rekik-en.pdf', fr: 'cv/cv-dhia-rekik.pdf' };
   function updateCvLinks(lang) {
     const href = CV_FILES[lang] || CV_FILES.en;
     ['cvBtn', 'cvBtn2', 'cvBtnNav'].forEach((id) => {
@@ -151,34 +151,6 @@
     }
     tick();
     if (window.i18n) window.i18n.onChange(() => { list = getList(); });
-  }
-
-  const availBanner = document.getElementById('availBanner');
-  const availClose  = document.getElementById('availClose');
-  if (availBanner && !localStorage.getItem('bannerDismissed')) {
-    document.body.classList.add('has-banner');
-    const dismissBanner = () => {
-      availBanner.classList.add('hidden');
-      document.querySelector('nav').classList.add('banner-gone');
-      document.body.classList.remove('has-banner');
-    };
-    availClose.addEventListener('click', () => {
-      dismissBanner();
-      localStorage.setItem('bannerDismissed', '1');
-    });
-    window.addEventListener('scroll', () => {
-      const heroH = document.querySelector('.hero')?.offsetHeight || 600;
-      if (window.scrollY > heroH) {
-        dismissBanner();
-      } else if (!localStorage.getItem('bannerDismissed')) {
-        availBanner.classList.remove('hidden');
-        document.querySelector('nav').classList.remove('banner-gone');
-        document.body.classList.add('has-banner');
-      }
-    }, { passive: true });
-  } else if (availBanner) {
-    availBanner.classList.add('hidden');
-    document.querySelector('nav').classList.add('banner-gone');
   }
 
   const backToTop = document.getElementById('backToTop');
