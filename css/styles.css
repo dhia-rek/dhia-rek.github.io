@@ -975,32 +975,37 @@ body.dark .hero-chat-feed .valek-suggestion {
   opacity: 0;
 }
 .exp-item.open .exp-details {
-  max-height: 600px;
+  max-height: 1400px;
   opacity: 1;
   padding: 0.4rem 1.4rem 1.4rem;
 }
-.exp-beats {
+.exp-desc {
+  margin-bottom: 1rem;
+  color: var(--ink-2);
+  line-height: 1.6;
+  font-size: 0.92rem;
+}
+.exp-desc ul {
   list-style: none;
-  margin: 0 0 1rem;
+  margin: 0;
   padding: 0;
 }
-.exp-beats li {
+.exp-desc li {
   position: relative;
-  padding: 0.5rem 0 0.5rem 1.6rem;
-  font-size: 0.92rem;
-  color: var(--ink-2);
-  line-height: 1.55;
+  padding: 0.55rem 0 0.55rem 1.6rem;
   border-bottom: 1px dashed var(--border);
 }
-.exp-beats li:last-child { border-bottom: none; }
-.exp-beats li::before {
+.exp-desc li:last-child { border-bottom: none; }
+.exp-desc li::before {
   content: '→';
   position: absolute;
   left: 0;
-  top: 0.5rem;
+  top: 0.55rem;
   color: var(--accent);
   font-weight: 700;
 }
+.exp-desc p { margin-bottom: 0.6rem; }
+.exp-desc p:last-child { margin-bottom: 0; }
 .exp-stack {
   display: flex;
   flex-wrap: wrap;
@@ -1347,6 +1352,10 @@ body.dark .hero-chat-feed .valek-suggestion {
   margin-bottom: 0.15rem;
 }
 .cred-badge-dot.scrum { background: #14b8a6; }
+.cred-badge-dot.ieee  { background: #0066b8; }
+.cred-badge-dot.lions { background: #f59e0b; }
+.cred-badge--past { opacity: 0.78; }
+.cred-badge--past:hover { opacity: 1; }
 .cred-badge-name {
   font-size: 0.88rem;
   font-weight: 600;

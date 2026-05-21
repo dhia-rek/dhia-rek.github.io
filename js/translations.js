@@ -2,7 +2,7 @@ window.translations = {
   en: {
     'banner.text': 'Seeking an end-of-studies AI internship (PFE) · July 2026 · Paris, France / Remote',
     'nav.cap': 'Capabilities', 'nav.proj': 'Projects', 'nav.perf': 'Performance',
-    'nav.exp': 'Experience', 'nav.contact': 'Contact',
+    'nav.exp': 'Experience', 'nav.edu': 'Education', 'nav.contact': 'Contact',
     'hero.eyebrow': 'Available · July 2026',
     'hero.greet': "Hi, I'm <span class=\"gradient-1\">Dhia</span>.",
     'hero.line1': 'Intelligence,', 'hero.line2': 'engineered.',
@@ -183,7 +183,7 @@ window.translations = {
   fr: {
     'banner.text': "Recherche un stage de fin d'études (PFE) en IA · Juillet 2026 · Paris, France / Remote",
     'nav.cap': 'Compétences', 'nav.proj': 'Projets', 'nav.perf': 'Performance',
-    'nav.exp': 'Expérience', 'nav.contact': 'Contact', 'nav.ship': 'Productions',
+    'nav.exp': 'Expérience', 'nav.edu': 'Formation', 'nav.contact': 'Contact', 'nav.ship': 'Productions',
     'hero.eyebrow': 'Disponible · Juillet 2026',
     'hero.greet': 'Bonjour, je suis <span class="gradient-1">Dhia</span>.',
     'hero.line1': "L'intelligence,", 'hero.line2': 'incarnée.',
