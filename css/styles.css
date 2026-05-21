@@ -469,6 +469,12 @@ section {
   -webkit-text-fill-color: transparent;
 }
 
+.hero-role {
+  font-size: clamp(1.1rem, 1.7vw, 1.3rem);
+  color: var(--ink-2);
+  margin: 0 0 0.55rem;
+  line-height: 1.4;
+}
 .hero-sub {
   font-size: clamp(1.05rem, 1.6vw, 1.2rem);
   color: var(--muted);
@@ -477,17 +483,12 @@ section {
   margin-bottom: 2rem;
 }
 .typewriter {
-  display: inline-block;
-  min-width: 22ch;
   color: var(--ink);
   font-weight: 600;
   border-right: 2px solid var(--accent);
   padding-right: 2px;
   white-space: nowrap;
   animation: caret 1s steps(1) infinite;
-}
-@media (max-width: 600px) {
-  .typewriter { min-width: 0; white-space: normal; }
 }
 @keyframes caret { 50% { border-color: transparent; } }
 
