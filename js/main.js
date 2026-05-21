@@ -8,13 +8,14 @@
   const themeIcon = document.getElementById('themeIcon');
   const moon = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
   const sun = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>';
-  let theme = localStorage.getItem('theme') || 'dark';
+  let theme = localStorage.getItem('theme') || 'light';
   function setTheme(t) {
     theme = t;
     localStorage.setItem('theme', t);
+    document.body.classList.toggle('dark', t === 'dark');
     document.body.classList.toggle('light', t === 'light');
-    document.querySelector('meta[name="theme-color"]').setAttribute('content', t === 'light' ? '#fbfbfd' : '#000000');
-    if (themeIcon) themeIcon.innerHTML = t === 'dark' ? moon : sun;
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', t === 'light' ? '#f6f9fd' : '#0b1220');
+    if (themeIcon) themeIcon.innerHTML = t === 'dark' ? sun : moon;
     window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: t } }));
   }
   if (themeBtn) themeBtn.addEventListener('click', () => setTheme(theme === 'dark' ? 'light' : 'dark'));
@@ -91,32 +92,10 @@
   });
 
   if (!isTouch) {
-    const dot = document.querySelector('.cursor-dot');
-    const ring = document.querySelector('.cursor-ring');
-    let mx = innerWidth / 2, my = innerHeight / 2;
-    let rx = mx, ry = my;
-    document.addEventListener('mousemove', (e) => {
-      mx = e.clientX; my = e.clientY;
-      dot.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
-    });
-    document.addEventListener('mousedown', () => ring.classList.add('click'));
-    document.addEventListener('mouseup', () => ring.classList.remove('click'));
-    function raf() {
-      rx += (mx - rx) * 0.18;
-      ry += (my - ry) * 0.18;
-      ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
-      requestAnimationFrame(raf);
-    }
-    raf();
-
-    const hoverSel = 'a, button, [data-magnetic], .feature-card, .project-card, .exp-row, input';
-    document.addEventListener('mouseover', (e) => { if (e.target.closest(hoverSel)) ring.classList.add('hover'); });
-    document.addEventListener('mouseout', (e) => { if (e.target.closest(hoverSel)) ring.classList.remove('hover'); });
-
     document.querySelectorAll('[data-magnetic]').forEach((el) => {
       el.addEventListener('mousemove', (e) => {
         const r = el.getBoundingClientRect();
-        el.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.25}px, ${(e.clientY - r.top - r.height / 2) * 0.35}px)`;
+        el.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.18}px, ${(e.clientY - r.top - r.height / 2) * 0.22}px)`;
       });
       el.addEventListener('mouseleave', () => { el.style.transform = ''; });
     });
