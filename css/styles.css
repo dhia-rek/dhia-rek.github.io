@@ -690,15 +690,25 @@ section {
   align-items: center;
   gap: 0.5rem;
   padding: 0.45rem 0.45rem 0.45rem 1.1rem;
-  background: var(--bg-elev);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.45);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(15, 23, 42, 0.06);
   border-radius: var(--r-pill);
-  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
-  transition: border-color .2s, box-shadow .2s;
+  box-shadow: none;
+  transition: border-color .2s, background .2s, box-shadow .2s;
 }
 .hero-chat-form:focus-within {
+  background: rgba(255, 255, 255, 0.7);
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
+}
+body.dark .hero-chat-form {
+  background: rgba(17, 26, 46, 0.45);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+body.dark .hero-chat-form:focus-within {
+  background: rgba(17, 26, 46, 0.7);
 }
 .hero-chat-form input {
   flex: 1;
