@@ -291,11 +291,84 @@ body.dark nav { background: rgba(11, 18, 32, 0.78); }
   flex-direction: column;
   gap: 0.25rem;
   transform: translateY(-110%);
-  transition: transform .35s var(--ease-out);
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform .35s var(--ease-out), visibility 0s linear .35s;
   z-index: 99;
   box-shadow: var(--shadow-md);
 }
-.nav-mobile-drawer.open { transform: translateY(0); }
+.nav-mobile-drawer.open {
+  transform: translateY(0);
+  visibility: visible;
+  pointer-events: auto;
+  transition: transform .35s var(--ease-out), visibility 0s linear 0s;
+}
+@media (min-width: 881px) {
+  .nav-mobile-drawer { display: none !important; }
+}
+
+/* === Fixed left social rail (brittanychiang-style) === */
+.social-rail {
+  position: fixed;
+  left: 20px;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.social-rail ul {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+}
+.social-rail ul::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 90px;
+  background: var(--border);
+  margin-top: 6px;
+}
+.social-rail a {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: color .2s, transform .2s;
+}
+.social-rail a:hover { color: var(--accent); transform: translateY(-2px); }
+@media (max-width: 1024px) {
+  .social-rail { display: none; }
+}
+
+/* === Nav Resume button === */
+.nav-resume {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.42rem 0.9rem;
+  margin-left: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-sm);
+  transition: background .2s, color .2s, transform .15s var(--ease-out);
+}
+.nav-resume:hover {
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+}
+@media (max-width: 540px) {
+  .nav-resume { display: none; }
+}
 .nav-mobile-drawer a {
   padding: 0.85rem 0.5rem;
   font-size: 1rem;
@@ -477,27 +550,37 @@ section {
 /* === Inline AI chat panel (replaces floating Valeknaar) === */
 .hero-chat {
   position: relative;
-  background: var(--bg-elev);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: clamp(1.2rem, 2.5vw, 1.6rem);
-  box-shadow: var(--shadow-md);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.95rem;
 }
-.hero-chat::before {
-  content: '';
+.hero-chat-mascot {
   position: absolute;
-  inset: -1px;
-  border-radius: var(--r-lg);
-  padding: 1px;
-  background: var(--gradient-soft);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  right: -12px;
+  bottom: 38px;
+  width: clamp(110px, 14vw, 160px);
+  height: auto;
   pointer-events: none;
-  opacity: 0.6;
+  user-select: none;
+  z-index: 2;
+  filter: drop-shadow(0 12px 24px rgba(15, 23, 42, 0.18));
+}
+.hero-chat-mascot--fallback {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--bg-elev);
+  right: -6px;
+  bottom: 52px;
+}
+@media (max-width: 880px) {
+  .hero-chat-mascot { display: none; }
 }
 .hero-chat-title {
   font-family: var(--head);
@@ -551,9 +634,9 @@ section {
 .hero-chat-feed .valek-msg p { margin: 0; }
 .hero-chat-feed .valek-msg--ai {
   align-self: flex-start;
-  background: var(--bg-soft);
+  background: transparent;
   color: var(--ink-2);
-  border-bottom-left-radius: 4px;
+  padding: 0.25rem 0.2rem;
 }
 .hero-chat-feed .valek-msg--user {
   align-self: flex-end;
@@ -601,13 +684,16 @@ section {
 }
 
 .hero-chat-form {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.45rem 0.45rem 0.45rem 0.95rem;
-  background: var(--bg);
+  padding: 0.45rem 0.45rem 0.45rem 1.1rem;
+  background: var(--bg-elev);
   border: 1px solid var(--border);
   border-radius: var(--r-pill);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
   transition: border-color .2s, box-shadow .2s;
 }
 .hero-chat-form:focus-within {

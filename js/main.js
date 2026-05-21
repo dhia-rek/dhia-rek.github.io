@@ -104,7 +104,7 @@
   const CV_FILES = { en: 'cv/cv-en.pdf', fr: 'cv/cv-fr.pdf' };
   function updateCvLinks(lang) {
     const href = CV_FILES[lang] || CV_FILES.en;
-    ['cvBtn', 'cvBtn2'].forEach((id) => {
+    ['cvBtn', 'cvBtn2', 'cvBtnNav'].forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.setAttribute('href', href);
     });
