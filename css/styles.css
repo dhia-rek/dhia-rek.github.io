@@ -477,11 +477,17 @@ section {
   margin-bottom: 2rem;
 }
 .typewriter {
+  display: inline-block;
+  min-width: 22ch;
   color: var(--ink);
   font-weight: 600;
   border-right: 2px solid var(--accent);
   padding-right: 2px;
+  white-space: nowrap;
   animation: caret 1s steps(1) infinite;
+}
+@media (max-width: 600px) {
+  .typewriter { min-width: 0; white-space: normal; }
 }
 @keyframes caret { 50% { border-color: transparent; } }
 
