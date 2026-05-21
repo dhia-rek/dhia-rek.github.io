@@ -4,10 +4,23 @@
   if (!grid) return;
 
   const CASE_STUDIES = {
+    'sagemcom-roco': {
+      tagline: 'PFE project at Esprit School of Engineering, completed during internship at Sagemcom. Upload, configure, execute, and evaluate Robot Framework test scripts from a single web platform.',
+      problem: 'QA engineers at Sagemcom were running Robot Framework automation scripts ad-hoc across local machines. No centralized interface, no audit trail, no way to trigger or review runs without direct terminal access. Scaling the practice across teams required a shared, reproducible platform.',
+      solution: 'Built a full-stack web application in Flask backed by PostgreSQL and a Redis-driven async worker. Engineers upload .robot test files through a web UI, configure parameters via forms, and trigger execution remotely. Results flow through three stages (Landing, Consumer, and Output) with logs and pass/fail breakdowns stored per run. The entire stack is containerized in Docker Compose: app, database, Redis, and worker all spin up with a single command. Install scripts cover both Windows and Unix. A pytest suite covers unit and integration layers end-to-end.',
+      stack: ['Python', 'Robot Framework', 'Flask', 'PostgreSQL', 'Redis', 'Docker', 'JavaScript', 'pytest'],
+      results: [
+        'Centralized platform replaces ad-hoc local execution with a shared, audited interface for all RF test runs',
+        'Async worker decouples test execution from the web server, handling long-running suites without blocking the UI',
+        'Three-stage pipeline (Landing, Consumer, Output) gives every run a traceable lifecycle from upload to result',
+        'One-command Docker Compose deployment eliminates environment drift across developer and CI machines',
+      ],
+      metric: 'Full Docker stack',
+    },
     'Grid_shooter': {
-      tagline: 'Train a REINFORCE agent to aim, dodge, and survive a staged zombie shooter — built from scratch.',
-      problem: 'Learning reinforcement learning from textbooks only goes so far. To genuinely understand policy gradients you need an environment complex enough to produce real emergent strategy — aiming, dodging, prioritizing threats — but structured enough to see exactly what the agent is learning and why.',
-      solution: 'Built a custom Gymnasium environment: an 8×8 grid zombie shooter with 4 escalating difficulty stages, directional shooting (9 actions), and carefully shaped rewards. Implemented REINFORCE from scratch in PyTorch with entropy bonus to prevent premature convergence and gradient clipping for stability. Zombies unlock progressively — top-only in stage 1, all four directions by stage 3 — giving the policy time to develop basic skills before full chaos. Pygame visualizes training live so you can watch the agent figure out how to aim.',
+      tagline: 'ECE Paris MSc AI project. Train a REINFORCE agent to aim, dodge, and survive a staged zombie shooter, built from scratch.',
+      problem: 'Learning reinforcement learning from textbooks only goes so far. To genuinely understand policy gradients you need an environment complex enough to produce real emergent strategy (aiming, dodging, prioritizing threats) but structured enough to see exactly what the agent is learning and why.',
+      solution: 'Built a custom Gymnasium environment: an 8×8 grid zombie shooter with 4 escalating difficulty stages, directional shooting (9 actions), and carefully shaped rewards. Implemented REINFORCE from scratch in PyTorch with entropy bonus to prevent premature convergence and gradient clipping for stability. Zombies unlock progressively: top-only in stage 1, all four directions by stage 3. Pygame visualizes training live so you can watch the agent figure out how to aim.',
       stack: ['Python', 'PyTorch', 'Gymnasium', 'REINFORCE', 'Pygame', 'NumPy'],
       results: [
         'Agent learns to aim directionally, dodge, and advance through 4 difficulty stages without any supervision',
@@ -15,30 +28,33 @@
         'Entropy bonus prevents policy collapse; gradient clipping ensures stable training across long episodes',
         'Clean separation: game logic, RL algorithm, and renderer are fully decoupled modules',
       ],
+      metric: '4 difficulty stages',
     },
     'multi-agent-multi-llm-rag': {
-      tagline: 'Turn a plain-text business case into a structured digital transformation roadmap — 6 specialist agents, 3 academic frameworks, full RAG.',
-      problem: 'Digital transformation frameworks are rich and well-researched but locked in dense PDFs and inaccessible without expert interpretation. Small businesses especially cannot afford consulting fees to apply them — yet the frameworks are precisely what\'s needed to avoid wasted budget and failed rollouts.',
-      solution: 'Built a RAG pipeline over three DT framework documents (Wade 2015, Peter 2018, Elia 2024) embedded offline into a persistent FAISS index using local MiniLM — no API cost for retrieval. Six specialist agents chain sequentially: Planner extracts intent and writes retrieval queries; Framework Agent classifies passages; Canvas Analysis scores maturity across 7 fields; Strategist synthesizes the 11-element Elia canvas; Roadmap Generator produces phased KPIs and milestones; Evaluator critiques the output using LLaMA 3.1 locally. A routing layer maps each task by type, complexity, and criticality to Gemini Flash 2.5 or Gemini Pro 2.5 — keeping cost low without sacrificing reasoning quality. Results are SHA-keyed and cached to disk so repeated runs skip all LLM calls. Streamlit UI + FastAPI REST endpoints included.',
+      tagline: 'MSc AI capstone at ECE Paris. Turn a plain-text business case into a structured digital transformation roadmap: 6 specialist agents, 3 academic frameworks, full RAG.',
+      problem: 'Digital transformation frameworks are rich and well-researched but locked in dense PDFs and inaccessible without expert interpretation. Small businesses especially cannot afford consulting fees to apply them, yet the frameworks are precisely what is needed to avoid wasted budget and failed rollouts.',
+      solution: 'Built a RAG pipeline over three DT framework documents (Wade 2015, Peter 2018, Elia 2024) embedded offline into a persistent FAISS index using local MiniLM (no API cost for retrieval). Six specialist agents chain sequentially: Planner extracts intent and writes retrieval queries; Framework Agent classifies passages; Canvas Analysis scores maturity across 7 fields; Strategist synthesizes the 11-element Elia canvas; Roadmap Generator produces phased KPIs and milestones; Evaluator critiques the output using LLaMA 3.1 locally. A routing layer maps each task by type, complexity, and criticality to Gemini Flash 2.5 or Gemini Pro 2.5. Results are SHA-keyed and cached to disk so repeated runs skip all LLM calls.',
       stack: ['Python', 'FAISS', 'Gemini API', 'sentence-transformers', 'Streamlit', 'FastAPI', 'pypdf', 'Ollama'],
       results: [
         'Full pipeline: plain-text business case → structured roadmap with phases, KPIs, owners, milestones, and budget',
-        'Multi-LLM routing — Gemini Flash for extraction, Gemini Pro for deep reasoning, LLaMA 3.1 locally for evaluation',
+        'Multi-LLM routing: Gemini Flash for extraction, Gemini Pro for deep reasoning, LLaMA 3.1 locally for evaluation',
         'SHA-keyed disk cache: repeated runs serve all 6 agent steps with zero LLM calls',
-        'Runs fully offline in mock mode — complete UI and architecture explorable without any API key',
+        'Runs fully offline in mock mode: complete UI and architecture explorable without any API key',
         'REST API (FastAPI) exposes the pipeline as HTTP endpoints; local CPU embeddings eliminate retrieval API cost',
       ],
+      metric: '6 agents · 3 frameworks',
     },
     'campus-safety-detection': {
-      tagline: 'Zero-shot CCTV bullying detection — no labeled abnormal data required.',
-      problem: 'Campus CCTV systems demand constant human monitoring — expensive, error-prone, and impossible to scale. Collecting labeled video of real bullying or violence incidents is also impractical due to rarity and sensitivity of such events.',
+      tagline: 'ECE Paris MSc AI project. Zero-shot CCTV bullying detection: no labeled abnormal data required.',
+      problem: 'Campus CCTV systems demand constant human monitoring (expensive, error-prone, and impossible to scale). Collecting labeled video of real bullying or violence incidents is also impractical due to rarity and sensitivity of such events.',
       solution: 'Built a zero-shot detection pipeline using CLIP to compare live video frames against natural-language descriptions of anomalies. YOLOv8 crops individual people first, then CLIP scores each crop. Scores are Z-score normalized and Gaussian-smoothed over time to suppress false positives. Audio is independently analyzed with PANNs. A Streamlit dashboard streams live CCTV playback with a real-time anomaly score graph, while a Telegram bot pushes annotated alert frames to subscribers.',
       stack: ['Python', 'CLIP', 'YOLOv8', 'PyTorch', 'Streamlit', 'Telegram Bot', 'PANNs', 'OpenCV', 'NumPy'],
       results: [
         'Anomaly score spikes to 1.771 sustained across 90+ consecutive frames during a bullying event',
-        'Zero labeled abnormal samples needed — pure zero-shot generalization via natural language',
+        'Zero labeled abnormal samples needed: pure zero-shot generalization via natural language',
         'Real-time Telegram alerts with annotated frame screenshots delivered to subscribers instantly',
       ],
+      metric: 'Zero-shot · 1.771 peak',
     },
   };
 
@@ -59,104 +75,55 @@
     return lang === 'fr' ? `il y a ${Math.floor(days/365)} an` : `${Math.floor(days/365)}y ago`;
   }
 
-  function fullDate(iso) {
-    if (!iso) return '';
-    const lang = window.i18n ? window.i18n.lang : 'en';
-    return new Date(iso).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  }
-
   const starSvg = '<svg viewBox="0 0 16 16"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg>';
-  const forkSvg = '<svg viewBox="0 0 16 16"><path d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"/></svg>';
   const repoSvg = '<svg viewBox="0 0 16 16"><path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"/></svg>';
+  const chevSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>';
 
   function renderCard(repo) {
-    const langClass = repo.language ? `lang-${repo.language.replace(/\s+/g,'')}` : '';
     const t = window.i18n ? window.i18n.t.bind(window.i18n) : (k, fb) => fb || k;
-    return `
-      <div class="project-card" data-repo="${escapeHtml(repo.name)}">
-        <div class="project-header">
-          <div class="project-icon-wrap">${repoSvg}</div>
-          <div class="project-stats">
-            ${repo.stargazers_count > 0 ? `<span>${starSvg}${repo.stargazers_count}</span>` : ''}
-            ${repo.forks_count > 0 ? `<span>${forkSvg}${repo.forks_count}</span>` : ''}
-          </div>
-        </div>
-        <h3>${escapeHtml(repo.name)}</h3>
-        <p class="desc">${escapeHtml(repo.description || '—')}</p>
-        <div class="project-footer">
-          <div class="project-meta">
-            ${repo.language ? `<span><span class="lang-dot ${langClass}"></span>${escapeHtml(repo.language)}</span>` : ''}
-            <span>${formatDate(repo.pushed_at)}</span>
-          </div>
-          <button class="case-study-btn">${t('modal.caseStudy', 'Case Study')} →</button>
-        </div>
-      </div>
-    `;
-  }
-
-  function openModal(repo) {
-    const modal = document.getElementById('projectModal');
-    const body = document.getElementById('modalBody');
-    if (!modal || !body) return;
-    const t = window.i18n ? window.i18n.t.bind(window.i18n) : (k) => k;
     const cs = CASE_STUDIES[repo.name] || {};
-
-    const tagline = cs.tagline || repo.description || '—';
+    const langClass = repo.language ? `lang-${repo.language.replace(/\s+/g,'')}` : '';
+    const tagline = cs.tagline || repo.description || '';
+    const metric = cs.metric || (repo.stargazers_count > 0 ? `${repo.stargazers_count} ★` : formatDate(repo.pushed_at));
     const problem = cs.problem || '';
     const solution = cs.solution || '';
-    const aboutText = (!problem && !solution) ? (cs.about || repo.description || '') : '';
     const stack = cs.stack || (repo.topics && repo.topics.length ? repo.topics : []);
     const results = cs.results || [];
     const demoUrl = cs.demo || repo.homepage;
+    const primaryTag = repo.language || (stack[0] || 'Project');
 
-    body.innerHTML = `
-      <h2>${escapeHtml(repo.name)}</h2>
-      <p class="modal-tagline">${escapeHtml(tagline)}</p>
-      <div class="modal-meta">
-        ${repo.language ? `<span><span class="lang-dot lang-${repo.language.replace(/\s+/g,'')}"></span>${escapeHtml(repo.language)}</span>` : ''}
-        ${repo.stargazers_count > 0 ? `<span>${starSvg}${repo.stargazers_count} ${repo.stargazers_count === 1 ? 'star' : 'stars'}</span>` : ''}
-        ${repo.forks_count > 0 ? `<span>${forkSvg}${repo.forks_count} forks</span>` : ''}
-        ${repo.license && repo.license.spdx_id ? `<span>${t('modal.license')}: ${escapeHtml(repo.license.spdx_id)}</span>` : ''}
-        <span>${t('modal.updated')}: ${fullDate(repo.pushed_at)}</span>
-      </div>
-
-      ${problem ? `<h4>${t('modal.problem')}</h4><p>${escapeHtml(problem)}</p>` : ''}
-      ${solution ? `<h4>${t('modal.solution')}</h4><p>${escapeHtml(solution)}</p>` : ''}
-      ${aboutText ? `<h4>${t('modal.about')}</h4><p>${escapeHtml(aboutText)}</p>` : ''}
-
-      ${stack.length ? `
-        <h4>${t('modal.stack')}</h4>
-        <div class="topic-list">${stack.map(s => `<span>${escapeHtml(s)}</span>`).join('')}</div>
-      ` : ''}
-
-      ${results.length ? `
-        <h4>${t('modal.results')}</h4>
-        <ul class="modal-results">${results.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
-      ` : ''}
-
-      <div class="modal-actions">
-        <a href="${escapeHtml(repo.html_url)}" target="_blank" rel="noopener" class="btn btn-primary" data-magnetic>${t('modal.viewRepo')}</a>
-        ${demoUrl ? `<a href="${escapeHtml(demoUrl)}" target="_blank" rel="noopener" class="btn btn-secondary" data-magnetic>${t('modal.liveDemo')}</a>` : ''}
-      </div>
+    return `
+      <article class="project-card" data-repo="${escapeHtml(repo.name)}">
+        <button class="project-card-summary" aria-expanded="false">
+          <div class="project-card-top">
+            <div class="project-icon-wrap">${repoSvg}</div>
+            <span class="project-card-chevron">${chevSvg}</span>
+          </div>
+          <h3>${escapeHtml(repo.name)}</h3>
+          <div class="project-card-meta">
+            <span class="project-card-tag"><span class="lang-dot ${langClass}"></span>${escapeHtml(primaryTag)}</span>
+            <span class="project-card-metric">${escapeHtml(metric)}</span>
+          </div>
+        </button>
+        <div class="project-details">
+          <p class="project-tagline">${escapeHtml(tagline)}</p>
+          ${problem ? `<h4>${t('modal.problem', 'The problem')}</h4><p>${escapeHtml(problem)}</p>` : ''}
+          ${solution ? `<h4>${t('modal.solution', 'The solution')}</h4><p>${escapeHtml(solution)}</p>` : ''}
+          ${stack.length ? `
+            <h4>${t('modal.stack', 'Stack')}</h4>
+            <div class="topic-list">${stack.map(s => `<span>${escapeHtml(s)}</span>`).join('')}</div>
+          ` : ''}
+          ${results.length ? `
+            <h4>${t('modal.results', 'Results')}</h4>
+            <ul class="modal-results">${results.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
+          ` : ''}
+          <div class="project-actions">
+            <a href="${escapeHtml(repo.html_url)}" target="_blank" rel="noopener" class="btn btn-primary" data-magnetic>${t('modal.viewRepo', 'View on GitHub ↗')}</a>
+            ${demoUrl ? `<a href="${escapeHtml(demoUrl)}" target="_blank" rel="noopener" class="btn btn-secondary" data-magnetic>${t('modal.liveDemo', 'Live demo')}</a>` : ''}
+          </div>
+        </div>
+      </article>
     `;
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeModal() {
-    const modal = document.getElementById('projectModal');
-    if (!modal) return;
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  }
-
-  function setupModal() {
-    const modal = document.getElementById('projectModal');
-    if (!modal) return;
-    modal.addEventListener('click', (e) => { if (e.target.closest('[data-modal-close]')) closeModal(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
   }
 
   function render(repos) {
@@ -166,14 +133,12 @@
     }
     grid.innerHTML = repos.map(renderCard).join('');
     grid.querySelectorAll('.project-card').forEach((card) => {
-      const name = card.getAttribute('data-repo');
-      const openThisModal = () => {
-        const repo = cache.find(r => r.name === name);
-        if (repo) openModal(repo);
-      };
-      card.addEventListener('click', (e) => { if (!e.target.closest('.case-study-btn')) openThisModal(); });
-      const btn = card.querySelector('.case-study-btn');
-      if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); openThisModal(); });
+      const summary = card.querySelector('.project-card-summary');
+      if (!summary) return;
+      summary.addEventListener('click', () => {
+        const open = card.classList.toggle('open');
+        summary.setAttribute('aria-expanded', String(open));
+      });
     });
   }
 
@@ -188,19 +153,17 @@
   }
 
   function showError() {
-    if (cache) return; // already rendered something — never downgrade to an error
+    if (cache) return;
     const t = window.i18n ? window.i18n.t.bind(window.i18n) : () => 'Failed to load.';
     grid.innerHTML = `<div class="projects-empty"><a href="https://github.com/${GITHUB_USER}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">${t('proj.error')}</a></div>`;
   }
 
   function load() {
-    // 1. Committed snapshot first — always renders, even if GitHub is rate-limited or down.
     fetch('repos.json')
       .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
       .then((repos) => { cache = pipeline(repos); render(cache); })
       .catch(() => {})
       .finally(() => {
-        // 2. Best-effort live refresh on top. If it fails, the snapshot stays.
         fetch(`https://api.github.com/users/${GITHUB_USER}/repos?sort=updated&per_page=30`)
           .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
           .then((repos) => { cache = pipeline(repos); render(cache); })
@@ -208,7 +171,6 @@
       });
   }
 
-  setupModal();
   load();
 
   if (window.i18n) window.i18n.onChange(() => { if (cache) render(cache); });

@@ -199,16 +199,17 @@
     });
   }
 
-  document.addEventListener('click', (e) => {
-    const chip = e.target.closest('.edu-modules span[data-tip]');
-    if (chip) {
-      const open = chip.classList.contains('tip-open');
-      document.querySelectorAll('.edu-modules span.tip-open').forEach(el => el.classList.remove('tip-open'));
-      if (!open) chip.classList.add('tip-open');
-      e.stopPropagation();
-    } else {
-      document.querySelectorAll('.edu-modules span.tip-open').forEach(el => el.classList.remove('tip-open'));
-    }
+  // Expandable experience items
+  document.querySelectorAll('.exp-item .exp-summary').forEach((summary) => {
+    const item = summary.closest('.exp-item');
+    const toggle = () => {
+      const open = item.classList.toggle('open');
+      summary.setAttribute('aria-expanded', String(open));
+    };
+    summary.addEventListener('click', toggle);
+    summary.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
   });
 
   const contactForm = document.getElementById('contactForm');
