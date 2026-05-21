@@ -118,10 +118,12 @@
 <section class="hero">
   <div class="hero-grid">
     <div class="hero-content">
-      <div class="hero-eyebrow" data-i18n="hero.eyebrow">Available July 2026</div>
+      <div class="hero-eyebrow" data-i18n="hero.eyebrow">Available · July 2026</div>
       <h1>
-        <span class="line" data-i18n="hero.greet">Hi, I'm Dhia.</span>
-        <span class="line gradient-1" data-i18n="hero.line2">Intelligence, engineered.</span>
+        <span class="hero-greet-row">
+          <img class="hero-avatar" src="assets/dhia.jpg" alt="Dhia Rekik" width="64" height="64">
+          <span data-i18n="hero.greet">Hi, I'm <span class="gradient-1">Dhia</span>.</span>
+        </span>
       </h1>
       <p class="hero-sub">
         <span data-i18n="hero.sub-prefix">I'm an</span>
@@ -144,10 +146,24 @@
         <span><strong>3 langs</strong> · AR · FR · EN</span>
       </div>
     </div>
-    <div class="hero-portrait">
-      <img src="assets/dhia.jpg" alt="Dhia Rekik portrait" width="380" height="380">
-      <div class="hero-portrait-tag" data-i18n="hero.tag">Available July 2026</div>
-    </div>
+
+    <aside class="hero-chat" aria-label="Ask Valeknaar, an AI assistant about Dhia">
+      <h2 class="hero-chat-title" data-i18n="chat.title">Want to ask me about Dhia?</h2>
+      <div class="hero-chat-chips" id="valekChips">
+        <button class="hero-chat-chip valek-chip" data-i18n="chat.q1">What are his AI skills?</button>
+        <button class="hero-chat-chip valek-chip" data-i18n="chat.q2">Is he available?</button>
+        <button class="hero-chat-chip valek-chip" data-i18n="chat.q3">Tell me about his projects.</button>
+        <button class="hero-chat-chip valek-chip" data-i18n="chat.q4">His experience at KPIT?</button>
+      </div>
+      <div class="hero-chat-feed" id="valekFeed"></div>
+      <form class="hero-chat-form" id="valekForm" autocomplete="off">
+        <input type="text" id="valekInput" data-i18n-ph="chat.placeholder" placeholder="Ask, write or search for anything…" maxlength="300" aria-label="Message">
+        <button type="submit" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </form>
+      <p class="hero-chat-foot">AI · may make mistakes</p>
+    </aside>
   </div>
 </section>
 
@@ -643,54 +659,6 @@
       <span><kbd>↵</kbd> select</span>
       <span><kbd>esc</kbd> close</span>
     </div>
-  </div>
-</div>
-
-<!-- Valeknaar AI chat (terminal style) -->
-<div class="valek-backdrop" id="valekBackdrop"></div>
-<div class="valek-widget valek-terminal" id="valekWidget">
-  <div class="valek-panel" id="valekPanel">
-    <div class="valek-header">
-      <div class="valek-traffic">
-        <span></span><span></span><span></span>
-      </div>
-      <div class="valek-title">valeknaar@dhia: ~</div>
-      <button class="valek-close" id="valekClose" aria-label="Close chat">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="valek-feed" id="valekFeed">
-      <div class="valek-boot">
-        <div>$ ./valeknaar --init</div>
-        <div>&gt; loading: cv.json, projects.json, experience.json</div>
-        <div>&gt; embedding: 13 modules · 3 langs · 2 yrs exp</div>
-        <div>&gt; <span class="ok">ready.</span></div>
-      </div>
-      <div class="valek-msg valek-msg--ai">
-        <p>Hi. I'm Valeknaar, Dhia's assistant. Ask me anything about his background, projects, or skills.</p>
-      </div>
-      <div class="valek-chips" id="valekChips">
-        <button class="valek-chip">What are his skills?</button>
-        <button class="valek-chip">Is he available?</button>
-        <button class="valek-chip">His experience?</button>
-        <button class="valek-chip">His projects?</button>
-      </div>
-    </div>
-    <div class="valek-footer">
-      <form class="valek-form" id="valekForm" autocomplete="off">
-        <span class="valek-prompt">guest@dhia:~$</span>
-        <input type="text" id="valekInput" placeholder="type a question…" maxlength="300" aria-label="Message">
-        <button type="submit" aria-label="Send">↵</button>
-      </form>
-      <p class="valek-disclaimer">● online · model: dhia-1.0 · AI may make mistakes</p>
-    </div>
-  </div>
-  <div class="valek-toggle-wrap">
-    <span class="valek-label" id="valekLabel">Ask Valeknaar</span>
-    <button class="valek-toggle" id="valekToggle" aria-label="Open Valeknaar AI assistant" aria-expanded="false">
-      <span class="icon-chat">&gt;_</span>
-      <svg class="icon-x" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
   </div>
 </div>
 
