@@ -2977,3 +2977,46 @@ textarea:focus-visible { outline: none; }
   }
 }
 
+/* ======================================================================
+   MOBILE POLISH — consolidated tweaks for phones (≤640px)
+   ====================================================================== */
+
+@media (max-width: 640px) {
+  /* Tighter outer gutter on small phones */
+  :root { --section-x: 16px; }
+
+  /* Hero: centered, more breathing room, tame the h1 floor */
+  .hero h1 { font-size: clamp(2rem, 9vw, 2.7rem); }
+  .hero-content { text-align: center; }
+  .hero-role { text-align: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-eyebrow { margin-left: auto; margin-right: auto; }
+
+  /* Typewriter must wrap on phones to avoid horizontal scroll */
+  .typewriter { white-space: normal; }
+
+  /* CTAs: full-width stacked buttons read better than half-width pills */
+  .hero-cta { flex-direction: column; align-items: stretch; }
+  .hero-cta .btn { justify-content: center; width: 100%; }
+
+  /* Trust line: center + softer spacing */
+  .hero-trust { justify-content: center; gap: 0.5rem 1rem; font-size: 0.82rem; }
+
+  /* Chat: centered title, slightly tighter feed height so the input is reachable */
+  .hero-chat-title { text-align: center; }
+  .hero-chat-feed { max-height: 220px; }
+
+  /* Nav: hide the ⌘K affordance — touch users can't trigger it */
+  .ctrl-cmd { display: none; }
+
+  /* Drawer items get a hair more touch padding */
+  .nav-mobile-drawer a { padding: 1rem 0.5rem; }
+}
+
+/* Extra-narrow phones (≤380px): one more pass for the smallest devices */
+@media (max-width: 380px) {
+  :root { --section-x: 14px; }
+  .hero h1 { font-size: clamp(1.75rem, 10vw, 2.25rem); }
+  .nav-logo { font-size: 0.92rem; }
+  .hero-trust { flex-direction: column; gap: 0.35rem; }
+}
