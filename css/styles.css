@@ -510,6 +510,11 @@ section {
   display: flex;
   flex-direction: column;
   gap: 0.95rem;
+  /* Lock a minimum height so the bottom edge (mascot anchor) stays
+     put while the feed grows char-by-char. Without this, .hero-chat
+     grows in chunks and the absolutely-positioned mascot lurches
+     downward as each new line is typed. */
+  min-height: 380px;
 }
 /* Desktop: nudge the chat down so its title aligns with the h1
    instead of with the eyebrow above it. */
