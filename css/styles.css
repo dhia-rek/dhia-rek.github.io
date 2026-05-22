@@ -510,43 +510,27 @@ section {
   display: flex;
   flex-direction: column;
   gap: 0.95rem;
-  /* Lock a minimum height so the bottom edge (mascot anchor) stays
-     put while the feed grows char-by-char. Without this, .hero-chat
-     grows in chunks and the absolutely-positioned mascot lurches
-     downward as each new line is typed. */
-  min-height: 380px;
 }
 /* Desktop: nudge the chat down so its title aligns with the h1
    instead of with the eyebrow above it. */
 @media (min-width: 921px) {
   .hero-chat { margin-top: clamp(2.6rem, 4vw, 3.4rem); }
 }
+/* Mascot sits quietly to the side of the chat — small, static, out
+   of the way of any answer text. */
 .hero-chat-mascot {
   position: absolute;
-  right: -12px;
-  bottom: 38px;
-  width: clamp(110px, 14vw, 160px);
+  right: -88px;
+  bottom: 0;
+  width: clamp(72px, 8vw, 96px);
   height: auto;
   pointer-events: none;
   user-select: none;
   z-index: 2;
-  filter: drop-shadow(0 12px 24px rgba(15, 23, 42, 0.18));
-  transform-origin: bottom right;
-  transition: transform .55s var(--ease-out),
-              right .55s var(--ease-out),
-              bottom .55s var(--ease-out),
-              width .55s var(--ease-out);
+  filter: drop-shadow(0 8px 18px rgba(15, 23, 42, 0.18));
 }
-/* When the chat has any messages (or the JS marked it active), the
-   mascot slides down and shrinks to "hang" off the chat input bar so
-   it stops covering the answer text. */
-.hero-chat.is-asking .hero-chat-mascot,
-.hero-chat:has(.hero-chat-feed > *) .hero-chat-mascot {
-  right: 4px;
-  bottom: -10px;
-  width: clamp(64px, 7vw, 84px);
-  transform: rotate(-6deg);
-  filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.22));
+@media (max-width: 1180px) {
+  .hero-chat-mascot { right: -8px; bottom: -10px; width: clamp(64px, 7vw, 80px); }
 }
 @media (max-width: 880px) {
   .hero-chat-mascot { display: none; }
