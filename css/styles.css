@@ -516,21 +516,18 @@ section {
 @media (min-width: 921px) {
   .hero-chat { margin-top: clamp(2.6rem, 4vw, 3.4rem); }
 }
-/* Mascot sits quietly to the side of the chat — small, static, out
-   of the way of any answer text. */
+/* Mascot sits quietly in the bottom-right corner of the chat — small,
+   static, out of the way of any answer text. */
 .hero-chat-mascot {
   position: absolute;
-  right: -88px;
-  bottom: 0;
-  width: clamp(72px, 8vw, 96px);
+  right: -6px;
+  bottom: -10px;
+  width: clamp(64px, 7vw, 84px);
   height: auto;
   pointer-events: none;
   user-select: none;
   z-index: 2;
   filter: drop-shadow(0 8px 18px rgba(15, 23, 42, 0.18));
-}
-@media (max-width: 1180px) {
-  .hero-chat-mascot { right: -8px; bottom: -10px; width: clamp(64px, 7vw, 80px); }
 }
 @media (max-width: 880px) {
   .hero-chat-mascot { display: none; }
