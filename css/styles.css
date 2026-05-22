@@ -425,7 +425,7 @@ section {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: clamp(2rem, 4.5vw, 3.5rem);
-  align-items: center;
+  align-items: start;
 }
 @media (max-width: 920px) {
   .hero-grid { grid-template-columns: 1fr; gap: 2.5rem; }
@@ -510,6 +510,11 @@ section {
   display: flex;
   flex-direction: column;
   gap: 0.95rem;
+}
+/* Desktop: nudge the chat down so its title aligns with the h1
+   instead of with the eyebrow above it. */
+@media (min-width: 921px) {
+  .hero-chat { margin-top: clamp(2.6rem, 4vw, 3.4rem); }
 }
 .hero-chat-mascot {
   position: absolute;
