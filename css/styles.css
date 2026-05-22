@@ -532,13 +532,14 @@ section {
               bottom .55s var(--ease-out),
               width .55s var(--ease-out);
 }
-/* When the user starts a conversation, the mascot slides down and
-   shrinks to "hang" off the chat input bar instead of covering the
-   answer text. */
-.hero-chat.is-asking .hero-chat-mascot {
+/* When the chat has any messages (or the JS marked it active), the
+   mascot slides down and shrinks to "hang" off the chat input bar so
+   it stops covering the answer text. */
+.hero-chat.is-asking .hero-chat-mascot,
+.hero-chat:has(.hero-chat-feed > *) .hero-chat-mascot {
   right: 4px;
-  bottom: -6px;
-  width: clamp(70px, 8.5vw, 96px);
+  bottom: -10px;
+  width: clamp(64px, 7vw, 84px);
   transform: rotate(-6deg);
   filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.22));
 }
