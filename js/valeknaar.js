@@ -102,12 +102,15 @@
     });
   }
 
+  const heroChatEl = document.querySelector('.hero-chat');
+
   let sending = false;
   async function send(text) {
     text = text.trim();
     if (!text || sending) return;
     sending = true;
 
+    if (heroChatEl) heroChatEl.classList.add('is-asking');
     hideChipsAll();
     userBubble(text);
     instances.forEach(inst => {
