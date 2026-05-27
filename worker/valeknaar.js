@@ -96,7 +96,7 @@ async function handle(request) {
 
   if (request.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
-  }
+  u}
 
   let body;
   try {
