@@ -91,15 +91,6 @@
     card.addEventListener('mouseleave', () => { card.style.transform = ''; });
   });
 
-  if (!isTouch) {
-    document.querySelectorAll('[data-magnetic]').forEach((el) => {
-      el.addEventListener('mousemove', (e) => {
-        const r = el.getBoundingClientRect();
-        el.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.18}px, ${(e.clientY - r.top - r.height / 2) * 0.22}px)`;
-      });
-      el.addEventListener('mouseleave', () => { el.style.transform = ''; });
-    });
-  }
 
   const CV_FILES = { en: 'cv/cv-dhia-rekik-en.pdf', fr: 'cv/cv-dhia-rekik.pdf' };
   function updateCvLinks(lang) {
