@@ -15,7 +15,7 @@ IDENTITY
 - Site: dhiarekik.me
 
 PROFILE
-MSc Artificial Intelligence student at ECE Paris (Grande École), specialized in LLMs & multi-agent systems, computer vision and generative AI. Coursework covering Multi-LLM architectures, cloud computing for AI, data security and business process automation. 2 years of experience in Test & Validation with a methodical, analytical approach. Skilled in evaluation methodology and optimization of complex systems to ensure quality and performance.
+MSc Artificial Intelligence student at ECE Paris (Grande École), with 2 years of industrial experience in automotive software validation (BMW EV charging systems) and a portfolio of production-grade AI projects: serverless ML pipelines on Azure, multi-agent systems with RAG, and zero-shot computer vision. Methodical, production-minded approach grounded in evaluation methodology and the optimization of complex systems.
 
 EDUCATION
 • MSc (M2) — Artificial Intelligence | ECE Paris (Grande École) | 2025–2026 | Paris, France
@@ -26,12 +26,11 @@ EDUCATION
 • Bachelor — Information Science & Technology | ENET'Com | 2017–2020 | Sfax, Tunisia
 
 EXPERIENCE
-1. Test & Validation Engineer (permanent) — KPIT Engineering | Sep 2024 – Feb 2026 | Sfax, Tunisia
-   • Validated automotive software for BMW ECUs via a Zuul CI/CD pipeline; diagnosed hardware vs software defects
-   • Contributed to evaluating an AI-based reporting system (TestGuide, TraceTronic); validated predictions, identified errors, gave structured feedback to improve reliability
-   • Analyzed and resolved 300+ anomalies (infrastructure, software versions, test cases) — ~80% resolution rate
-   • Developed a Python script to generate daily Excel reports
-   • Ran 50+ electrical-load tests for BMW system validation
+1. Test & Validation Engineer (full-time, Client: BMW) — KPIT Engineering | Sep 2024 – Feb 2026 | Sfax, Tunisia
+   • Designed and executed requirements-driven conformance test suites for EV charging systems (GB/T, CHAdeMO) on BMW ECUs, integrated into the Zuul CI/CD pipeline; 50+ charging tests delivered
+   • Evaluated an AI reporting system (TestGuide, TraceTronic) for automated test-result comparison and report generation; validated predictions, flagged errors, gave structured feedback to improve reliability
+   • Analyzed and resolved 300+ anomalies (infrastructure, software versions, test cases); ~80% resolution rate
+   • Developed Python scripts to automate result extraction from TestGuide, log analysis, and daily Excel reporting
 
 2. WordPress Developer (Freelance) — Krichen Distribution | Feb – Aug 2024 | Sfax, Tunisia
    • Set up and maintained the WordPress platform
@@ -45,23 +44,29 @@ EXPERIENCE
    • Optimized internal test workflows, significantly improving automation efficiency
 
 PROJECTS
-1. Digital Transformation Roadmap Generator (ECE M2 — Multi-LLM Architectures)
+1. Event-Driven ML Pipeline on Azure — Medical Risk Prediction (ECE M2 integrative project)
+   Serverless event-driven ML pipeline on Azure (Blob → Event Grid → Queue + DLQ → Worker Functions); containerized FastAPI inference on Azure Container Apps; result storage and dashboard via Cosmos DB + Static Web App; observability with Application Insights and KQL; multi-environment CI/CD with GitHub Actions. (Not public on GitHub due to Azure billing.)
+   Stack: Azure, Docker, FastAPI, GitHub Actions, KQL
+
+2. Digital Transformation Roadmap Generator (ECE M2 — Multi-LLM Architectures)
    Multi-agent RAG system (6 agents) turning a free-text business case into a structured roadmap; dynamic routing to the optimal LLM.
    Stack: Python, Multi-agents, RAG (FAISS), Gemini, FastAPI, Streamlit
 
-2. AI CCTV — Harassment Detection
+3. AI CCTV — Harassment Detection
    Zero-shot video detection (CLIP + YOLO) with no abnormal training data; real-time Streamlit dashboard + automatic Telegram alerts.
    Stack: Python, PyTorch, CLIP, YOLOv8, Streamlit
 
-3. Grid Shooter — REINFORCE Agent (ECE M2 RL project)
+4. Grid Shooter — REINFORCE Agent (ECE M2 RL project)
    REINFORCE (policy gradient) algorithm on a custom Gymnasium environment with live Pygame visualization.
    Stack: Python, PyTorch, Gymnasium, Pygame
 
 TECHNICAL SKILLS
-LLM & Generative AI: LangChain, RAG, multi-agent systems, Hugging Face Transformers, prompt engineering
+LLM & Generative AI: LangChain, RAG, multi-agent systems, agentic AI, Hugging Face Transformers, OpenAI, Anthropic, Gemini, prompt engineering, fine-tuning
+Vector Search: FAISS, embeddings, semantic search
 ML & Vision: PyTorch, TensorFlow, Scikit-learn, CLIP, YOLOv8, OpenCV, Whisper, Gymnasium (RL), Pandas, NumPy
 Programming: Python, SQL, JavaScript, PHP; Flask, FastAPI, Streamlit
-MLOps / DevOps / QA: Docker, Git, CI/CD (Jenkins, Zuul), Linux, Bash, Robot Framework, Selenium, Pytest, Scrum/Agile, Jira
+Cloud: Microsoft Azure, KQL, serverless, event-driven architecture
+MLOps / DevOps / QA: Docker, Git, CI/CD (GitHub Actions, Jenkins, Zuul), n8n, Linux, Bash, Robot Framework, Selenium, Pytest, Scrum/Agile, Jira
 Languages: Arabic (native), French (C1 — TCF), English (B2 — IELTS)
 
 CERTIFICATIONS
@@ -96,7 +101,7 @@ async function handle(request) {
 
   if (request.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
-  u}
+  }
 
   let body;
   try {
