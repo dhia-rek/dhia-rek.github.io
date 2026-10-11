@@ -1742,7 +1742,7 @@ body.dark .shipped-status.live { color: #34d399; }
   border: 1px solid var(--border);
   border-radius: var(--r-md);
 }
-.stack-cat h5 {
+.stack-cat-title {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--accent);
@@ -1882,7 +1882,7 @@ footer {
 }
 footer a { color: var(--ink-2); transition: color .2s; }
 footer a:hover { color: var(--accent); }
-.kbd-hint { color: var(--dim); }
+.kbd-hint { color: var(--muted); }
 
 /* ===== REVEAL ON SCROLL ===== */
 .reveal {
@@ -2441,3 +2441,5 @@ textarea:focus-visible { outline: none; }
 }
 
 .text-center { text-align: center; }
+
+footer a { text-decoration: underline; text-underline-offset: 2px; }

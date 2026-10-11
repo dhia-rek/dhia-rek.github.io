@@ -141,7 +141,7 @@ function createMagnifier() {
   glowRing.rotation.z = Math.PI * 1.1;
   group.add(glowRing);
   const lens = new THREE.Mesh(new THREE.CircleGeometry(0.19, 40), new THREE.MeshPhysicalMaterial({
-    color: 0xcfefff, transparent: true, opacity: 0.18, roughness: 0, transmission: 0.6, thickness: 0.05,
+    color: 0xcfefff, transparent: true, opacity: 0.22, roughness: 0.05,
   }));
   group.add(lens);
   const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.32, 16), matte(0x15191e, { roughness: 0.4 }));
