@@ -1,9 +1,7 @@
 // Valeknaar, the robot guide: drives along the bottom of the screen, stops near each section with a
 // suggestion, and can be grabbed, dragged and thrown. A quick tap opens the Valeknaar chat.
-// Loaded as a module after the page; does nothing without WebGL or when the visitor hid it.
-import * as THREE from 'three';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createRobot, addRobotLights } from './robot-model.js?v=20261011-13';
+// Loaded as a module after the page; does nothing without GPU-accelerated WebGL. three.js and the
+// model are imported only after that check passes, so visitors without a GPU never download them.
 
 const STORE_KEY = 'valek-robot';
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -68,8 +66,13 @@ function storeHidden(hidden) {
   try { hidden ? localStorage.setItem(STORE_KEY, 'off') : localStorage.removeItem(STORE_KEY); } catch { /* storage blocked */ }
 }
 
-function start() {
+async function start() {
   if (!supportsWebGL()) return;
+  const [THREE, { RoomEnvironment }, { createRobot, addRobotLights }] = await Promise.all([
+    import('three'),
+    import('three/addons/environments/RoomEnvironment.js'),
+    import('./robot-model.js?v=20261011-16'),
+  ]);
 
   // ---- DOM: canvas, hit area, bubble, show button ----
   const layer = document.createElement('div');
