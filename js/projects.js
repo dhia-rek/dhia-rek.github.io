@@ -4,7 +4,23 @@
   if (!grid) return;
 
   const CASE_STUDIES = {
+    'dopa-hackathon': {
+      title: 'Nekyia',
+      tagline: 'Hackathon game: a Greek-mythology roguelike in the browser where AI-written dialogue, trials and omens react to how you play.',
+      problem: 'Roguelikes repeat themselves: rooms change, but the world never reacts to who you are. The hackathon goal was a game whose story responds to the player in real time.',
+      solution: 'A Binding of Isaac-style roguelike in Phaser 3 and TypeScript. You descend through the underworld as Achilles, Atalanta, Heracles or Orpheus. Sparing, robbing or killing villagers changes your karma; bosses speak before each fight and remember your deeds. Each floor a god sets an AI-written trial, and omens reshape the next floor based on how you play. A small Python server calls Gemini for dialogue, trials and voiced lines; without it the game falls back to a built-in mock and runs fully offline. Works on phones with twin touch sticks.',
+      stack: ['TypeScript', 'Phaser 3', 'Gemini API', 'Gemini TTS', 'Python', 'Vite'],
+      results: [
+        'Choices drive the story: karma changes which boss you face and how it talks to you',
+        'AI trials and omens make every floor different, with procedural rooms and replayable seeds',
+        'Runs offline without an API key thanks to a built-in mock of the AI server',
+        'Playable on desktop and phone (twin-stick touch controls, landscape mode)',
+      ],
+      metric: 'AI-driven story',
+    },
     'ai-vision-detection': {
+      title: 'AI Vision Detection',
+      lang: 'JavaScript',
       tagline: 'Object detection, facial-expression reading and ASL fingerspelling, live on your camera and entirely in your browser. No server, no upload.',
       problem: 'Most vision apps stream your camera to a server: slow, costly to host, and a privacy problem. Sign-language letters were the hardest part: the first model was right only 47% of the time on photos it had never seen.',
       solution: 'Three modes on one camera. YOLO11n finds 80 kinds of objects, YuNet and MobileFaceNet read the expression on each face, and MediaPipe hand landmarks feed a letter classifier I trained myself. Every model was exported to run in the page with ONNX Runtime Web in Web Workers (WebGPU when available), so frames never leave the device and the site is plain static files. Python trains and evaluates the models; tests check the browser gives the same answers.',
@@ -19,6 +35,7 @@
       live: 'https://dhiarekik.me/ai-vision-detection/',
     },
     'sagemcom-roco': {
+      title: 'Robot Framework Test Platform',
       tagline: 'PFE project at Esprit School of Engineering, completed during internship at Sagemcom. Upload, configure, execute, and evaluate Robot Framework test scripts from a single web platform.',
       problem: 'QA engineers at Sagemcom were running Robot Framework automation scripts ad-hoc across local machines. No centralized interface, no audit trail, no way to trigger or review runs without direct terminal access. Scaling the practice across teams required a shared, reproducible platform.',
       solution: 'Built a full-stack web application in Flask backed by PostgreSQL and a Redis-driven async worker. Engineers upload .robot test files through a web UI, configure parameters via forms, and trigger execution remotely. Results flow through three stages (Landing, Consumer, and Output) with logs and pass/fail breakdowns stored per run. The entire stack is containerized in Docker Compose: app, database, Redis, and worker all spin up with a single command. Install scripts cover both Windows and Unix. A pytest suite covers unit and integration layers end-to-end.',
@@ -32,6 +49,7 @@
       metric: 'Full Docker stack',
     },
     'grid-shooter': {
+      title: 'Grid Shooter RL Agent',
       tagline: 'ECE Paris MSc AI project. Train a REINFORCE agent to aim, dodge, and survive a staged zombie shooter, built from scratch.',
       problem: 'Learning reinforcement learning from textbooks only goes so far. To genuinely understand policy gradients you need an environment complex enough to produce real emergent strategy (aiming, dodging, prioritizing threats) but structured enough to see exactly what the agent is learning and why.',
       solution: 'Built a custom Gymnasium environment: an 8×8 grid zombie shooter with 4 escalating difficulty stages, directional shooting (9 actions), and carefully shaped rewards. Implemented REINFORCE from scratch in PyTorch with entropy bonus to prevent premature convergence and gradient clipping for stability. Zombies unlock progressively: top-only in stage 1, all four directions by stage 3. Pygame visualizes training live so you can watch the agent figure out how to aim.',
@@ -45,6 +63,7 @@
       metric: '4 difficulty stages',
     },
     'multi-agent-multi-llm-rag': {
+      title: 'Multi-Agent RAG Roadmap',
       tagline: 'MSc AI capstone at ECE Paris. Turn a plain-text business case into a structured digital transformation roadmap: 6 specialist agents, 3 academic frameworks, full RAG.',
       problem: 'Digital transformation frameworks are rich and well-researched but locked in dense PDFs and inaccessible without expert interpretation. Small businesses especially cannot afford consulting fees to apply them, yet the frameworks are precisely what is needed to avoid wasted budget and failed rollouts.',
       solution: 'Built a RAG pipeline over three DT framework documents (Wade 2015, Peter 2018, Elia 2024) embedded offline into a persistent FAISS index using local MiniLM (no API cost for retrieval). Six specialist agents chain sequentially: Planner extracts intent and writes retrieval queries; Framework Agent classifies passages; Canvas Analysis scores maturity across 7 fields; Strategist synthesizes the 11-element Elia canvas; Roadmap Generator produces phased KPIs and milestones; Evaluator critiques the output using LLaMA 3.1 locally. A routing layer maps each task by type, complexity, and criticality to Gemini Flash 2.5 or Gemini Pro 2.5. Results are SHA-keyed and cached to disk so repeated runs skip all LLM calls.',
@@ -59,6 +78,7 @@
       metric: '6 agents · 3 frameworks',
     },
     'campus-safety-detection': {
+      title: 'Campus Safety Detection',
       tagline: 'ECE Paris MSc AI project. Zero-shot CCTV bullying detection: no labeled abnormal data required.',
       problem: 'Campus CCTV systems demand constant human monitoring (expensive, error-prone, and impossible to scale). Collecting labeled video of real bullying or violence incidents is also impractical due to rarity and sensitivity of such events.',
       solution: 'Built a zero-shot detection pipeline using CLIP to compare live video frames against natural-language descriptions of anomalies. YOLOv8 crops individual people first, then CLIP scores each crop. Scores are Z-score normalized and Gaussian-smoothed over time to suppress false positives. Audio is independently analyzed with PANNs. A Streamlit dashboard streams live CCTV playback with a real-time anomaly score graph, while a Telegram bot pushes annotated alert frames to subscribers.',
@@ -103,7 +123,7 @@
     const stack = cs.stack || (repo.topics && repo.topics.length ? repo.topics : []);
     const results = cs.results || [];
     const liveUrl = cs.live || repo.homepage;
-    const primaryTag = repo.language || (stack[0] || 'Project');
+    const primaryTag = cs.lang || repo.language || (stack[0] || 'Project');
 
     return `
       <article class="project-card" data-repo="${escapeHtml(repo.name)}">
@@ -113,7 +133,7 @@
             ${liveUrl ? `<span class="project-live-badge">${t('proj.live', 'Live')}</span>` : ''}
             <span class="project-card-chevron">${chevSvg}</span>
           </div>
-          <h3>${escapeHtml(repo.name)}</h3>
+          <h3>${escapeHtml(cs.title || repo.name)}</h3>
           <div class="project-card-meta">
             <span class="project-card-tag"><span class="lang-dot ${langClass}"></span>${escapeHtml(primaryTag)}</span>
             <span class="project-card-metric">${escapeHtml(metric)}</span>
