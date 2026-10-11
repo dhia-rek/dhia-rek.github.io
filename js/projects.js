@@ -4,6 +4,20 @@
   if (!grid) return;
 
   const CASE_STUDIES = {
+    'ai-vision-detection': {
+      tagline: 'Object detection, facial-expression reading and ASL fingerspelling, live on your camera and entirely in your browser. No server, no upload.',
+      problem: 'Most vision apps stream your camera to a server: slow, costly to host, and a privacy problem. Sign-language letters were the hardest part: the first model was right only 47% of the time on photos it had never seen.',
+      solution: 'Three modes on one camera. YOLO11n finds 80 kinds of objects, YuNet and MobileFaceNet read the expression on each face, and MediaPipe hand landmarks feed a letter classifier I trained myself. Every model was exported to run in the page with ONNX Runtime Web in Web Workers (WebGPU when available), so frames never leave the device and the site is plain static files. Python trains and evaluates the models; tests check the browser gives the same answers.',
+      stack: ['JavaScript', 'ONNX Runtime Web', 'MediaPipe', 'YOLO11', 'Web Workers', 'Python', 'NumPy', 'Playwright'],
+      results: [
+        'ASL letter accuracy 47% → 76% on a separate photo collection never used for training',
+        'Object detection at about 29 fps on a 6-core CPU in the browser, with no GPU',
+        'Browser and Python give the same answers on all 22 parity cases',
+        'Nothing is uploaded: the camera stays on the visitor\'s device',
+      ],
+      metric: 'Live in your browser',
+      live: 'https://dhiarekik.me/ai-vision-detection/',
+    },
     'sagemcom-roco': {
       tagline: 'PFE project at Esprit School of Engineering, completed during internship at Sagemcom. Upload, configure, execute, and evaluate Robot Framework test scripts from a single web platform.',
       problem: 'QA engineers at Sagemcom were running Robot Framework automation scripts ad-hoc across local machines. No centralized interface, no audit trail, no way to trigger or review runs without direct terminal access. Scaling the practice across teams required a shared, reproducible platform.',
@@ -17,7 +31,7 @@
       ],
       metric: 'Full Docker stack',
     },
-    'Grid_shooter': {
+    'grid-shooter': {
       tagline: 'ECE Paris MSc AI project. Train a REINFORCE agent to aim, dodge, and survive a staged zombie shooter, built from scratch.',
       problem: 'Learning reinforcement learning from textbooks only goes so far. To genuinely understand policy gradients you need an environment complex enough to produce real emergent strategy (aiming, dodging, prioritizing threats) but structured enough to see exactly what the agent is learning and why.',
       solution: 'Built a custom Gymnasium environment: an 8×8 grid zombie shooter with 4 escalating difficulty stages, directional shooting (9 actions), and carefully shaped rewards. Implemented REINFORCE from scratch in PyTorch with entropy bonus to prevent premature convergence and gradient clipping for stability. Zombies unlock progressively: top-only in stage 1, all four directions by stage 3. Pygame visualizes training live so you can watch the agent figure out how to aim.',
@@ -89,7 +103,7 @@
     const solution = cs.solution || '';
     const stack = cs.stack || (repo.topics && repo.topics.length ? repo.topics : []);
     const results = cs.results || [];
-    const demoUrl = cs.demo || repo.homepage;
+    const liveUrl = cs.live || repo.homepage;
     const primaryTag = repo.language || (stack[0] || 'Project');
 
     return `
@@ -97,6 +111,7 @@
         <button class="project-card-summary" aria-expanded="false">
           <div class="project-card-top">
             <div class="project-icon-wrap">${repoSvg}</div>
+            ${liveUrl ? `<span class="project-live-badge">${t('proj.live', 'Live')}</span>` : ''}
             <span class="project-card-chevron">${chevSvg}</span>
           </div>
           <h3>${escapeHtml(repo.name)}</h3>
@@ -118,8 +133,8 @@
             <ul class="modal-results">${results.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
           ` : ''}
           <div class="project-actions">
-            <a href="${escapeHtml(repo.html_url)}" target="_blank" rel="noopener" class="btn btn-primary" data-magnetic>${t('modal.viewRepo', 'View on GitHub ↗')}</a>
-            ${demoUrl ? `<a href="${escapeHtml(demoUrl)}" target="_blank" rel="noopener" class="btn btn-secondary" data-magnetic>${t('modal.liveDemo', 'Live demo')}</a>` : ''}
+            ${liveUrl ? `<a href="${escapeHtml(liveUrl)}" target="_blank" rel="noopener" class="btn btn-primary" data-magnetic>${t('modal.tryLive', 'Try it live ›')}</a>` : ''}
+            <a href="${escapeHtml(repo.html_url)}" target="_blank" rel="noopener" class="btn ${liveUrl ? 'btn-secondary' : 'btn-primary'}" data-magnetic>${t('modal.viewRepo', 'View on GitHub ↗')}</a>
           </div>
         </div>
       </article>
@@ -146,6 +161,8 @@
     return repos
       .filter((r) => !r.fork && !r.private && r.name !== `${GITHUB_USER}.github.io`)
       .sort((a, b) => {
+        const live = (r) => (CASE_STUDIES[r.name] && CASE_STUDIES[r.name].live) || r.homepage ? 1 : 0;
+        if (live(b) !== live(a)) return live(b) - live(a);
         if (b.stargazers_count !== a.stargazers_count) return b.stargazers_count - a.stargazers_count;
         return new Date(b.pushed_at) - new Date(a.pushed_at);
       })
