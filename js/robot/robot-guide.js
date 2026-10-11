@@ -3,7 +3,7 @@
 // Loaded as a module after the page; does nothing without WebGL or when the visitor hid it.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createRobot, addRobotLights } from './robot-model.js?v=20261011-12';
+import { createRobot, addRobotLights } from './robot-model.js?v=20261011-13';
 
 const STORE_KEY = 'valek-robot';
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -84,9 +84,9 @@ function start() {
 
   // ---- three.js scene: orthographic camera in CSS pixels, y up ----
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  // The canvas only covers a box around the robot, so it can render at twice the screen's resolution
-  // (an exact 2:1 downscale keeps edges smooth and sharp).
-  renderer.setPixelRatio(Math.min(6, Math.max(2, Math.round(devicePixelRatio) * 2)));
+  // The canvas only covers a box around the robot. Render at the screen's own resolution on
+  // high-density screens (already sharp), and at 2x on standard screens for smooth edges.
+  renderer.setPixelRatio(Math.min(3, Math.max(2, devicePixelRatio)));
   const scene = new THREE.Scene();
   addRobotLights(scene, renderer, new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture);
   const camera = new THREE.OrthographicCamera(0, 1, 1, 0, -2000, 2000);
@@ -391,6 +391,15 @@ function start() {
   window.valekRobot = { say, setHidden };
 }
 
-const go = () => start();
-if ('requestIdleCallback' in window) requestIdleCallback(go, { timeout: 2500 });
-else setTimeout(go, 800);
+// Start after the page has loaded and settled, or as soon as the visitor scrolls or touches the page,
+// so the 3D work never competes with the page's first paint.
+let started = false;
+const go = () => {
+  if (started) return;
+  started = true;
+  ['scroll', 'pointerdown', 'keydown'].forEach((e) => removeEventListener(e, go));
+  start();
+};
+['scroll', 'pointerdown', 'keydown'].forEach((e) => addEventListener(e, go, { once: true, passive: true }));
+const later = () => setTimeout(() => ('requestIdleCallback' in window ? requestIdleCallback(go, { timeout: 2000 }) : go()), 2500);
+if (document.readyState === 'complete') later(); else addEventListener('load', later, { once: true });
