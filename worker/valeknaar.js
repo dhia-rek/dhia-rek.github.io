@@ -123,9 +123,12 @@ async function handle(request) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
+      // llama-3.3-70b-versatile was shut down by Groq on 2026-08-16; gpt-oss-120b is its replacement.
+      // It is a reasoning model: keep reasoning short and leave room for the answer.
+      model: 'openai/gpt-oss-120b',
+      reasoning_effort: 'low',
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-      max_tokens: 400,
+      max_tokens: 900,
       temperature: 0.7,
     }),
   });
