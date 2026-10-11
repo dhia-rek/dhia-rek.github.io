@@ -539,7 +539,6 @@ section {
   text-underline-offset: 2px;
 }
 .hero-qr-links { margin-top: 0.3rem; }
-.qr-phone { display: none; }
 .hero-chat-chips {
   display: flex;
   flex-direction: column;
@@ -2457,11 +2456,9 @@ textarea:focus-visible { outline: none; }
 
 .text-center { text-align: center; }
 
-/* On phones a QR code can't be scanned from the same screen: show a button to the links page instead. */
+/* Phones: a slightly smaller code, so the card stays compact (people scan it from your screen). */
 @media (max-width: 700px) {
-  .hero-qr { padding: 1.1rem 1.2rem; }
-  .hero-qr-code, .hero-qr-download, .qr-scan { display: none; }
-  .qr-phone { display: inline; }
-  .hero-qr-title { margin-top: 0; }
+  .hero-qr { padding: 1.2rem 1.2rem 1.1rem; }
+  .hero-qr-code { width: 160px; height: 160px; }
 }
 
