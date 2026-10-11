@@ -163,7 +163,7 @@
   }
 
   // Expandable experience items
-  document.querySelectorAll('.exp-item .exp-summary').forEach((summary) => {
+  document.querySelectorAll('.exp-item[data-expandable] .exp-summary').forEach((summary) => {
     const item = summary.closest('.exp-item');
     const toggle = () => {
       const open = item.classList.toggle('open');
