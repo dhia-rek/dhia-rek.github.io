@@ -12,8 +12,8 @@
     { icon: '⬡', key: 'exp',  label: 'Experience',   sub: 'A track record', action: () => goto('#experience') },
     { icon: '◈', key: 'stack',label: 'Tech specs',   sub: 'Tools I use', action: () => goto('#stack') },
     { icon: '✉', key: 'mail', label: 'Email Dhia',   sub: 'dhia.rekik@icloud.com', action: () => location.href = 'mailto:dhia.rekik@icloud.com' },
-    { icon: '◉', key: 'gh',   label: 'GitHub',       sub: 'github.com/dhia-rek', action: () => open('https://github.com/dhia-rek', '_blank') },
-    { icon: '◆', key: 'in',   label: 'LinkedIn',     sub: 'linkedin.com/in/dhia-rekik', action: () => open('https://linkedin.com/in/dhia-rekik', '_blank') },
+    { icon: '◉', key: 'gh',   label: 'GitHub',       sub: 'github.com/dhia-rek', action: () => window.open('https://github.com/dhia-rek', '_blank') },
+    { icon: '◆', key: 'in',   label: 'LinkedIn',     sub: 'linkedin.com/in/dhia-rekik', action: () => window.open('https://linkedin.com/in/dhia-rekik', '_blank') },
     { icon: '☼', key: 'theme',label: 'Toggle theme', sub: 'Dark / light',   action: () => document.getElementById('themeBtn').click() },
     { icon: '⌥', key: 'lang', label: 'Toggle language', sub: 'EN / FR',     action: () => document.getElementById('langBtn').click() },
     { icon: '↑', key: 'top',  label: 'Back to top',  sub: 'Scroll to hero', action: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
@@ -77,6 +77,7 @@
   function open_() {
     palette.classList.add('open');
     palette.setAttribute('aria-hidden', 'false');
+    palette.inert = false;
     document.body.style.overflow = 'hidden';
     input.value = '';
     update();
@@ -86,6 +87,7 @@
   function close() {
     palette.classList.remove('open');
     palette.setAttribute('aria-hidden', 'true');
+    palette.inert = true;
     document.body.style.overflow = '';
   }
 

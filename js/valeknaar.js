@@ -161,6 +161,7 @@
   function openPop() {
     popEl.classList.add('open');
     popEl.setAttribute('aria-hidden', 'false');
+    popEl.inert = false;
     fab.setAttribute('aria-expanded', 'true');
     fab.classList.add('hidden');
     setTimeout(() => { pop.input && pop.input.focus({ preventScroll: true }); }, 60);
@@ -168,6 +169,7 @@
   function closePop() {
     popEl.classList.remove('open');
     popEl.setAttribute('aria-hidden', 'true');
+    popEl.inert = true;
     fab.setAttribute('aria-expanded', 'false');
     // re-show fab if user is still past hero
     if (shouldShowFab()) fab.classList.remove('hidden');

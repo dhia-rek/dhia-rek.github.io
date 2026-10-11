@@ -64,7 +64,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="css/styles.css?v=20261011-4">
+<link rel="stylesheet" href="css/styles.css?v=20261011-12">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 </head>
 <body>
@@ -74,7 +74,7 @@
 <nav>
   <div class="nav-inner">
     <a href="#" class="nav-logo">Dhia Rekik</a>
-    <button class="nav-menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+    <button type="button" class="nav-menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links">
@@ -85,13 +85,13 @@
       <li><a href="#contact" data-i18n="nav.contact">Contact</a></li>
     </ul>
     <div class="nav-controls">
-      <button class="ctrl ctrl-cmd" id="cmdBtn" aria-label="Open command palette" title="⌘K">
+      <button type="button" class="ctrl ctrl-cmd" id="cmdBtn" aria-label="Open command palette" title="⌘K">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
         </svg>
       </button>
-      <button class="ctrl" id="langBtn">EN</button>
-      <button class="ctrl" id="themeBtn" aria-label="Toggle theme">
+      <button type="button" class="ctrl" id="langBtn">EN</button>
+      <button type="button" class="ctrl" id="themeBtn" aria-label="Toggle theme">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIcon" width="14" height="14">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
@@ -162,10 +162,10 @@
     <aside class="hero-chat" aria-label="Ask Valeknaar, an AI assistant about Dhia">
       <h2 class="hero-chat-title" data-i18n="chat.title">Want to ask me about Dhia?</h2>
       <div class="hero-chat-chips" id="valekChips">
-        <button class="hero-chat-chip valek-chip" data-i18n="chat.q1">What are his AI skills?</button>
-        <button class="hero-chat-chip valek-chip" data-i18n="chat.q2">Is he available?</button>
-        <button class="hero-chat-chip valek-chip" data-i18n="chat.q3">Tell me about his projects.</button>
-        <button class="hero-chat-chip valek-chip" data-i18n="chat.q4">His experience at KPIT?</button>
+        <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q1">What are his AI skills?</button>
+        <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q2">Is he available?</button>
+        <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q3">Tell me about his projects.</button>
+        <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q4">His experience at KPIT?</button>
       </div>
       <div class="hero-chat-feed" id="valekFeed"></div>
       <form class="hero-chat-form" id="valekForm" autocomplete="off">
@@ -197,53 +197,54 @@
 
 <!-- ========== EXPERIENCE ========== -->
 <section class="experience reveal" id="experience">
-  <div style="text-align: center;">
+  <div class="text-center">
     <div class="feature-eyebrow" data-i18n="exp.eye">Experience</div>
     <h2 class="feature-title" data-i18n="exp.title">Experience.</h2>
   </div>
 
   <ol class="exp-timeline">
     <li class="exp-item" data-expandable>
-      <div class="exp-summary" role="button" tabindex="0" aria-expanded="false">
+      <button type="button" class="exp-summary" aria-expanded="false">
         <span class="exp-marker"></span>
-        <div class="exp-summary-info">
-          <div class="exp-summary-date">Aug 2026 — Feb 2027 · <span data-i18n="exp.0.b">Internship</span> · Paris</div>
-          <div class="exp-summary-role">
+        <span class="exp-summary-info">
+          <span class="exp-summary-date">Aug 2026 — Feb 2027 · <span data-i18n="exp.0.b">Internship</span> · Paris</span>
+          <span class="exp-summary-role">
             <span class="exp-logo">
               <img src="https://icons.duckduckgo.com/ip3/driveco.com.ico" alt="Driveco" width="20" height="20" loading="lazy" onerror="this.style.display='none';this.parentElement.querySelector('.exp-logo-fallback').style.display='flex'">
               <span class="exp-logo-fallback" style="display:none">D</span>
             </span>
             <strong data-i18n="exp.0.r">AI Integration Intern</strong>
-            <a class="exp-summary-org exp-org-link" href="https://www.driveco.com" target="_blank" rel="noopener">· Driveco ↗</a>
-          </div>
-        </div>
+            <span class="exp-summary-org">· Driveco</span>
+          </span>
+        </span>
         <span class="exp-chevron" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </span>
-      </div>
+      </button>
       <div class="exp-details">
         <div class="exp-desc" data-i18n="exp.0.d"></div>
+        <a class="exp-org-link" href="https://www.driveco.com" target="_blank" rel="noopener">driveco.com ↗</a>
       </div>
     </li>
 
     <li class="exp-item" data-expandable>
-      <div class="exp-summary" role="button" tabindex="0" aria-expanded="false">
+      <button type="button" class="exp-summary" aria-expanded="false">
         <span class="exp-marker"></span>
-        <div class="exp-summary-info">
-          <div class="exp-summary-date">Sep 2024 — Feb 2026 · <span data-i18n="exp.1.b">Full-time</span></div>
-          <div class="exp-summary-role">
+        <span class="exp-summary-info">
+          <span class="exp-summary-date">Sep 2024 — Feb 2026 · <span data-i18n="exp.1.b">Full-time</span></span>
+          <span class="exp-summary-role">
             <span class="exp-logo">
               <img src="https://icons.duckduckgo.com/ip3/kpit.com.ico" alt="KPIT" width="20" height="20" loading="lazy" onerror="this.style.display='none';this.parentElement.querySelector('.exp-logo-fallback').style.display='flex'">
               <span class="exp-logo-fallback" style="display:none">K</span>
             </span>
             <strong data-i18n="exp.1.r">Test &amp; Validation Engineer</strong>
             <span class="exp-summary-org">· KPIT Engineering</span>
-          </div>
-        </div>
+          </span>
+        </span>
         <span class="exp-chevron" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </span>
-      </div>
+      </button>
       <div class="exp-details">
         <div class="exp-desc" data-i18n="exp.1.d"></div>
         <div class="exp-stack">
@@ -253,23 +254,23 @@
     </li>
 
     <li class="exp-item" data-expandable>
-      <div class="exp-summary" role="button" tabindex="0" aria-expanded="false">
+      <button type="button" class="exp-summary" aria-expanded="false">
         <span class="exp-marker"></span>
-        <div class="exp-summary-info">
-          <div class="exp-summary-date">Feb 2024 — Aug 2024 · <span data-i18n="exp.2.b">Freelance</span></div>
-          <div class="exp-summary-role">
+        <span class="exp-summary-info">
+          <span class="exp-summary-date">Feb 2024 — Aug 2024 · <span data-i18n="exp.2.b">Freelance</span></span>
+          <span class="exp-summary-role">
             <span class="exp-logo">
               <img src="https://icons.duckduckgo.com/ip3/krichen-distribution.tn.ico" alt="Krichen Distribution" width="20" height="20" onerror="this.style.display='none';this.parentElement.querySelector('.exp-logo-fallback').style.display='flex'">
               <span class="exp-logo-fallback" style="display:none">K</span>
             </span>
             <strong data-i18n="exp.2.r">WordPress Developer</strong>
             <span class="exp-summary-org">· Krichen Distribution</span>
-          </div>
-        </div>
+          </span>
+        </span>
         <span class="exp-chevron" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </span>
-      </div>
+      </button>
       <div class="exp-details">
         <div class="exp-desc" data-i18n="exp.2.d"></div>
         <div class="exp-stack">
@@ -279,23 +280,23 @@
     </li>
 
     <li class="exp-item" data-expandable>
-      <div class="exp-summary" role="button" tabindex="0" aria-expanded="false">
+      <button type="button" class="exp-summary" aria-expanded="false">
         <span class="exp-marker"></span>
-        <div class="exp-summary-info">
-          <div class="exp-summary-date">Feb 2023 — Aug 2023 · <span data-i18n="exp.3.b">Internship</span></div>
-          <div class="exp-summary-role">
+        <span class="exp-summary-info">
+          <span class="exp-summary-date">Feb 2023 — Aug 2023 · <span data-i18n="exp.3.b">Internship</span></span>
+          <span class="exp-summary-role">
             <span class="exp-logo">
               <img src="https://icons.duckduckgo.com/ip3/sagemcom.fr.ico" alt="SAGEMCOM" width="20" height="20" loading="lazy" onerror="this.style.display='none';this.parentElement.querySelector('.exp-logo-fallback').style.display='flex'">
               <span class="exp-logo-fallback" style="display:none">S</span>
             </span>
             <strong data-i18n="exp.3.r">Web Developer · Final Year Project</strong>
             <span class="exp-summary-org">· SAGEMCOM</span>
-          </div>
-        </div>
+          </span>
+        </span>
         <span class="exp-chevron" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </span>
-      </div>
+      </button>
       <div class="exp-details">
         <div class="exp-desc" data-i18n="exp.3.d"></div>
         <div class="exp-stack">
@@ -308,7 +309,7 @@
 
 <!-- ========== EDUCATION ========== -->
 <section class="education-block reveal" id="education">
-  <div style="text-align: center;">
+  <div class="text-center">
     <div class="feature-eyebrow" data-i18n="edu.eye">Education</div>
     <h2 class="feature-title" data-i18n="edu.title">Currently specializing in AI.</h2>
   </div>
@@ -480,7 +481,7 @@
 
 <!-- ========== CREDENTIALS ========== -->
 <section class="credentials reveal" id="credentials">
-  <div style="text-align: center;">
+  <div class="text-center">
     <div class="feature-eyebrow" data-i18n="cred.eye">Credentials</div>
     <h2 class="feature-title" data-i18n="cred.title">Languages, certifications, alumni.</h2>
   </div>
@@ -652,14 +653,14 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
         <span data-i18n="contact.btn1">Email Dhia</span>
       </a>
-      <button class="btn btn-secondary copy-email-btn" id="copyEmailBtn" aria-label="Copy email address">
+      <button type="button" class="btn btn-secondary copy-email-btn" id="copyEmailBtn" aria-label="Copy email address">
         <svg class="icon-copy" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         <svg class="icon-check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
       </button>
     </div>
     <a href="tel:+33762607557" class="btn btn-secondary" data-magnetic>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-      <span data-i18n="contact.btn3">+33 7 62 60 75 57</span>
+      <span data-i18n="contact.btn3">+33&nbsp;7&nbsp;62&nbsp;60&nbsp;75&nbsp;57</span>
     </a>
     <a href="https://linkedin.com/in/dhia-rekik" target="_blank" rel="noopener" class="btn btn-ghost" data-magnetic>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
@@ -687,7 +688,7 @@
 </footer>
 
 <!-- Command palette -->
-<div class="cmdk" id="cmdk" aria-hidden="true">
+<div class="cmdk" id="cmdk" aria-hidden="true" inert>
   <div class="cmdk-backdrop" data-cmdk-close></div>
   <div class="cmdk-panel" role="dialog" aria-modal="true">
     <div class="cmdk-input-wrap">
@@ -705,23 +706,23 @@
 </div>
 
 <!-- Floating Valeknaar chat: appears after scrolling past hero -->
-<button class="valek-fab" id="valekFab" aria-label="Ask Valeknaar" aria-expanded="false">
+<button type="button" class="valek-fab" id="valekFab" aria-label="Ask Valeknaar" aria-expanded="false">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   <span data-i18n="chat.ask">Ask Valeknaar</span>
 </button>
 
-<div class="valek-pop" id="valekPop" role="dialog" aria-modal="false" aria-labelledby="valekPopTitle" aria-hidden="true">
+<div class="valek-pop" id="valekPop" role="dialog" aria-modal="false" aria-labelledby="valekPopTitle" aria-hidden="true" inert>
   <div class="valek-pop-head">
     <strong id="valekPopTitle" data-i18n="chat.title">Want to ask me about Dhia?</strong>
-    <button class="valek-pop-close" id="valekPopClose" aria-label="Close chat">
+    <button type="button" class="valek-pop-close" id="valekPopClose" aria-label="Close chat">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
   <div class="hero-chat-chips" id="valekPopChips">
-    <button class="hero-chat-chip valek-chip" data-i18n="chat.q1">What are his AI skills?</button>
-    <button class="hero-chat-chip valek-chip" data-i18n="chat.q2">Is he available?</button>
-    <button class="hero-chat-chip valek-chip" data-i18n="chat.q3">Tell me about his projects.</button>
-    <button class="hero-chat-chip valek-chip" data-i18n="chat.q4">His experience at KPIT?</button>
+    <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q1">What are his AI skills?</button>
+    <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q2">Is he available?</button>
+    <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q3">Tell me about his projects.</button>
+    <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q4">His experience at KPIT?</button>
   </div>
   <div class="hero-chat-feed" id="valekPopFeed"></div>
   <form class="hero-chat-form" id="valekPopForm" autocomplete="off">
@@ -734,20 +735,20 @@
 </div>
 
 <!-- Back to top -->
-<button class="back-to-top" id="backToTop" aria-label="Back to top">
+<button type="button" class="back-to-top" id="backToTop" aria-label="Back to top">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>
 </button>
 
-<script src="js/translations.js?v=20261011-3"></script>
-<script src="js/i18n.js?v=20261011-3"></script>
-<script src="js/main.js?v=20261011-3"></script>
-<script src="js/projects.js?v=20261011-3"></script>
-<script src="js/command-palette.js?v=20261011-3"></script>
-<script src="js/valeknaar.js?v=20261011-3"></script>
-<script type="module" src="js/robot/robot-guide.js?v=20261011-11"></script>
+<script src="js/translations.js?v=20261011-12"></script>
+<script src="js/i18n.js?v=20261011-12"></script>
+<script src="js/main.js?v=20261011-12"></script>
+<script src="js/projects.js?v=20261011-12"></script>
+<script src="js/command-palette.js?v=20261011-12"></script>
+<script src="js/valeknaar.js?v=20261011-12"></script>
+<script type="module" src="js/robot/robot-guide.js?v=20261011-12"></script>
 
 <!-- Cloudflare Web Analytics -->
-<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "82fdba3ce2a249d98680ab49ec8379f4"}'></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;82fdba3ce2a249d98680ab49ec8379f4&quot;}"></script>
 
 </body>
 </html>
