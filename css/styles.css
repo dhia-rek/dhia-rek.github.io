@@ -954,6 +954,7 @@ body.dark .hero-chat-feed .valek-suggestion {
 /* wordmark logos (KPIT, Sagemcom) need a wider tile */
 .exp-logo-wide { width: auto; padding: 0 6px; }
 .exp-logo-wide img { width: auto; height: 11px; }
+.exp-logo-tall img { height: 18px; }
 .exp-chevron {
   display: inline-flex;
   align-items: center;
@@ -1557,7 +1558,7 @@ body.dark .hero-chat-feed .valek-suggestion {
   color: var(--muted);
   font-weight: 600;
 }
-.shipped-icon img { width: 24px; height: 24px; }
+.shipped-icon img { width: 34px; height: 34px; border-radius: 8px; }
 .shipped-status {
   display: inline-flex;
   align-items: center;
