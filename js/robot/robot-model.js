@@ -1,16 +1,14 @@
 // Valeknaar's body: an egg-shaped robot with a glossy visor, flipper arms and a magnifying glass,
-// riding on small tank treads. Built from primitives so every part can move.
-// createRobot() returns the scene group plus update(dt, state), which animates treads, eyes, arms.
+// floating above the ground like the reference picture. Built from primitives so every part can move.
+// createRobot() returns the scene group plus update(dt, state), which animates the body, eyes and arms.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const COLORS = {
-  shell: 0xe6ecf1,
+  shell: 0xf1f5f8,
   visor: 0x0b0f14,
   bezel: 0x1c232b,
   glow: 0x4fd8ff,
-  tread: 0x2b3440,
-  treadBody: 0x161c23,
 };
 
 const matte = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.42, metalness: 0.05, ...extra });
@@ -105,74 +103,6 @@ function createFace() {
   return { texture, draw };
 }
 
-// ---- treads: a stadium path with cleats that travel around it ----
-function stadiumPoint(s, length, radius) {
-  const half = length / 2, arc = Math.PI * radius, perimeter = 2 * length + 2 * arc;
-  s = ((s % perimeter) + perimeter) % perimeter;
-  if (s < length) return { z: -half + s, y: -radius, angle: 0 };
-  s -= length;
-  if (s < arc) { const a = -Math.PI / 2 + s / radius; return { z: half + Math.cos(a) * radius, y: Math.sin(a) * radius, angle: a + Math.PI / 2 }; }
-  s -= arc;
-  if (s < length) return { z: half - s, y: radius, angle: Math.PI };
-  s -= length;
-  const a = Math.PI / 2 + s / radius;
-  return { z: -half + Math.cos(a) * radius, y: Math.sin(a) * radius, angle: a + Math.PI / 2 };
-}
-
-function createTread(side, { length = 0.5, radius = 0.15, width = 0.2, offset = 0.33 } = {}) {
-  const group = new THREE.Group();
-  group.position.set(side * offset, radius, 0);
-
-  const shape = new THREE.Shape();
-  shape.absarc(length / 2, 0, radius * 0.9, -Math.PI / 2, Math.PI / 2, false);
-  shape.absarc(-length / 2, 0, radius * 0.9, Math.PI / 2, Math.PI * 1.5, false);
-  const body = new THREE.ExtrudeGeometry(shape, { depth: width * 0.9, bevelEnabled: true, bevelSize: 0.015, bevelThickness: 0.015, curveSegments: 20 });
-  body.rotateY(-Math.PI / 2);
-  body.translate(width * 0.45, 0, 0);
-  group.add(new THREE.Mesh(body, matte(COLORS.treadBody)));
-
-  // Wheels with glowing hubs on the outer face.
-  const wheelGeo = new THREE.CylinderGeometry(radius * 0.6, radius * 0.6, 0.02, 24);
-  wheelGeo.rotateZ(Math.PI / 2);
-  const hubGeo = new THREE.TorusGeometry(radius * 0.3, 0.012, 8, 24);
-  hubGeo.rotateY(Math.PI / 2);
-  const wheels = [];
-  for (const z of [-length / 2, 0, length / 2]) {
-    const wheel = new THREE.Group();
-    wheel.position.set(side * (width * 0.47 + 0.012), 0, z);
-    wheel.add(new THREE.Mesh(wheelGeo, matte(COLORS.tread)));
-    const hub = new THREE.Mesh(hubGeo, glowMat());
-    hub.position.x = side * 0.012;
-    wheel.add(hub);
-    group.add(wheel);
-    wheels.push(wheel);
-  }
-
-  const perimeter = 2 * length + 2 * Math.PI * radius;
-  const count = 14;
-  const cleatGeo = new RoundedBoxGeometry(width, 0.05, perimeter / count * 0.62, 2, 0.015);
-  const cleatMat = matte(COLORS.tread, { roughness: 0.75 });
-  const cleats = [];
-  for (let i = 0; i < count; i++) {
-    const cleat = new THREE.Mesh(cleatGeo, cleatMat);
-    group.add(cleat);
-    cleats.push(cleat);
-  }
-
-  let travel = 0;
-  function update(distance) {
-    travel += distance;
-    for (let i = 0; i < count; i++) {
-      const p = stadiumPoint(i * perimeter / count - travel, length, radius);
-      cleats[i].position.set(0, p.y, p.z);
-      cleats[i].rotation.x = -p.angle;
-    }
-    for (const wheel of wheels) wheel.rotation.x += distance / (radius * 0.6);
-  }
-  update(0);
-  return { group, update };
-}
-
 // Egg profile for a LatheGeometry: rounder and a little wider at the top, like the reference.
 function eggGeometry(height = 1.2, width = 0.6) {
   const points = [];
@@ -209,43 +139,38 @@ export function createRobot() {
   const chassis = new THREE.Group();   // yaw (turning) and bounce
   root.add(chassis);
 
-  const left = createTread(-1), right = createTread(1);
-  chassis.add(left.group, right.group);
-  const axle = new THREE.Mesh(new RoundedBoxGeometry(0.5, 0.12, 0.34, 3, 0.04), matte(COLORS.treadBody));
-  axle.position.y = 0.26;
-  chassis.add(axle);
 
   // Body: one egg; it leans and turns as a whole, like the reference.
   const body = new THREE.Group();
   body.position.y = 0.9;
   chassis.add(body);
-  const shell = outline(new THREE.Mesh(eggGeometry(1.3, 0.6), matte(COLORS.shell, { roughness: 0.45 })), 1.03);
+  const shell = outline(new THREE.Mesh(eggGeometry(1.46, 0.45), matte(COLORS.shell, { roughness: 0.4 })), 1.022);
   body.add(shell);
 
   // Visor: dark bezel, glossy black glass, eyes on a canvas just in front.
   const visor = new THREE.Group();
-  visor.position.set(0, 0.02, 0.56);
+  visor.position.set(0, 0.08, 0.38);
   visor.rotation.x = -0.06;
   body.add(visor);
-  const bezel = outline(new THREE.Mesh(new RoundedBoxGeometry(0.86, 0.56, 0.24, 6, 0.12), matte(COLORS.bezel, { roughness: 0.35 })), 1.04);
+  const bezel = outline(new THREE.Mesh(new RoundedBoxGeometry(0.66, 0.46, 0.15, 6, 0.07), matte(COLORS.bezel, { roughness: 0.35 })), 1.03);
   visor.add(bezel);
-  const glass = new THREE.Mesh(new RoundedBoxGeometry(0.76, 0.46, 0.06, 6, 0.1), glossy(COLORS.visor));
-  glass.position.z = 0.1;
+  const glass = new THREE.Mesh(new RoundedBoxGeometry(0.58, 0.38, 0.06, 6, 0.09), glossy(COLORS.visor));
+  glass.position.z = 0.065;
   visor.add(glass);
   const face = createFace();
-  const eyes = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 0.45), new THREE.MeshBasicMaterial({ map: face.texture, transparent: true, toneMapped: false }));
-  eyes.position.z = 0.135;
+  const eyes = new THREE.Mesh(new THREE.PlaneGeometry(0.56, 0.35), new THREE.MeshBasicMaterial({ map: face.texture, transparent: true, toneMapped: false }));
+  eyes.position.z = 0.1;
   visor.add(eyes);
 
   // Ears: black glossy domes with a glowing ring.
   for (const side of [-1, 1]) {
     const ear = new THREE.Group();
-    ear.position.set(side * 0.585, 0.08, 0.04);
+    ear.position.set(side * 0.445, 0.12, 0.02);
     ear.rotation.y = side * Math.PI / 2;
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.11, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), glossy(COLORS.visor));
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.085, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), glossy(COLORS.visor));
     dome.rotation.x = Math.PI / 2;
     ear.add(dome);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.014, 10, 40), glowMat());
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.012, 10, 40), glowMat());
     ear.add(ring);
     body.add(ear);
   }
@@ -253,12 +178,12 @@ export function createRobot() {
   // Flipper arms with a glowing seam at the shoulder.
   const arms = [-1, 1].map((side) => {
     const shoulder = new THREE.Group();
-    shoulder.position.set(side * 0.5, -0.18, 0.22);
-    const seam = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.012, 8, 32), glowMat());
+    shoulder.position.set(side * 0.39, -0.2, 0.16);
+    const seam = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.01, 8, 32), glowMat());
     seam.rotation.x = Math.PI / 2;
     shoulder.add(seam);
-    const flipper = outline(new THREE.Mesh(new THREE.CapsuleGeometry(0.105, 0.3, 8, 16), matte(COLORS.shell, { roughness: 0.45 })), 1.09);
-    flipper.scale.set(1, 1, 0.75);
+    const flipper = outline(new THREE.Mesh(new THREE.CapsuleGeometry(0.072, 0.32, 8, 16), matte(COLORS.shell, { roughness: 0.4 })), 1.07);
+    flipper.scale.set(1, 1, 0.8);
     flipper.position.y = -0.24;
     shoulder.add(flipper);
     const hand = new THREE.Group();
@@ -283,12 +208,12 @@ export function createRobot() {
   grad.addColorStop(1, 'rgba(10,14,31,0)');
   sctx.fillStyle = grad;
   sctx.fillRect(0, 0, 64, 64);
-  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.0), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false }));
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.75), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2;
   shadow.position.y = 0.002;
   root.add(shadow);
 
-  // Hover glow: a soft cyan disc under the treads, visible while floating.
+  // Hover glow: a soft cyan disc under the body, like a hover light.
   const glowCanvas = document.createElement('canvas');
   glowCanvas.width = glowCanvas.height = 128;
   const gctx = glowCanvas.getContext('2d');
@@ -298,11 +223,11 @@ export function createRobot() {
   ggrad.addColorStop(1, 'rgba(79,216,255,0)');
   gctx.fillStyle = ggrad;
   gctx.fillRect(0, 0, 128, 128);
-  const hoverGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.9), new THREE.MeshBasicMaterial({
+  const hoverGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.45), new THREE.MeshBasicMaterial({
     map: new THREE.CanvasTexture(glowCanvas), transparent: true, depthWrite: false, opacity: 0, toneMapped: false,
   }));
   hoverGlow.rotation.x = -Math.PI / 2;
-  hoverGlow.position.y = -0.02;
+  hoverGlow.position.y = 0.14;                       // just under the egg
   root.add(hoverGlow);
 
   // ---- animation ----
@@ -319,16 +244,12 @@ export function createRobot() {
     shadow.position.y = 0.002 - lift;
     shadow.scale.setScalar(Math.max(0.35, 1 - lift * 0.9));
     shadow.material.opacity = Math.max(0, 1 - lift * 0.8);
-    hoverGlow.material.opacity = (state.hover || 0) * (0.75 + Math.sin(time * 6) * 0.15);
+    hoverGlow.material.opacity = Math.max(0.35, state.hover || 0) * (0.75 + Math.sin(time * 6) * 0.15);
     hoverGlow.scale.setScalar(0.9 + Math.sin(time * 6) * 0.05);
-    const dist = state.speed * dt;
-    left.update(dist);
-    right.update(dist);
 
     chassis.rotation.y += (state.yaw - chassis.rotation.y) * Math.min(1, dt * 6);
     const moving = Math.abs(state.speed) > 0.01;
-    chassis.position.y = moving ? Math.abs(Math.sin(time * 14)) * 0.01 : 0;
-    body.position.y = 0.9 + (moving ? 0 : Math.sin(time * 2) * 0.012);
+    body.position.y = 0.9 + Math.sin(time * 2) * 0.012;   // smooth float, no wheel jitter
     body.rotation.y += ((state.headYaw || 0) - body.rotation.y) * Math.min(1, dt * 5);
     const lean = moving ? 0.08 * Math.sign(state.speed) : 0;
     body.rotation.x += (lean - body.rotation.x) * Math.min(1, dt * 4);
@@ -356,5 +277,5 @@ export function createRobot() {
     });
   }
 
-  return { root, update, height: 1.55 };
+  return { root, update, height: 1.65 };
 }
