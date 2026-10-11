@@ -3,7 +3,7 @@
 // Loaded as a module after the page; does nothing without WebGL or when the visitor hid it.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createRobot, addRobotLights } from './robot-model.js?v=20261011-11';
+import { createRobot, addRobotLights } from './robot-model.js?v=20261011-12';
 
 const STORE_KEY = 'valek-robot';
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
