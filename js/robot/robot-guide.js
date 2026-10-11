@@ -11,12 +11,10 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TEXT = {
   en: {
     hero: "Hi, I'm Valeknaar! Drag me around, or tap me to chat.",
+    work: 'Psst: the vision project runs live in your browser.',
+    workAction: 'Try it live',
     experience: 'Dhia is an AI Integration Intern at Driveco. Ask me about it!',
-    education: 'MSc in Artificial Intelligence at ECE Paris.',
-    projects: 'Psst: the vision project runs live in your browser.',
-    projectsAction: 'Try it live',
-    capabilities: 'Want the short version of his skills? Tap me.',
-    shipped: 'These websites are live. Have a look!',
+    about: 'Want the short version? Tap me and ask.',
     contact: 'Want to reach Dhia? The form is right here.',
     held: ['Wheee!', 'Put me down!', 'Where are we going?'],
     ouch: ['Ouch!', 'Whoa!', 'I saw stars…', 'Again?!'],
@@ -25,12 +23,10 @@ const TEXT = {
   },
   fr: {
     hero: 'Salut, je suis Valeknaar ! Déplace-moi, ou touche-moi pour discuter.',
+    work: 'Psst : le projet vision tourne en direct dans ton navigateur.',
+    workAction: 'Essayer',
     experience: "Dhia est stagiaire en intégration IA chez Driveco. Demande-moi !",
-    education: "MSc en intelligence artificielle à l'ECE Paris.",
-    projects: 'Psst : le projet vision tourne en direct dans ton navigateur.',
-    projectsAction: 'Essayer',
-    capabilities: 'La version courte de ses compétences ? Touche-moi.',
-    shipped: 'Ces sites sont en ligne. Jette un œil !',
+    about: 'La version courte ? Touche-moi et demande.',
     contact: 'Pour contacter Dhia, le formulaire est juste ici.',
     held: ['Wiii !', 'Pose-moi !', 'On va où ?'],
     ouch: ['Aïe !', 'Oups !', "J'ai vu des étoiles…", 'Encore ?!'],
@@ -38,8 +34,8 @@ const TEXT = {
     show: 'Afficher le robot',
   },
 };
-const SECTIONS = ['hero', 'experience', 'education', 'projects', 'capabilities', 'shipped', 'contact'];
-const ACTIONS = { projects: 'https://dhiarekik.me/ai-vision-detection/' };
+const SECTIONS = ['hero', 'work', 'experience', 'about', 'contact'];
+const ACTIONS = { work: '/ai-vision-detection/' };
 
 const lang = () => (window.i18n && window.i18n.lang === 'fr' ? 'fr' : 'en');
 const t = (key) => TEXT[lang()][key];
@@ -185,8 +181,8 @@ function start() {
   }
   function greet(name) {
     const action = ACTIONS[name] ? { href: ACTIONS[name], label: t(`${name}Action`) } : null;
-    say(t(name), { ms: name === 'projects' ? 7000 : 5000, action });
-    anim.magnify = name === 'projects';
+    say(t(name), { ms: name === 'work' ? 7000 : 5000, action });
+    anim.magnify = name === 'work';
     if (name === 'hero') waveUntil = performance.now() + 1800;
   }
   let pendingGreet = 'hero';
