@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const COLORS = {
-  shell: 0xd9e1e7,
+  shell: 0xe6ecf1,
   visor: 0x0b0f14,
   bezel: 0x1c232b,
   glow: 0x4fd8ff,
@@ -13,9 +13,20 @@ const COLORS = {
   treadBody: 0x161c23,
 };
 
-const matte = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.05, ...extra });
+const matte = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.42, metalness: 0.05, ...extra });
 const glossy = (color, extra = {}) => new THREE.MeshPhysicalMaterial({ color, roughness: 0.12, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.08, ...extra });
 const glowMat = () => new THREE.MeshBasicMaterial({ color: COLORS.glow, toneMapped: false });
+
+// Thin dark outline (inverted hull): a slightly bigger back-facing copy drawn behind the mesh.
+// Keeps the silhouette crisp on a white page. The mesh must be centred on its own origin.
+const outlineMat = new THREE.MeshBasicMaterial({ color: 0x1a2332, side: THREE.BackSide });
+function outline(mesh, grow = 1.035) {
+  const hull = new THREE.Mesh(mesh.geometry, outlineMat);
+  hull.scale.setScalar(grow);
+  hull.renderOrder = -1;
+  mesh.add(hull);
+  return mesh;
+}
 
 // ---- face: eyes drawn on a canvas, so expressions are just a redraw ----
 function createFace() {
@@ -138,8 +149,8 @@ function createTread(side, { length = 0.5, radius = 0.15, width = 0.2, offset = 
   }
 
   const perimeter = 2 * length + 2 * Math.PI * radius;
-  const count = 20;
-  const cleatGeo = new RoundedBoxGeometry(width, 0.04, perimeter / count * 0.7, 2, 0.012);
+  const count = 14;
+  const cleatGeo = new RoundedBoxGeometry(width, 0.05, perimeter / count * 0.62, 2, 0.015);
   const cleatMat = matte(COLORS.tread, { roughness: 0.75 });
   const cleats = [];
   for (let i = 0; i < count; i++) {
@@ -208,7 +219,7 @@ export function createRobot() {
   const body = new THREE.Group();
   body.position.y = 0.9;
   chassis.add(body);
-  const shell = new THREE.Mesh(eggGeometry(1.3, 0.6), matte(COLORS.shell, { roughness: 0.55 }));
+  const shell = outline(new THREE.Mesh(eggGeometry(1.3, 0.6), matte(COLORS.shell, { roughness: 0.45 })), 1.03);
   body.add(shell);
 
   // Visor: dark bezel, glossy black glass, eyes on a canvas just in front.
@@ -216,7 +227,7 @@ export function createRobot() {
   visor.position.set(0, 0.02, 0.56);
   visor.rotation.x = -0.06;
   body.add(visor);
-  const bezel = new THREE.Mesh(new RoundedBoxGeometry(0.86, 0.56, 0.24, 6, 0.12), matte(COLORS.bezel, { roughness: 0.35 }));
+  const bezel = outline(new THREE.Mesh(new RoundedBoxGeometry(0.86, 0.56, 0.24, 6, 0.12), matte(COLORS.bezel, { roughness: 0.35 })), 1.04);
   visor.add(bezel);
   const glass = new THREE.Mesh(new RoundedBoxGeometry(0.76, 0.46, 0.06, 6, 0.1), glossy(COLORS.visor));
   glass.position.z = 0.1;
@@ -246,7 +257,7 @@ export function createRobot() {
     const seam = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.012, 8, 32), glowMat());
     seam.rotation.x = Math.PI / 2;
     shoulder.add(seam);
-    const flipper = new THREE.Mesh(new THREE.CapsuleGeometry(0.105, 0.3, 8, 16), matte(COLORS.shell, { roughness: 0.55 }));
+    const flipper = outline(new THREE.Mesh(new THREE.CapsuleGeometry(0.105, 0.3, 8, 16), matte(COLORS.shell, { roughness: 0.45 })), 1.09);
     flipper.scale.set(1, 1, 0.75);
     flipper.position.y = -0.24;
     shoulder.add(flipper);
