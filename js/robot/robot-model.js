@@ -25,14 +25,12 @@ function createFace() {
   ctx.scale(2, 2);                                  // draw in 320x200 units at twice the resolution
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 8;
-  texture.generateMipmaps = false;                  // keep the eye stripes sharp
-  texture.minFilter = THREE.LinearFilter;
+  texture.anisotropy = 16;                          // smooth at small sizes (mipmaps on), no sparkle
   let last = '';
 
   // Vertical eye made of horizontal glowing stripes, like a scanline display.
   function stripedEye(cx, cy, w, h) {
-    const stripe = 6, gap = 5;
+    const stripe = 8, gap = 3;
     for (let y = cy - h / 2; y < cy + h / 2; y += stripe + gap) {
       ctx.beginPath();
       ctx.roundRect(cx - w / 2, y, w, Math.min(stripe, cy + h / 2 - y), 2);
