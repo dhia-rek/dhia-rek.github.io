@@ -45,10 +45,19 @@ const lang = () => (window.i18n && window.i18n.lang === 'fr' ? 'fr' : 'en');
 const t = (key) => TEXT[lang()][key];
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
+// Only run the 3D robot with real graphics acceleration: without a GPU (software rendering) every
+// frame costs the CPU heavily and slows the whole page. ?robot in the URL forces it (for testing).
 function supportsWebGL() {
+  if (new URLSearchParams(location.search).has('robot')) return true;
   try {
     const c = document.createElement('canvas');
-    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    const opts = { failIfMajorPerformanceCaveat: true };
+    const gl = c.getContext('webgl2', opts) || c.getContext('webgl', opts);
+    if (!gl) return false;
+    const info = gl.getExtension('WEBGL_debug_renderer_info');
+    const name = info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(String(name));
   } catch { return false; }
 }
 
@@ -172,7 +181,8 @@ function start() {
   // ---- sections: drive to a spot and suggest something ----
   function spotFor(name) {
     const i = SECTIONS.indexOf(name);
-    const lo = W < 700 ? 50 : 90, hi = W < 700 ? W * 0.45 : Math.min(W * 0.32, 460);
+    // desktop: stay right of the fixed social links rail on the left edge
+    const lo = W < 700 ? 50 : 170, hi = W < 700 ? W * 0.45 : Math.min(W * 0.34, 520);
     return lo + ((i * 0.37) % 1) * (hi - lo);
   }
   function greet(name) {
