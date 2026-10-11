@@ -20,13 +20,11 @@ const glowMat = () => new THREE.MeshBasicMaterial({ color: COLORS.glow, toneMapp
 // ---- face: eyes drawn on a canvas, so expressions are just a redraw ----
 function createFace() {
   const canvas = document.createElement('canvas');
-  canvas.width = 640;
-  canvas.height = 400;
+  canvas.width = 320;
+  canvas.height = 200;
   const ctx = canvas.getContext('2d');
-  ctx.scale(2, 2);                                  // draw in 320x200 units at twice the resolution
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 8;
   let last = '';
 
   // Vertical eye made of horizontal glowing stripes, like a scanline display.
@@ -165,12 +163,12 @@ function createTread(side, { length = 0.5, radius = 0.15, width = 0.2, offset = 
 // Egg profile for a LatheGeometry: rounder and a little wider at the top, like the reference.
 function eggGeometry(height = 1.2, width = 0.6) {
   const points = [];
-  for (let i = 0; i <= 72; i++) {
-    const t = (i / 72) * Math.PI;
+  for (let i = 0; i <= 48; i++) {
+    const t = (i / 48) * Math.PI;
     const r = Math.sin(t) * width * (1 + 0.06 * -Math.cos(t));
     points.push(new THREE.Vector2(Math.max(r, 0.0001), -Math.cos(t) * height / 2));
   }
-  return new THREE.LatheGeometry(points, 96);
+  return new THREE.LatheGeometry(points, 64);
 }
 
 function createMagnifier() {
@@ -277,39 +275,16 @@ export function createRobot() {
   shadow.position.y = 0.002;
   root.add(shadow);
 
-  // Hover glow: a soft cyan disc under the treads, visible while floating.
-  const glowCanvas = document.createElement('canvas');
-  glowCanvas.width = glowCanvas.height = 128;
-  const gctx = glowCanvas.getContext('2d');
-  const ggrad = gctx.createRadialGradient(64, 64, 4, 64, 64, 64);
-  ggrad.addColorStop(0, 'rgba(56,189,248,0.9)');
-  ggrad.addColorStop(0.4, 'rgba(56,189,248,0.4)');
-  ggrad.addColorStop(1, 'rgba(79,216,255,0)');
-  gctx.fillStyle = ggrad;
-  gctx.fillRect(0, 0, 128, 128);
-  const hoverGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.9), new THREE.MeshBasicMaterial({
-    map: new THREE.CanvasTexture(glowCanvas), transparent: true, depthWrite: false, opacity: 0, toneMapped: false,
-  }));
-  hoverGlow.rotation.x = -Math.PI / 2;
-  hoverGlow.position.y = -0.02;
-  root.add(hoverGlow);
-
   // ---- animation ----
   let time = 0, blinkTimer = 2 + Math.random() * 2, blink = 0;
 
   /**
    * Advance the animation.
    * state: { speed (units/s, signed), yaw, headYaw, look (-1..1), expression, wave (0..1),
-   *          point (0..1), magnify (bool), talking (bool), hover (0..1 glow), lift (units above ground) }
+   *          point (0..1), magnify (bool), talking (bool) }
    */
   function update(dt, state) {
     time += dt;
-    const lift = state.lift || 0;
-    shadow.position.y = 0.002 - lift;
-    shadow.scale.setScalar(Math.max(0.35, 1 - lift * 0.9));
-    shadow.material.opacity = Math.max(0, 1 - lift * 0.8);
-    hoverGlow.material.opacity = (state.hover || 0) * (0.75 + Math.sin(time * 6) * 0.15);
-    hoverGlow.scale.setScalar(0.9 + Math.sin(time * 6) * 0.05);
     const dist = state.speed * dt;
     left.update(dist);
     right.update(dist);
