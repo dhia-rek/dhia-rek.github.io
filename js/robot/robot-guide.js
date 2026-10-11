@@ -71,7 +71,7 @@ async function start() {
   const [THREE, { RoomEnvironment }, { createRobot, addRobotLights }] = await Promise.all([
     import('three'),
     import('three/addons/environments/RoomEnvironment.js'),
-    import('./robot-model.js?v=20261011-16'),
+    import('./robot-model.js?v=20261011-24'),
   ]);
 
   // ---- DOM: canvas, hit area, bubble, show button ----
