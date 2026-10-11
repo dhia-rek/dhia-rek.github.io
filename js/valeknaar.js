@@ -152,11 +152,10 @@
     }
   });
 
-  // ---- Floating pill open/close + scroll-based visibility ----
+  // ---- Floating chat button: always visible (the robot also opens the chat) ----
   const fab = document.getElementById('valekFab');
   const popEl = document.getElementById('valekPop');
   const popCloseBtn = document.getElementById('valekPopClose');
-  const heroSection = document.querySelector('.hero');
 
   function openPop() {
     popEl.classList.add('open');
@@ -171,18 +170,7 @@
     popEl.setAttribute('aria-hidden', 'true');
     popEl.inert = true;
     fab.setAttribute('aria-expanded', 'false');
-    // re-show fab if user is still past hero
-    if (shouldShowFab()) fab.classList.remove('hidden');
-  }
-  function shouldShowFab() {
-    if (!heroSection) return true;
-    const heroBottom = heroSection.getBoundingClientRect().bottom;
-    return heroBottom < 80;
-  }
-  function updateFab() {
-    if (popEl && popEl.classList.contains('open')) return;
-    if (shouldShowFab()) fab.classList.add('show');
-    else fab.classList.remove('show');
+    fab.classList.remove('hidden');
   }
 
   if (fab && popEl) {
@@ -191,7 +179,6 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && popEl.classList.contains('open')) closePop();
     });
-    window.addEventListener('scroll', updateFab, { passive: true });
-    updateFab();
+    fab.classList.add('show');
   }
 })();
