@@ -5,26 +5,16 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const COLORS = {
-  shell: 0xf1f5f8,
+  shell: 0xdde5ea,
   visor: 0x0b0f14,
   bezel: 0x1c232b,
   glow: 0x4fd8ff,
 };
 
-const matte = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.42, metalness: 0.05, ...extra });
+const matte = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.02, envMapIntensity: 0.45, ...extra });
 const glossy = (color, extra = {}) => new THREE.MeshPhysicalMaterial({ color, roughness: 0.12, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.08, ...extra });
 const glowMat = () => new THREE.MeshBasicMaterial({ color: COLORS.glow, toneMapped: false });
 
-// Thin dark outline (inverted hull): a slightly bigger back-facing copy drawn behind the mesh.
-// Keeps the silhouette crisp on a white page. The mesh must be centred on its own origin.
-const outlineMat = new THREE.MeshBasicMaterial({ color: 0x1a2332, side: THREE.BackSide });
-function outline(mesh, grow = 1.035) {
-  const hull = new THREE.Mesh(mesh.geometry, outlineMat);
-  hull.scale.setScalar(grow);
-  hull.renderOrder = -1;
-  mesh.add(hull);
-  return mesh;
-}
 
 // ---- face: eyes drawn on a canvas, so expressions are just a redraw ----
 function createFace() {
@@ -36,11 +26,13 @@ function createFace() {
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 8;
+  texture.generateMipmaps = false;                  // keep the eye stripes sharp
+  texture.minFilter = THREE.LinearFilter;
   let last = '';
 
   // Vertical eye made of horizontal glowing stripes, like a scanline display.
   function stripedEye(cx, cy, w, h) {
-    const stripe = 7, gap = 4;
+    const stripe = 6, gap = 5;
     for (let y = cy - h / 2; y < cy + h / 2; y += stripe + gap) {
       ctx.beginPath();
       ctx.roundRect(cx - w / 2, y, w, Math.min(stripe, cy + h / 2 - y), 2);
@@ -77,18 +69,18 @@ function createFace() {
         ctx.stroke();
       }
     } else if (expression === 'happy') {
-      ctx.lineWidth = 11;
+      ctx.lineWidth = 7;
       ctx.lineCap = 'round';
       for (const [x, y] of eyes) {
         ctx.beginPath();
-        ctx.arc(x, y + 14, 22, Math.PI * 1.15, Math.PI * 1.85);
+        ctx.arc(x, y + 12, 17, Math.PI * 1.15, Math.PI * 1.85);
         ctx.stroke();
       }
     } else {
       const open = Math.max(0.12, 1 - blink);
       for (const [i, [x, y]] of eyes.entries()) {
         const big = expression === 'curious' && i === 1 ? 1.2 : 1;
-        stripedEye(x, y, 26 * big, 72 * big * open);
+        stripedEye(x, y, 19 * big, 54 * big * open);
       }
     }
     if (expression === 'talk') {
@@ -103,15 +95,43 @@ function createFace() {
   return { texture, draw };
 }
 
-// Egg profile for a LatheGeometry: rounder and a little wider at the top, like the reference.
-function eggGeometry(height = 1.2, width = 0.6) {
+// Egg profile: superellipse-like, fuller sides and soft round ends, a little wider at the top.
+function eggPoint(t, height, width) {
+  const r = Math.pow(Math.sin(t), 0.8) * width * (1 + 0.05 * -Math.cos(t));
+  const y = -Math.sign(Math.cos(t)) * Math.pow(Math.abs(Math.cos(t)), 0.92) * height / 2;
+  return new THREE.Vector2(Math.max(r, 0.0001), y);
+}
+const EGG = { height: 1.34, width: 0.56 };
+
+function eggGeometry(height = EGG.height, width = EGG.width) {
   const points = [];
-  for (let i = 0; i <= 72; i++) {
-    const t = (i / 72) * Math.PI;
-    const r = Math.sin(t) * width * (1 + 0.06 * -Math.cos(t));
-    points.push(new THREE.Vector2(Math.max(r, 0.0001), -Math.cos(t) * height / 2));
-  }
+  for (let i = 0; i <= 72; i++) points.push(eggPoint((i / 72) * Math.PI, height, width));
   return new THREE.LatheGeometry(points, 96);
+}
+
+// A band of the egg's own surface between two heights and around the front, pushed out slightly:
+// the visor follows the body's curve instead of sitting on it like a flat box.
+function eggBand(yMin, yMax, arc, grow) {
+  const points = [];
+  for (let i = 0; i <= 240; i++) {
+    const p = eggPoint((i / 240) * Math.PI, EGG.height, EGG.width);
+    if (p.y >= yMin && p.y <= yMax) points.push(new THREE.Vector2(p.x * grow, p.y));
+  }
+  return new THREE.LatheGeometry(points, 48, -arc / 2, arc);
+}
+
+// Rounded-rectangle mask, used as alphaMap so the visor bands get soft corners.
+function roundedMask(radius = 0.28) {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 160;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, 256, 160);
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.roundRect(2, 2, 252, 156, 160 * radius);
+  ctx.fill();
+  return new THREE.CanvasTexture(c);
 }
 
 function createMagnifier() {
@@ -144,33 +164,31 @@ export function createRobot() {
   const body = new THREE.Group();
   body.position.y = 0.9;
   chassis.add(body);
-  const shell = outline(new THREE.Mesh(eggGeometry(1.46, 0.45), matte(COLORS.shell, { roughness: 0.4 })), 1.022);
+  const shell = new THREE.Mesh(eggGeometry(), matte(COLORS.shell, { roughness: 0.55 }));
   body.add(shell);
 
-  // Visor: dark bezel, glossy black glass, eyes on a canvas just in front.
-  const visor = new THREE.Group();
-  visor.position.set(0, 0.08, 0.38);
-  visor.rotation.x = -0.06;
-  body.add(visor);
-  const bezel = outline(new THREE.Mesh(new RoundedBoxGeometry(0.66, 0.46, 0.15, 6, 0.07), matte(COLORS.bezel, { roughness: 0.35 })), 1.03);
-  visor.add(bezel);
-  const glass = new THREE.Mesh(new RoundedBoxGeometry(0.58, 0.38, 0.06, 6, 0.09), glossy(COLORS.visor));
-  glass.position.z = 0.065;
-  visor.add(glass);
+  // Visor: two curved bands of the egg surface (dark rim, glossy black glass) with rounded corners;
+  // the eyes are drawn on the glass itself as an emissive texture.
   const face = createFace();
-  const eyes = new THREE.Mesh(new THREE.PlaneGeometry(0.56, 0.35), new THREE.MeshBasicMaterial({ map: face.texture, transparent: true, toneMapped: false }));
-  eyes.position.z = 0.1;
-  visor.add(eyes);
+  const mask = roundedMask();
+  const bezel = new THREE.Mesh(eggBand(-0.2, 0.3, 1.75, 1.018), matte(COLORS.bezel, { roughness: 0.35, alphaMap: mask, transparent: true }));
+  body.add(bezel);
+  const glass = new THREE.Mesh(eggBand(-0.165, 0.265, 1.55, 1.03), new THREE.MeshPhysicalMaterial({
+    color: COLORS.visor, roughness: 0.12, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.06,
+    emissive: 0xffffff, emissiveMap: face.texture, alphaMap: mask, transparent: true,
+    toneMapped: false,                                // keep the cyan glow saturated
+  }));
+  body.add(glass);
 
   // Ears: black glossy domes with a glowing ring.
   for (const side of [-1, 1]) {
     const ear = new THREE.Group();
-    ear.position.set(side * 0.445, 0.12, 0.02);
+    ear.position.set(side * 0.555, 0.1, 0.02);
     ear.rotation.y = side * Math.PI / 2;
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.085, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), glossy(COLORS.visor));
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.095, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), glossy(COLORS.visor));
     dome.rotation.x = Math.PI / 2;
     ear.add(dome);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.012, 10, 40), glowMat());
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.012, 10, 40), glowMat());
     ear.add(ring);
     body.add(ear);
   }
@@ -178,11 +196,11 @@ export function createRobot() {
   // Flipper arms with a glowing seam at the shoulder.
   const arms = [-1, 1].map((side) => {
     const shoulder = new THREE.Group();
-    shoulder.position.set(side * 0.39, -0.2, 0.16);
-    const seam = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.01, 8, 32), glowMat());
+    shoulder.position.set(side * 0.48, -0.2, 0.16);
+    const seam = new THREE.Mesh(new THREE.TorusGeometry(0.088, 0.011, 8, 32), glowMat());
     seam.rotation.x = Math.PI / 2;
     shoulder.add(seam);
-    const flipper = outline(new THREE.Mesh(new THREE.CapsuleGeometry(0.072, 0.32, 8, 16), matte(COLORS.shell, { roughness: 0.4 })), 1.07);
+    const flipper = new THREE.Mesh(new THREE.CapsuleGeometry(0.085, 0.3, 8, 16), matte(COLORS.shell, { roughness: 0.4 }));
     flipper.scale.set(1, 1, 0.8);
     flipper.position.y = -0.24;
     shoulder.add(flipper);
@@ -208,7 +226,7 @@ export function createRobot() {
   grad.addColorStop(1, 'rgba(10,14,31,0)');
   sctx.fillStyle = grad;
   sctx.fillRect(0, 0, 64, 64);
-  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.75), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false }));
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.85), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2;
   shadow.position.y = 0.002;
   root.add(shadow);
@@ -223,7 +241,7 @@ export function createRobot() {
   ggrad.addColorStop(1, 'rgba(79,216,255,0)');
   gctx.fillStyle = ggrad;
   gctx.fillRect(0, 0, 128, 128);
-  const hoverGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.45), new THREE.MeshBasicMaterial({
+  const hoverGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 0.55), new THREE.MeshBasicMaterial({
     map: new THREE.CanvasTexture(glowCanvas), transparent: true, depthWrite: false, opacity: 0, toneMapped: false,
   }));
   hoverGlow.rotation.x = -Math.PI / 2;
@@ -278,5 +296,23 @@ export function createRobot() {
     });
   }
 
-  return { root, update, height: 1.65 };
+  return { root, update, height: 1.6 };
+}
+
+/**
+ * Lights for the robot: a soft room reflection, key light from the upper left and a cool rim from
+ * behind, so the white shell reads as a round 3D form instead of a flat cut-out.
+ */
+export function addRobotLights(scene, renderer, environment) {
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  scene.environment = environment;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a96ac, 0.75));
+  const key = new THREE.DirectionalLight(0xffffff, 2.6);
+  key.position.set(-2.5, 4, 5);
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0xcfeeff, 1.4);
+  rim.position.set(3, 2, -4);
+  scene.add(rim);
 }
