@@ -1381,7 +1381,7 @@ body.dark .hero-chat-feed .valek-suggestion {
   align-items: center;
   justify-content: center;
 }
-.project-icon-wrap svg { width: 18px; height: 18px; }
+.project-icon-wrap svg { width: 18px; height: 18px; fill: currentColor; }
 .project-live-badge {
   display: inline-flex;
   align-items: center;
@@ -1619,6 +1619,10 @@ body.dark .hero-chat-feed .valek-suggestion {
   color: #047857;
 }
 body.dark .shipped-status.live { color: #34d399; }
+/* company logos are often dark: give them a light tile in dark mode so they stay visible */
+body.dark .exp-logo,
+body.dark .shipped-icon { background: #eef2f7; border-color: transparent; }
+body.dark .project-icon-wrap { background: rgba(56, 189, 248, 0.16); color: var(--accent-ink); }
 .shipped-status .dot {
   width: 6px; height: 6px;
   background: currentColor;
@@ -1880,7 +1884,7 @@ footer {
   color: var(--muted);
   border-top: 1px solid var(--border);
 }
-footer a { color: var(--ink-2); transition: color .2s; }
+footer a { color: var(--ink-2); transition: color .2s; text-decoration: underline; text-underline-offset: 2px; }
 footer a:hover { color: var(--accent); }
 .kbd-hint { color: var(--muted); }
 
@@ -2442,4 +2446,22 @@ textarea:focus-visible { outline: none; }
 
 .text-center { text-align: center; }
 
-footer a { text-decoration: underline; text-underline-offset: 2px; }
+
+.contact-qr {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  width: fit-content;
+  max-width: 100%;
+  margin: 1.75rem auto 0;
+  padding: 0.9rem 1.2rem 0.9rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-elev);
+  text-align: left;
+}
+.contact-qr img { width: 112px; height: 112px; border-radius: 8px; background: #fff; padding: 4px; flex: none; }
+.contact-qr strong { display: block; font-family: var(--head); font-size: 1rem; color: var(--ink); }
+.contact-qr p { margin: 0.25rem 0 0.5rem; color: var(--muted); font-size: 0.88rem; max-width: 30ch; }
+.contact-qr a { color: var(--accent); font-size: 0.88rem; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+
