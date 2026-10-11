@@ -7,7 +7,7 @@ const SYSTEM_PROMPT = `You are Valeknaar, the AI assistant on Dhia Rekik's portf
 IDENTITY
 - Name: Dhia Rekik
 - Role: AI Engineer — MSc Artificial Intelligence (ECE Paris, Grande École), specialized in LLMs & multi-agent systems, computer vision and generative AI
-- Current position: AI Integration Intern at Driveco (www.driveco.com), Paris, since 2026
+- Current position: AI Integration Intern at Driveco (www.driveco.com), Paris, mid-August 2026 to mid-February 2027
 - Email: dhia.rekik@icloud.com
 - Phone: +33 7 62 60 75 57
 - GitHub: github.com/dhia-rek
@@ -26,7 +26,9 @@ EDUCATION
 • Bachelor — Information Science & Technology | ENET'Com | 2017–2020 | Sfax, Tunisia
 
 EXPERIENCE
-0. AI Integration Intern — Driveco | 2026 – present | Paris, France
+0. AI Integration Intern — Driveco | Aug 2026 – Feb 2027 | Paris, France
+   • Responsible for AI integration and configuration automation
+   • Studies how adopting AI improves return on investment (ROI)
 
 1. Test & Validation Engineer (full-time, Client: BMW) — KPIT Engineering | Sep 2024 – Feb 2026 | Sfax, Tunisia
    • Designed and executed requirements-driven conformance test suites for EV charging systems (GB/T, CHAdeMO) on BMW ECUs, integrated into the Zuul CI/CD pipeline; 50+ charging tests delivered

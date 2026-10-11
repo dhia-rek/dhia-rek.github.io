@@ -924,10 +924,6 @@ body.dark .hero-chat-feed .valek-suggestion {
   transition: border-color .2s, box-shadow .2s, transform .15s;
   outline: none;
 }
-.exp-summary-static {
-  grid-template-columns: 1fr;
-  cursor: default;
-}
 .exp-org-link {
   color: inherit;
   text-decoration: none;

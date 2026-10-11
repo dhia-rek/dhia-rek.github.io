@@ -202,11 +202,11 @@
   </div>
 
   <ol class="exp-timeline">
-    <li class="exp-item">
-      <div class="exp-summary exp-summary-static">
+    <li class="exp-item" data-expandable>
+      <div class="exp-summary" role="button" tabindex="0" aria-expanded="false">
         <span class="exp-marker"></span>
         <div class="exp-summary-info">
-          <div class="exp-summary-date">2026 — <span data-i18n="exp.0.now">Present</span> · <span data-i18n="exp.0.b">Internship</span> · Paris</div>
+          <div class="exp-summary-date">Aug 2026 — Feb 2027 · <span data-i18n="exp.0.b">Internship</span> · Paris</div>
           <div class="exp-summary-role">
             <span class="exp-logo">
               <img src="https://icons.duckduckgo.com/ip3/driveco.com.ico" alt="Driveco" width="20" height="20" loading="lazy" onerror="this.style.display='none';this.parentElement.querySelector('.exp-logo-fallback').style.display='flex'">
@@ -216,6 +216,12 @@
             <a class="exp-summary-org exp-org-link" href="https://www.driveco.com" target="_blank" rel="noopener">· Driveco ↗</a>
           </div>
         </div>
+        <span class="exp-chevron" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </div>
+      <div class="exp-details">
+        <div class="exp-desc" data-i18n="exp.0.d"></div>
       </div>
     </li>
 
