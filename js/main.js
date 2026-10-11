@@ -169,10 +169,7 @@
       const open = item.classList.toggle('open');
       summary.setAttribute('aria-expanded', String(open));
     };
-    summary.addEventListener('click', toggle);
-    summary.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-    });
+    summary.addEventListener('click', toggle);   // a <button>: Enter and Space work natively
   });
 
   const contactForm = document.getElementById('contactForm');
