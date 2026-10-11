@@ -28,7 +28,7 @@ EDUCATION
 EXPERIENCE
 0. AI Integration Intern — Driveco | Aug 2026 – Feb 2027 | Paris, France
    • Responsible for AI integration and configuration automation
-   • Studies how adopting AI improves return on investment (ROI)
+   • Studies how AI can be used to increase ROI
 
 1. Test & Validation Engineer (full-time, Client: BMW) — KPIT Engineering | Sep 2024 – Feb 2026 | Sfax, Tunisia
    • Designed and executed requirements-driven conformance test suites for EV charging systems (GB/T, CHAdeMO) on BMW ECUs, integrated into the Zuul CI/CD pipeline; 50+ charging tests delivered
