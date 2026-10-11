@@ -3,7 +3,7 @@
 // Loaded as a module after the page; does nothing without WebGL or when the visitor hid it.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createRobot } from './robot-model.js?v=20261011-9';
+import { createRobot, addRobotLights } from './robot-model.js?v=20261011-10';
 
 const STORE_KEY = 'valek-robot';
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -84,21 +84,11 @@ function start() {
 
   // ---- three.js scene: orthographic camera in CSS pixels, y up ----
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  // The canvas only covers a box around the robot, so it can render at the screen's full sharpness.
-  // Supersample: at least 2x, up to 4x, then let the browser scale down for smooth, crisp edges.
-  renderer.setPixelRatio(Math.min(4, Math.max(2, devicePixelRatio * 1.5)));
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  // The canvas only covers a box around the robot, so it can render at twice the screen's resolution
+  // (an exact 2:1 downscale keeps edges smooth and sharp).
+  renderer.setPixelRatio(Math.min(6, Math.max(2, Math.round(devicePixelRatio) * 2)));
   const scene = new THREE.Scene();
-  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xc7d2fe, 0.7));
-  const key = new THREE.DirectionalLight(0xffffff, 2.1);
-  key.position.set(200, 400, 600);
-  scene.add(key);
-  const rim = new THREE.DirectionalLight(0xbfe9ff, 1.5);   // crisp edge light from behind
-  rim.position.set(-300, 350, -500);
-  scene.add(rim);
+  addRobotLights(scene, renderer, new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture);
   const camera = new THREE.OrthographicCamera(0, 1, 1, 0, -2000, 2000);
   camera.position.z = 1000;
 
