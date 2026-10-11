@@ -15,11 +15,12 @@ IDENTITY
 - Site: dhiarekik.me
 
 PROFILE
-MSc Artificial Intelligence student at ECE Paris (Grande École), with 2 years of industrial experience in automotive software validation (BMW EV charging systems) and a portfolio of working AI projects: serverless ML pipelines on Azure, multi-agent systems with RAG, and zero-shot computer vision. Methodical, production-minded approach grounded in evaluation methodology and the optimization of complex systems.
+MSc Artificial Intelligence student at ECE Paris (Grande École), with 1.5 years of industrial experience in automotive software validation (BMW EV charging systems) and a portfolio of working AI projects: multi-agent systems with RAG, and zero-shot computer vision. Methodical, production-minded approach grounded in evaluation methodology and the optimization of complex systems.
 
 EDUCATION
 • MSc (M2) — Artificial Intelligence | ECE Paris (Grande École) | 2025–2027 (coursework 2025–2026, end-of-studies internship at Driveco Aug 2026 – Feb 2027) | Paris, France
   Coursework: Multi-LLM Architectures, Gen AI & Diffusion Models, Computer Vision (Industry 5.0), Cloud Computing for AI, AI Transformation, Security & Data Protection, AI for Business Process Automation.
+  Thesis: data quality monitored by LLM agents. Machine learning models detect anomalies in the data, then agents analyse their causes and propose fixes.
 
 • Engineering Degree — Software Engineering | ESPRIT | 2021–2023 | Tunis, Tunisia
 
@@ -27,25 +28,30 @@ EDUCATION
 
 EXPERIENCE
 0. AI Integration Intern (end-of-studies internship) — Driveco | Aug 2026 – Feb 2027 | Paris, France
-   • AI integration and configuration automation
+   • Analyses business needs and scopes AI use cases
+   • Designs and integrates AI solutions: LLMs, AI agents and automated workflows
+   • Builds and optimises workflows with APIs, scripts and no-code/low-code tools; prompt engineering and integration of internal tools
    • Builds the business case for AI: where it pays off and by how much (ROI)
+   • Evaluates, documents and improves the solutions, working with Tech, Product and Data teams
 
-1. Test & Validation Engineer (full-time, Client: BMW) — KPIT Engineering | Sep 2024 – Feb 2026 | Sfax, Tunisia
-   • Designed and executed requirements-driven conformance test suites for EV charging systems (GB/T, CHAdeMO) on BMW ECUs, integrated into the Zuul CI/CD pipeline; 50+ charging tests delivered
-   • Evaluated an AI reporting system (TestGuide, TraceTronic) for automated test-result comparison and report generation; validated predictions, flagged errors, gave structured feedback to improve reliability
-   • Analyzed and resolved 300+ anomalies (infrastructure, software versions, test cases); ~80% resolution rate
-   • Developed Python scripts to automate result extraction from TestGuide, log analysis, and daily Excel reporting
+1. Test & Validation Engineer (full-time, Client: BMW) — KPIT Engineering | Sep 2024 – Feb 2026 (about 1.5 years) | Sfax, Tunisia
+   • Ran, validated and reported tests for BMW EV charging systems (GB/T, CHAdeMO) on test benches through a Zuul CI pipeline with 5 software branches to validate (TestGuide); 50+ charging tests delivered
+   • Analysed failed tests with Wireshark to find root causes: 300+ anomalies analysed, about 80% resolved (estimate)
+   • Wrote a Python script that reads the results of the 5 branches, interprets them and generates the Excel report previously written by hand; the team adopted it as its standard
+   • Started a Wireshark plugin that checks the VIN, IP addresses and DoIP / SOME/IP communication when a log is opened, to tell a configuration change from a real bug in seconds instead of an hour
+   • Evaluated an AI reporting tool (TestGuide, TraceTronic) and gave structured feedback on its predictions
 
 2. WordPress Developer (Freelance) — Krichen Distribution | Feb – Aug 2024 | Sfax, Tunisia
-   • Set up and maintained the WordPress platform
-   • Managed product catalogs (700+), pricing, stock and automated notifications
-   • Integrated secure payment systems and configured servers and SMTP
-   • Improved performance, SEO and mobile responsiveness
+   • Designed, built and deployed the e-commerce platform to the client's specifications (WordPress, WooCommerce, 700+ products)
+   • Stock management with automatic alerts, secure payments, server and SMTP
+   • Processed user-behaviour data to improve the site's analytics and help the client understand its customers
+   • Improved speed, SEO and mobile experience
+   He also designed and built the Echoes Agency website (echoesagency.eu).
 
-3. Web Developer (Final-year project) — SAGEMCOM | Feb – Aug 2023 | Tunis, Tunisia
-   • Built a web application to automate test configuration and execution via Robot Framework and Selenium
-   • Dockerized for cross-platform deployment (Windows, Linux, macOS) + validation report generation
-   • Optimized internal test workflows, significantly improving automation efficiency
+3. Web Developer (Final-year project) — Sagemcom | Feb – Aug 2023 | Tunis, Tunisia
+   • Automated manual tests and configurations: Robot Framework for readable test scenarios, Selenium to drive the browser (e.g. the device's web interface), AutoIT for the operating system
+   • Built a web platform to run them, packaged with Docker for Windows, Linux and macOS, with automatic validation reports
+   • Made the tests reusable on any environment so consultants and technical leads could run and understand them
 
 PROJECTS
 1. Event-Driven ML Pipeline on Azure — Medical Risk Prediction (ECE M2 integrative project)
@@ -53,14 +59,20 @@ PROJECTS
    Stack: Azure, Docker, FastAPI, GitHub Actions, KQL
 
 2. Digital Transformation Roadmap Generator (ECE M2 — Multi-LLM Architectures)
-   Multi-agent RAG system (6 agents) turning a free-text business case into a structured roadmap; dynamic routing to the optimal LLM.
-   Stack: Python, Multi-agents, RAG (FAISS), Gemini, FastAPI, Streamlit
+   Built with Roy Hayek. Six LLM agents (LangGraph) turn a free-text business case into a structured roadmap, grounded in three academic frameworks via RAG (FAISS). Each agent declares its task type, complexity and criticality, and a router picks the model: Gemini Flash-Lite, Gemini Flash or a local Ollama model. 18/18 valid JSON outputs on 3 live cases, about 45 s per roadmap.
+   Stack: Python, LangGraph, RAG (FAISS), Gemini, Ollama, FastAPI, Streamlit
 
 3. AI CCTV — Harassment Detection
    Zero-shot video detection (CLIP + YOLO) with no abnormal training data; real-time Streamlit dashboard + automatic Telegram alerts.
    Stack: Python, PyTorch, CLIP, YOLOv8, Streamlit
 
-4. Grid Shooter — REINFORCE Agent (ECE M2 RL project)
+4. AI Vision Detection (live at dhiarekik.me/ai-vision-detection)
+   Object detection (YOLO11n), facial expressions (YuNet + MobileFaceNet) and ASL fingerspelling (MediaPipe + his own letter classifier), running entirely in the browser with ONNX Runtime Web; nothing is uploaded. ASL letter accuracy improved from 47% to 76% on a separate photo collection.
+
+5. Nekyia (hackathon)
+   Greek-mythology roguelike in the browser (Phaser 3, TypeScript) with Gemini-written dialogue, trials and omens that react to the player's choices.
+
+6. Grid Shooter — REINFORCE Agent (ECE M2 RL project)
    REINFORCE (policy gradient) algorithm on a custom Gymnasium environment with live Pygame visualization.
    Stack: Python, PyTorch, Gymnasium, Pygame
 
@@ -75,11 +87,11 @@ Languages: Arabic (native), French (C1 — TCF), English (B2 — IELTS)
 
 CERTIFICATIONS
 - Scrum Fundamentals
-- Deep Learning Specialization (Coursera)
-- Machine Learning Specialization (Coursera)
+- Deep Learning Specialization (Andrew Ng, Coursera)
+- Machine Learning Specialization (Andrew Ng, Coursera)
 
 OTHER
-- Volunteering: IEEE ENET'Com (Alumni, 2018–2020), Lions Club Méditerranéen (Alumni, 2019–2020), PMI Member
+- Memberships: IEEE ENET'Com Student Branch (2018–2020), Lions Club Méditerranéen (2019–2020), PMI (Project Management Institute) member
 - Interests: Football, Chess, Reading
 
 INSTRUCTIONS
