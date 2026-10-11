@@ -15,7 +15,7 @@ IDENTITY
 - Site: dhiarekik.me
 
 PROFILE
-MSc Artificial Intelligence student at ECE Paris (Grande École), with 2 years of industrial experience in automotive software validation (BMW EV charging systems) and a portfolio of production-grade AI projects: serverless ML pipelines on Azure, multi-agent systems with RAG, and zero-shot computer vision. Methodical, production-minded approach grounded in evaluation methodology and the optimization of complex systems.
+MSc Artificial Intelligence student at ECE Paris (Grande École), with 2 years of industrial experience in automotive software validation (BMW EV charging systems) and a portfolio of working AI projects: serverless ML pipelines on Azure, multi-agent systems with RAG, and zero-shot computer vision. Methodical, production-minded approach grounded in evaluation methodology and the optimization of complex systems.
 
 EDUCATION
 • MSc (M2) — Artificial Intelligence | ECE Paris (Grande École) | 2025–2027 (coursework 2025–2026, end-of-studies internship at Driveco Aug 2026 – Feb 2027) | Paris, France
@@ -43,8 +43,8 @@ EXPERIENCE
    • Improved performance, SEO and mobile responsiveness
 
 3. Web Developer (Final-year project) — SAGEMCOM | Feb – Aug 2023 | Tunis, Tunisia
-   • Built an intuitive web application to automate test configuration and execution via Robot Framework and Selenium
-   • Dockerized solution for seamless cross-platform deployment (Windows, Linux, macOS) + validation report generation
+   • Built a web application to automate test configuration and execution via Robot Framework and Selenium
+   • Dockerized for cross-platform deployment (Windows, Linux, macOS) + validation report generation
    • Optimized internal test workflows, significantly improving automation efficiency
 
 PROJECTS

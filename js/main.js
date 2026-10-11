@@ -122,28 +122,6 @@
     });
   }
 
-  const tw = document.getElementById('typewriter');
-  if (tw) {
-    const getList = () => [0,1,2,3,4,5].map((i) => window.i18n ? window.i18n.t(`typer.${i}`) : '');
-    let list = getList();
-    let i = 0, j = 0, deleting = false;
-    function tick() {
-      if (!list.length || !list[i]) { setTimeout(tick, 300); return; }
-      const word = list[i];
-      tw.textContent = word.slice(0, j);
-      if (!deleting) {
-        j++;
-        if (j > word.length) { deleting = true; setTimeout(tick, 1400); return; }
-      } else {
-        j--;
-        if (j === 0) { deleting = false; i = (i + 1) % list.length; }
-      }
-      setTimeout(tick, deleting ? 35 : 70);
-    }
-    tick();
-    if (window.i18n) window.i18n.onChange(() => { list = getList(); });
-  }
-
   const backToTop = document.getElementById('backToTop');
   if (backToTop) {
     window.addEventListener('scroll', () => {

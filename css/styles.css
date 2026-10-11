@@ -350,18 +350,7 @@ section {
   max-width: var(--container);
   margin: 0 auto;
 }
-.feature-eyebrow {
-  display: inline-block;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 0.9rem;
-  padding: 0.32rem 0.78rem;
-  background: var(--accent-soft);
-  border-radius: var(--r-pill);
-}
+
 .feature-title {
   text-align: center;
   font-size: clamp(2rem, 4.5vw, 3.2rem);
@@ -484,14 +473,7 @@ section {
   max-width: 540px;
   margin-bottom: 2rem;
 }
-.typewriter {
-  color: var(--ink);
-  font-weight: 600;
-  border-right: 2px solid var(--accent);
-  padding-right: 2px;
-  white-space: nowrap;
-  animation: caret 1s steps(1) infinite;
-}
+
 @keyframes caret { 50% { border-color: transparent; } }
 
 .hero-cta {
@@ -791,24 +773,6 @@ body.dark .hero-chat-feed .valek-suggestion {
 @media (max-width: 720px) {
   .about-quote::before { margin-left: auto; margin-right: auto; }
 }
-.about-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1.1rem;
-}
-@media (max-width: 720px) {
-  .about-chips { justify-content: center; }
-}
-.about-chips span {
-  font-size: 0.78rem;
-  font-weight: 500;
-  padding: 0.32rem 0.7rem;
-  border-radius: var(--r-pill);
-  background: var(--bg-soft);
-  color: var(--muted);
-  border: 1px solid var(--border);
-}
 
 /* ===== FEATURE GRID (Why / Capabilities) ===== */
 .feature {
@@ -838,18 +802,7 @@ body.dark .hero-chat-feed .valek-suggestion {
   border-color: var(--border-strong);
   box-shadow: var(--shadow-md);
 }
-.feature-card-icon {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--gradient-soft);
-  border-radius: 12px;
-  font-size: 1.25rem;
-  color: var(--accent);
-  margin-bottom: 1rem;
-}
+
 .feature-card h3 {
   font-size: 1.1rem;
   font-weight: 600;
@@ -998,12 +951,9 @@ body.dark .hero-chat-feed .valek-suggestion {
   flex-shrink: 0;
 }
 .exp-logo img { width: 18px; height: 18px; object-fit: contain; }
-.exp-logo-fallback {
-  font-family: var(--head);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--muted);
-}
+/* wordmark logos (KPIT, Sagemcom) need a wider tile */
+.exp-logo-wide { width: auto; padding: 0 6px; }
+.exp-logo-wide img { width: auto; height: 11px; }
 .exp-chevron {
   display: inline-flex;
   align-items: center;
@@ -1085,12 +1035,6 @@ body.dark .hero-chat-feed .valek-suggestion {
   .exp-marker { left: 5px; }
   .exp-summary { grid-template-columns: 1fr auto; padding: 0.85rem 1rem; }
   .exp-summary-role { font-size: 0.92rem; }
-}
-
-.affiliations {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
 }
 
 .lang-flag { font-size: 0.95rem; }
@@ -1339,7 +1283,6 @@ body.dark .hero-chat-feed .valek-suggestion {
 }
 @media (max-width: 920px) { #projectsGrid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) { #projectsGrid { grid-template-columns: 1fr; } }
-
 
 .project-card {
   background: var(--bg-elev);
@@ -1670,38 +1613,6 @@ body.dark .project-icon-wrap { background: rgba(56, 189, 248, 0.16); color: var(
   color: var(--muted);
   border: 1px solid var(--border);
   border-radius: var(--r-pill);
-}
-
-.shipped-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-top: var(--s-4);
-  text-align: center;
-}
-@media (max-width: 600px) { .shipped-metrics { grid-template-columns: 1fr; } }
-.metric {
-  padding: 1.25rem 0.8rem;
-  background: var(--bg-elev);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-}
-.metric-num {
-  display: block;
-  font-family: var(--head);
-  font-size: 1.8rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  background: var(--gradient-1);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.metric-label {
-  display: block;
-  font-size: 0.82rem;
-  color: var(--muted);
-  margin-top: 0.3rem;
 }
 
 /* ===== SPECS / NUMBERS ===== */
@@ -2340,7 +2251,7 @@ textarea:focus-visible { outline: none; }
   .hero-eyebrow { margin-left: auto; margin-right: auto; }
 
   /* Typewriter must wrap on phones to avoid horizontal scroll */
-  .typewriter { white-space: normal; }
+  
 
   /* CTAs: full-width stacked buttons read better than half-width pills */
   .hero-cta { flex-direction: column; align-items: stretch; }
