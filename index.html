@@ -66,7 +66,7 @@
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="css/styles.css?v=20261011-16">
+<link rel="stylesheet" href="css/styles.css?v=20261011-19">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 </head>
 <body>
@@ -171,22 +171,12 @@
       </div>
     </div>
 
-    <aside class="hero-chat" aria-label="Ask Valeknaar, an AI assistant about Dhia">
-      <h2 class="hero-chat-title" data-i18n="chat.title">Want to ask me about Dhia?</h2>
-      <div class="hero-chat-chips" id="valekChips">
-        <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q1">What are his AI skills?</button>
-        <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q2">What does he do at Driveco?</button>
-        <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q3">Tell me about his projects.</button>
-        <button type="button" class="hero-chat-chip valek-chip" data-i18n="chat.q4">His experience at KPIT?</button>
-      </div>
-      <div class="hero-chat-feed" id="valekFeed"></div>
-      <form class="hero-chat-form" id="valekForm" autocomplete="off">
-        <input type="text" id="valekInput" data-i18n-ph="chat.placeholder" placeholder="Ask, write or search for anything…" maxlength="300" aria-label="Message">
-        <button type="submit" aria-label="Send">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
-      </form>
-      <p class="hero-chat-foot">AI · may make mistakes</p>
+    <aside class="hero-qr" aria-labelledby="heroQrTitle">
+      <img class="hero-qr-code" src="assets/qr/dhiarekik-links.svg" alt="QR code linking to dhiarekik.me/links" width="190" height="190">
+      <h2 class="hero-qr-title" id="heroQrTitle"><span class="qr-scan" data-i18n="qr.title">Scan to connect</span><span class="qr-phone" data-i18n="qr.titlePhone">Find me online</span></h2>
+      <p class="hero-qr-sub"><span class="qr-scan" data-i18n="qr.sub">One code for all my profiles: LinkedIn, Instagram, Facebook, GitHub.</span><span class="qr-phone" data-i18n="qr.subPhone">All my profiles in one place: LinkedIn, Instagram, Facebook, GitHub.</span></p>
+      <a class="hero-qr-download" href="assets/qr/dhiarekik-links.png" download="dhia-rekik-qr.png" data-i18n="qr.download">Download QR code</a>
+      <a class="btn btn-secondary hero-qr-links" href="links/" data-i18n="qr.links">All my links</a>
     </aside>
   </div>
 </section>
@@ -687,14 +677,6 @@
       <span data-i18n="contact.cv">Download CV</span>
     </a>
   </div>
-  <div class="contact-qr">
-    <img src="assets/qr/dhiarekik-links.svg" alt="QR code to dhiarekik.me/links" width="112" height="112" loading="lazy">
-    <div>
-      <strong data-i18n="qr.title">Scan to connect</strong>
-      <p data-i18n="qr.sub">One code for all my profiles: LinkedIn, Instagram, Facebook, GitHub.</p>
-      <a href="assets/qr/dhiarekik-links.png" download="dhia-rekik-qr.png" data-i18n="qr.download">Download QR code</a>
-    </div>
-  </div>
 </section>
 
 <footer>
@@ -759,12 +741,12 @@
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>
 </button>
 
-<script src="js/translations.js?v=20261011-17"></script>
+<script src="js/translations.js?v=20261011-19"></script>
 <script src="js/i18n.js?v=20261011-12"></script>
 <script src="js/main.js?v=20261011-12"></script>
 <script src="js/projects.js?v=20261011-14"></script>
 <script src="js/command-palette.js?v=20261011-12"></script>
-<script src="js/valeknaar.js?v=20261011-12"></script>
+<script src="js/valeknaar.js?v=20261011-18"></script>
 <script type="module" src="js/robot/robot-guide.js?v=20261011-16"></script>
 
 <!-- Cloudflare Web Analytics -->
