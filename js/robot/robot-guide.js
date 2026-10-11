@@ -3,7 +3,7 @@
 // Loaded as a module after the page; does nothing without WebGL or when the visitor hid it.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createRobot } from './robot-model.js';
+import { createRobot } from './robot-model.js?v=20261011-6';
 
 const STORE_KEY = 'valek-robot';
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -85,14 +85,15 @@ function start() {
   // ---- three.js scene: orthographic camera in CSS pixels, y up ----
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   // The canvas only covers a box around the robot, so it can render at the screen's full sharpness.
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 3));
+  // Supersample: at least 2x, up to 4x, then let the browser scale down for smooth, crisp edges.
+  renderer.setPixelRatio(Math.min(4, Math.max(2, devicePixelRatio * 1.5)));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   const scene = new THREE.Scene();
   scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xc7d2fe, 0.9));
-  const key = new THREE.DirectionalLight(0xffffff, 1.6);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xc7d2fe, 0.7));
+  const key = new THREE.DirectionalLight(0xffffff, 2.1);
   key.position.set(200, 400, 600);
   scene.add(key);
   const rim = new THREE.DirectionalLight(0xbfe9ff, 1.5);   // crisp edge light from behind
@@ -114,7 +115,7 @@ function start() {
   let W = 0, H = 0, scale = 60, radius = 50, floor = 0, box = 200;
   function layout() {
     W = innerWidth; H = innerHeight;
-    scale = W < 700 ? 46 : 62;              // pixels per robot unit
+    scale = W < 700 ? 52 : 70;              // pixels per robot unit
     radius = (robot.height / 2) * scale;
     floor = (W < 700 ? 10 : 16) + radius;   // centre height when standing on the bottom edge
     box = Math.ceil(radius * 3.6);
