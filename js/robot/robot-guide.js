@@ -3,7 +3,7 @@
 // Loaded as a module after the page; does nothing without WebGL or when the visitor hid it.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createRobot, addRobotLights } from './robot-model.js?v=20261011-10';
+import { createRobot, addRobotLights } from './robot-model.js?v=20261011-11';
 
 const STORE_KEY = 'valek-robot';
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -364,11 +364,13 @@ function start() {
       pivot.rotation.z = angle;
       pivot.scale.set(scale * (1 + squash * 0.6), scale * (1 - squash), scale);
       robot.update(dt, anim);
-      camera.left = pos.x - box / 2; camera.right = pos.x + box / 2;
-      camera.bottom = pos.y - box / 2; camera.top = pos.y + box / 2;
+      // Snap to whole device pixels so the browser never resamples the canvas (keeps it sharp in Safari).
+      const dpr = devicePixelRatio || 1;
+      const cx = Math.round((pos.x - box / 2) * dpr) / dpr, cy = Math.round((H - pos.y - box / 2) * dpr) / dpr;
+      camera.left = cx; camera.right = cx + box; camera.top = H - cy; camera.bottom = H - cy - box;
       camera.updateProjectionMatrix();
       renderer.render(scene, camera);
-      canvas.style.transform = `translate(${pos.x - box / 2}px, ${H - pos.y - box / 2}px)`;
+      canvas.style.transform = `translate(${cx}px, ${cy}px)`;
       // HTML hit area and bubble follow the robot (CSS coordinates are y-down).
       const size = radius * 2.1;
       hit.style.transform = `translate(${pos.x - size / 2}px, ${H - pos.y - size / 2}px)`;
