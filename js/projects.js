@@ -63,19 +63,29 @@
       metric: '4 difficulty stages',
     },
     'multi-agent-multi-llm-rag': {
-      title: 'Multi-Agent RAG Roadmap',
-      tagline: 'MSc AI capstone at ECE Paris. Turn a plain-text business case into a structured digital transformation roadmap: 6 specialist agents, 3 academic frameworks, full RAG.',
-      problem: 'Digital transformation frameworks are rich and well-researched but locked in dense PDFs and inaccessible without expert interpretation. Small businesses especially cannot afford consulting fees to apply them, yet the frameworks are precisely what is needed to avoid wasted budget and failed rollouts.',
-      solution: 'Built a RAG pipeline over three DT framework documents (Wade 2015, Peter 2018, Elia 2024) embedded offline into a persistent FAISS index using local MiniLM (no API cost for retrieval). Six specialist agents chain sequentially: Planner extracts intent and writes retrieval queries; Framework Agent classifies passages; Canvas Analysis scores maturity across 7 fields; Strategist synthesizes the 11-element Elia canvas; Roadmap Generator produces phased KPIs and milestones; Evaluator critiques the output using LLaMA 3.1 locally. A routing layer maps each task by type, complexity, and criticality to Gemini Flash 2.5 or Gemini Pro 2.5. Results are SHA-keyed and cached to disk so repeated runs skip all LLM calls.',
-      stack: ['Python', 'FAISS', 'Gemini API', 'sentence-transformers', 'Streamlit', 'FastAPI', 'pypdf', 'Ollama'],
-      results: [
-        'Full pipeline: plain-text business case → structured roadmap with phases, KPIs, owners, milestones, and budget',
-        'Multi-LLM routing: Gemini Flash for extraction, Gemini Pro for deep reasoning, LLaMA 3.1 locally for evaluation',
-        'SHA-keyed disk cache: repeated runs serve all 6 agent steps with zero LLM calls',
-        'Runs fully offline in mock mode: complete UI and architecture explorable without any API key',
-        'REST API (FastAPI) exposes the pipeline as HTTP endpoints; local CPU embeddings eliminate retrieval API cost',
+      title: "Multi-Agent RAG Roadmap",
+      tagline: "ECE Paris MSc AI project, built with Roy Hayek. Turns a plain-text business case into a digital transformation roadmap with six LLM agents, three academic frameworks and multi-LLM routing.",
+      problem: "Digital transformation frameworks are well researched but locked in dense PDFs, and small businesses cannot pay consultants to apply them. Companies have plenty of documents, but it is hard to turn them into a clear transformation strategy.",
+      solution: "The three frameworks (Wade 2015, Peter, Elia et al. 2024) are chunked, embedded with MiniLM on CPU and stored in a FAISS index once. A LangGraph pipeline then runs six agents: a planner extracts the need and writes retrieval queries, a framework agent and a canvas agent analyse the retrieved passages in parallel, a strategist builds the strategy, a roadmap agent produces phases, KPIs, owners and budget, and an evaluator scores the result. Each agent declares its task type, complexity and criticality, and a router picks the model from those criteria: Gemini Flash-Lite for simple steps, Gemini Flash for reasoning, or a local Ollama model. Every output is validated as JSON and cached, so a bad answer or a timeout does not restart the whole run.",
+      stack: [
+        "Python",
+        "LangGraph",
+        "LangChain",
+        "Gemini API",
+        "Ollama",
+        "FAISS",
+        "sentence-transformers",
+        "Streamlit",
+        "FastAPI",
       ],
-      metric: '6 agents · 3 frameworks',
+      results: [
+        "Multi-LLM routing: each agent gets the cheapest model that fits its criteria (task type, complexity, criticality)",
+        "18 of 18 agent outputs were valid JSON on 3 live cases; evaluator score 6.0 / 10 on average",
+        "About 45 s per full roadmap on the free Gemini tier",
+        "Chunking fix raised the share of the corpus actually embedded from 36% to 99%, and retrieval precision from 0.19 to 0.48",
+        "Runs without an API key: retrieval is live and the agents replay a recorded Gemini run",
+      ],
+      metric: "6 agents · multi-LLM routing",
     },
     'campus-safety-detection': {
       title: 'Campus Safety Detection',
@@ -84,12 +94,89 @@
       solution: 'Built a zero-shot detection pipeline using CLIP to compare live video frames against natural-language descriptions of anomalies. YOLOv8 crops individual people first, then CLIP scores each crop. Scores are Z-score normalized and Gaussian-smoothed over time to suppress false positives. Audio is independently analyzed with PANNs. A Streamlit dashboard streams live CCTV playback with a real-time anomaly score graph, while a Telegram bot pushes annotated alert frames to subscribers.',
       stack: ['Python', 'CLIP', 'YOLOv8', 'PyTorch', 'Streamlit', 'Telegram Bot', 'PANNs', 'OpenCV', 'NumPy'],
       results: [
-        'Anomaly score spikes to 1.771 sustained across 90+ consecutive frames during a bullying event',
+        'During a bullying clip the anomaly score stays high for 90+ consecutive frames',
         'Zero labeled abnormal samples needed: pure zero-shot generalization via natural language',
         'Real-time Telegram alerts with annotated frame screenshots delivered to subscribers instantly',
       ],
-      metric: 'Zero-shot · 1.771 peak',
+      metric: 'Zero-shot',
     },
+  };
+
+
+  // French text for the case studies, used on top of the English entries when the site is in French.
+  const CASE_STUDIES_FR = {
+    "dopa-hackathon": {
+      "tagline": "Jeu de hackathon : un roguelike sur la mythologie grecque dans le navigateur, où des dialogues, épreuves et présages écrits par l'IA réagissent à ta façon de jouer.",
+      "problem": "Les roguelikes se répètent : les salles changent, mais le monde ne réagit jamais à qui tu es. L'objectif du hackathon : un jeu dont l'histoire répond au joueur en temps réel.",
+      "solution": "Un roguelike façon Binding of Isaac en Phaser 3 et TypeScript. Tu descends aux Enfers en incarnant Achille, Atalante, Héraclès ou Orphée. Épargner, voler ou tuer des villageois change ton karma ; les boss parlent avant chaque combat et se souviennent de tes actes. À chaque étage, un dieu impose une épreuve écrite par l'IA, et des présages modifient l'étage suivant selon ta façon de jouer. Un petit serveur Python appelle Gemini pour les dialogues, les épreuves et les voix ; sans lui, le jeu bascule sur une version simulée et fonctionne hors ligne. Jouable sur téléphone avec deux joysticks tactiles.",
+      "results": [
+        "Les choix pilotent l'histoire : le karma change le boss affronté et la façon dont il te parle",
+        "Les épreuves et présages de l'IA rendent chaque étage différent, avec des salles procédurales et des parties rejouables",
+        "Fonctionne hors ligne sans clé API grâce à une version simulée du serveur IA",
+        "Jouable sur ordinateur et téléphone (commandes tactiles, mode paysage)"
+      ],
+      "metric": "Histoire pilotée par l'IA"
+    },
+    "ai-vision-detection": {
+      "tagline": "Détection d'objets, lecture des expressions faciales et alphabet ASL, en direct sur ta caméra et entièrement dans ton navigateur. Pas de serveur, rien n'est envoyé.",
+      "problem": "La plupart des applis de vision envoient la caméra à un serveur : lent, coûteux à héberger et problématique pour la vie privée. Les lettres en langue des signes étaient la partie la plus dure : le premier modèle n'avait raison que 47 % du temps sur des photos jamais vues.",
+      "solution": "Trois modes sur une seule caméra. YOLO11n trouve 80 types d'objets, YuNet et MobileFaceNet lisent l'expression de chaque visage, et les points de la main de MediaPipe alimentent un classifieur de lettres que j'ai entraîné. Chaque modèle a été exporté pour tourner dans la page avec ONNX Runtime Web dans des Web Workers (WebGPU si disponible) : les images ne quittent jamais l'appareil et le site n'est que des fichiers statiques. Python entraîne et évalue les modèles ; des tests vérifient que le navigateur donne les mêmes réponses.",
+      "results": [
+        "Précision sur les lettres ASL : 47 % → 76 % sur une collection de photos jamais utilisée pour l'entraînement",
+        "Détection d'objets à environ 29 images/s sur un CPU 6 cœurs dans le navigateur, sans GPU",
+        "Le navigateur et Python donnent les mêmes réponses sur les 22 cas de parité",
+        "Rien n'est envoyé : la caméra reste sur l'appareil du visiteur"
+      ],
+      "metric": "En direct dans ton navigateur"
+    },
+    "sagemcom-roco": {
+      "tagline": "Projet de fin d'études à ESPRIT, réalisé en stage chez Sagemcom. Importer, configurer, lancer et analyser des scripts de test Robot Framework depuis une seule plateforme web.",
+      "problem": "Chez Sagemcom, les ingénieurs QA lançaient leurs scripts Robot Framework au cas par cas sur leurs machines : pas d'interface commune, pas d'historique, impossible de lancer ou relire un test sans accès au terminal.",
+      "solution": "Application web complète en Flask avec PostgreSQL et un worker asynchrone sur Redis. Les ingénieurs importent leurs fichiers .robot, règlent les paramètres dans des formulaires et lancent l'exécution à distance. Chaque exécution passe par trois étapes (réception, traitement, résultat) avec logs et détail réussite/échec. Toute la stack tourne dans Docker Compose et démarre en une commande ; des scripts d'installation couvrent Windows et Unix, et une suite pytest couvre les tests unitaires et d'intégration.",
+      "results": [
+        "Une plateforme commune remplace les exécutions locales, avec un historique de chaque test",
+        "Le worker asynchrone exécute les longues suites sans bloquer l'interface",
+        "Chaque exécution est traçable de l'import au résultat",
+        "Déploiement en une commande avec Docker Compose, identique sur chaque machine"
+      ],
+      "metric": "Stack Docker complète"
+    },
+    "grid-shooter": {
+      "tagline": "Projet du MSc IA de l'ECE Paris. Entraîner un agent REINFORCE à viser, esquiver et survivre dans un jeu de zombies par niveaux, construit de zéro.",
+      "problem": "Les livres ne suffisent pas pour comprendre l'apprentissage par renforcement. Il faut un environnement assez riche pour faire émerger une vraie stratégie (viser, esquiver, choisir ses cibles) mais assez simple pour voir ce que l'agent apprend et pourquoi.",
+      "solution": "Un environnement Gymnasium sur mesure : un jeu de tir contre des zombies sur une grille 8×8, avec 4 niveaux de difficulté, des tirs dans 9 directions et des récompenses bien dosées. REINFORCE est implémenté de zéro en PyTorch, avec un bonus d'entropie pour éviter une convergence trop rapide et un écrêtage du gradient pour la stabilité. Les zombies arrivent progressivement : seulement par le haut au niveau 1, de partout au niveau 3. Pygame affiche l'entraînement en direct pour voir l'agent apprendre à viser.",
+      "results": [
+        "L'agent apprend à viser, esquiver et franchir les 4 niveaux sans supervision",
+        "Un bonus d'alignement (+0,5) oriente l'exploration vers des tirs visés dès le début",
+        "Le bonus d'entropie évite l'effondrement de la politique ; l'écrêtage du gradient stabilise l'entraînement",
+        "Logique du jeu, algorithme et affichage sont des modules séparés"
+      ],
+      "metric": "4 niveaux de difficulté"
+    },
+    "multi-agent-multi-llm-rag": {
+      "tagline": "Projet du MSc IA de l'ECE Paris, réalisé avec Roy Hayek. Transforme un cas d'entreprise en texte libre en feuille de route de transformation digitale, avec six agents LLM, trois cadres académiques et un routage multi-LLM.",
+      "problem": "Les cadres de transformation digitale sont solides mais enfermés dans des PDF denses, et les petites entreprises ne peuvent pas payer des consultants pour les appliquer. Les entreprises ont beaucoup de documents, mais il est difficile d'en tirer une stratégie claire.",
+      "solution": "Les trois cadres (Wade 2015, Peter, Elia et al. 2024) sont découpés, vectorisés avec MiniLM sur CPU et stockés une fois dans un index FAISS. Un pipeline LangGraph enchaîne ensuite six agents : un planificateur extrait le besoin et écrit les requêtes, un agent cadres et un agent canvas analysent en parallèle les passages retrouvés, un stratège construit la stratégie, un agent feuille de route produit les phases, KPIs, responsables et budget, et un évaluateur note le résultat. Chaque agent déclare son type de tâche, sa complexité et sa criticité, et un routeur choisit le modèle selon ces critères : Gemini Flash-Lite pour les étapes simples, Gemini Flash pour le raisonnement, ou un modèle local Ollama. Chaque sortie est validée en JSON et mise en cache : une mauvaise réponse ou un timeout ne relance pas tout.",
+      "results": [
+        "Routage multi-LLM : chaque agent reçoit le modèle le moins coûteux qui correspond à ses critères (type de tâche, complexité, criticité)",
+        "18 sorties d'agents sur 18 en JSON valide sur 3 cas réels ; note moyenne de l'évaluateur : 6,0 / 10",
+        "Environ 45 s par feuille de route complète avec l'offre gratuite de Gemini",
+        "La correction du découpage a fait passer la part du corpus réellement vectorisée de 36 % à 99 %, et la précision de recherche de 0,19 à 0,48",
+        "Fonctionne sans clé API : la recherche tourne en vrai et les agents rejouent un enregistrement Gemini"
+      ],
+      "metric": "6 agents · routage multi-LLM"
+    },
+    "campus-safety-detection": {
+      "tagline": "Projet du MSc IA de l'ECE Paris. Détection du harcèlement sur vidéosurveillance sans exemples annotés.",
+      "problem": "La vidéosurveillance demande une surveillance humaine constante : coûteuse, source d'erreurs et impossible à généraliser. Et il est très difficile d'obtenir des vidéos annotées de vrais incidents, rares et sensibles.",
+      "solution": "Un pipeline zero-shot : CLIP compare les images de la caméra à des descriptions en langage naturel de comportements normaux et anormaux. YOLOv8 isole d'abord chaque personne, puis CLIP note chacune. Les scores sont normalisés et lissés dans le temps pour limiter les fausses alertes. L'audio est analysé séparément avec PANNs. Un tableau de bord Streamlit affiche la vidéo avec la courbe de score en direct, et un bot Telegram envoie les images d'alerte annotées.",
+      "results": [
+        "Pendant une vidéo de harcèlement, le score d'anomalie reste élevé sur plus de 90 images consécutives",
+        "Aucun exemple anormal annoté nécessaire : la détection repose sur des descriptions en langage naturel",
+        "Alertes Telegram en temps réel avec l'image annotée"
+      ],
+      "metric": "Zero-shot"
+    }
   };
 
   let cache = null;
@@ -114,7 +201,8 @@
 
   function renderCard(repo) {
     const t = window.i18n ? window.i18n.t.bind(window.i18n) : (k, fb) => fb || k;
-    const cs = CASE_STUDIES[repo.name] || {};
+    const fr = window.i18n && window.i18n.lang === 'fr' ? (CASE_STUDIES_FR[repo.name] || {}) : {};
+    const cs = { ...(CASE_STUDIES[repo.name] || {}), ...fr };
     const langClass = repo.language ? `lang-${repo.language.replace(/\s+/g,'')}` : '';
     const tagline = cs.tagline || repo.description || '';
     const metric = cs.metric || (repo.stargazers_count > 0 ? `${repo.stargazers_count} ★` : formatDate(repo.pushed_at));
