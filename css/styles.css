@@ -2374,3 +2374,5 @@ textarea:focus-visible { outline: none; }
   .hero-qr-code { width: 160px; height: 160px; }
 }
 
+.edu-thesis { margin-top: 0.7rem; color: var(--muted); font-size: 0.95rem; max-width: 62ch; }
+.edu-thesis strong { color: var(--ink); }
