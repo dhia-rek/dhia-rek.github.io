@@ -209,10 +209,12 @@ export function createRobot() {
     return { shoulder, hand, side };
   });
 
+  // Magnifying glass held up in front of the visor, like the reference picture: the lens sits over
+  // the left half of the face and the handle runs down and out towards the left hand.
   const magnifier = createMagnifier();
-  magnifier.position.set(0.02, -0.02, 0.12);
-  magnifier.rotation.set(0.2, 0.5, -0.5);
-  arms[0].hand.add(magnifier);
+  magnifier.position.set(-0.24, 0.0, 0.64);
+  magnifier.rotation.set(0.05, 0.28, -0.55);
+  body.add(magnifier);
 
   // Soft contact shadow
   const shadowCanvas = document.createElement('canvas');
@@ -277,7 +279,7 @@ export function createRobot() {
       let pitch = 0;
       if (side === 1 && state.wave) roll = side * (2.5 + Math.sin(time * 12) * 0.35) * state.wave;
       if (side === -1 && state.point) { roll = side * 1.4 * state.point; pitch = -0.5 * state.point; }
-      if (side === -1 && state.magnify && !state.point) { roll = -0.7; pitch = -1.1; }
+      if (side === -1 && state.magnify && !state.point) { roll = -0.12; pitch = -0.45; }   // flipper tip at the end of the handle
       shoulder.rotation.z += (roll - shoulder.rotation.z) * Math.min(1, dt * 7);
       shoulder.rotation.x += (pitch - shoulder.rotation.x) * Math.min(1, dt * 7);
     }
