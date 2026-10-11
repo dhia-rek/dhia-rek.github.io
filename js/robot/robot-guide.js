@@ -11,12 +11,10 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TEXT = {
   en: {
     hero: "Hi, I'm Valeknaar! Drag me around, or tap me to chat.",
+    work: 'Psst: the vision project runs live in your browser.',
+    workAction: 'Try it live',
     experience: 'Dhia is an AI Integration Intern at Driveco. Ask me about it!',
-    education: 'MSc in Artificial Intelligence at ECE Paris.',
-    projects: 'Psst: the vision project runs live in your browser.',
-    projectsAction: 'Try it live',
-    capabilities: 'Want the short version of his skills? Tap me.',
-    shipped: 'These websites are live. Have a look!',
+    about: 'Want the short version? Tap me and ask.',
     contact: 'Want to reach Dhia? The form is right here.',
     held: ['Wheee!', 'Put me down!', 'Where are we going?'],
     ouch: ['Ouch!', 'Whoa!', 'I saw stars…', 'Again?!'],
@@ -25,12 +23,10 @@ const TEXT = {
   },
   fr: {
     hero: 'Salut, je suis Valeknaar ! Déplace-moi, ou touche-moi pour discuter.',
+    work: 'Psst : le projet vision tourne en direct dans ton navigateur.',
+    workAction: 'Essayer',
     experience: "Dhia est stagiaire en intégration IA chez Driveco. Demande-moi !",
-    education: "MSc en intelligence artificielle à l'ECE Paris.",
-    projects: 'Psst : le projet vision tourne en direct dans ton navigateur.',
-    projectsAction: 'Essayer',
-    capabilities: 'La version courte de ses compétences ? Touche-moi.',
-    shipped: 'Ces sites sont en ligne. Jette un œil !',
+    about: 'La version courte ? Touche-moi et demande.',
     contact: 'Pour contacter Dhia, le formulaire est juste ici.',
     held: ['Wiii !', 'Pose-moi !', 'On va où ?'],
     ouch: ['Aïe !', 'Oups !', "J'ai vu des étoiles…", 'Encore ?!'],
@@ -38,8 +34,8 @@ const TEXT = {
     show: 'Afficher le robot',
   },
 };
-const SECTIONS = ['hero', 'experience', 'education', 'projects', 'capabilities', 'shipped', 'contact'];
-const ACTIONS = { projects: 'https://dhiarekik.me/ai-vision-detection/' };
+const SECTIONS = ['hero', 'work', 'experience', 'about', 'contact'];
+const ACTIONS = { work: '/ai-vision-detection/' };
 
 const lang = () => (window.i18n && window.i18n.lang === 'fr' ? 'fr' : 'en');
 const t = (key) => TEXT[lang()][key];
@@ -84,14 +80,20 @@ function start() {
 
   // ---- three.js scene: orthographic camera in CSS pixels, y up ----
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  // The canvas only covers a box around the robot, so it can render at the screen's full sharpness.
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 3));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
   const scene = new THREE.Scene();
   scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
   scene.add(new THREE.HemisphereLight(0xffffff, 0xc7d2fe, 0.9));
   const key = new THREE.DirectionalLight(0xffffff, 1.6);
   key.position.set(200, 400, 600);
   scene.add(key);
+  const rim = new THREE.DirectionalLight(0xbfe9ff, 1.5);   // crisp edge light from behind
+  rim.position.set(-300, 350, -500);
+  scene.add(rim);
   const camera = new THREE.OrthographicCamera(0, 1, 1, 0, -2000, 2000);
   camera.position.z = 1000;
 
@@ -105,15 +107,15 @@ function start() {
   scene.add(pivot);
 
   // ---- layout ----
-  let W = 0, H = 0, scale = 60, radius = 50, floor = 0;
+  let W = 0, H = 0, scale = 60, radius = 50, floor = 0, box = 200;
   function layout() {
     W = innerWidth; H = innerHeight;
-    renderer.setSize(W, H, false);
-    camera.right = W; camera.top = H;
-    camera.updateProjectionMatrix();
-    scale = W < 700 ? 44 : 60;              // pixels per robot unit
+    scale = W < 700 ? 46 : 62;              // pixels per robot unit
     radius = (robot.height / 2) * scale;
     floor = (W < 700 ? 10 : 16) + radius;   // centre height when standing on the bottom edge
+    box = Math.ceil(radius * 3.6);
+    renderer.setSize(box, box, false);
+    canvas.style.width = canvas.style.height = `${box}px`;
     pivot.scale.setScalar(scale);
   }
   layout();
@@ -122,10 +124,10 @@ function start() {
   // ---- physics + behaviour state ----
   const pos = new THREE.Vector2(W < 700 ? 60 : 120, floor);
   const vel = new THREE.Vector2();
-  let angle = 0, spin = 0, squash = 0;
+  let angle = 0, spin = 0, squash = 0, lift = 0;
   let mode = 'idle';                         // idle | drive | held | air | recover
   let targetX = pos.x, section = 'hero', faceTimer = 0, recoverTimer = 0;
-  const anim = { speed: 0, yaw: 0, headYaw: 0, look: 0, expression: 'neutral', wave: 0, point: 0, magnify: false, talking: false };
+  const anim = { speed: 0, yaw: 0, headYaw: 0, look: 0, expression: 'neutral', wave: 0, point: 0, magnify: false, talking: false, hover: 0, lift: 0 };
   let hidden = storedHidden();
   let talkUntil = 0, waveUntil = 0;
 
@@ -179,8 +181,8 @@ function start() {
   }
   function greet(name) {
     const action = ACTIONS[name] ? { href: ACTIONS[name], label: t(`${name}Action`) } : null;
-    say(t(name), { ms: name === 'projects' ? 7000 : 5000, action });
-    anim.magnify = name === 'projects';
+    say(t(name), { ms: name === 'work' ? 7000 : 5000, action });
+    anim.magnify = name === 'work';
     if (name === 'hero') waveUntil = performance.now() + 1800;
   }
   let pendingGreet = 'hero';
@@ -242,6 +244,18 @@ function start() {
   hit.addEventListener('pointercancel', release);
   hit.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('valekFab')?.click(); } });
 
+  // ---- floating: hover above the ground, bob and sway ----
+  function float(dt, t, lean) {
+    const target = reducedMotion ? scale * 0.12 : scale * 0.24;
+    lift += (target - lift) * Math.min(1, dt * 2.5);
+    const bob = reducedMotion ? 0 : Math.sin(t * 2.3) * scale * 0.05;
+    pos.y = floor + lift + bob;
+    const sway = reducedMotion ? 0 : Math.sin(t * 1.4) * 0.035;
+    angle += (sway + lean - angle) * Math.min(1, dt * 4);
+    anim.lift = (lift + bob) / scale;
+    anim.hover = Math.min(1, lift / (scale * 0.2));
+  }
+
   // ---- simulation ----
   const GRAVITY = 2600;
   function impact(strength) {
@@ -254,6 +268,7 @@ function start() {
   }
   function step(dt) {
     const now = performance.now();
+    const t = now / 1000;
     anim.speed = 0;
     if (mode === 'held') {
       const p = trail[trail.length - 1];
@@ -285,6 +300,9 @@ function start() {
       if (faceTimer <= 0) anim.expression = 'surprised';
     } else if (mode === 'recover') {
       recoverTimer += dt;
+      lift = 0;
+      anim.lift = 0;
+      anim.hover = 0;
       const upright = Math.round(angle / (Math.PI * 2)) * Math.PI * 2;
       angle += (upright - angle) * Math.min(1, dt * 5);
       pos.y = floor;
@@ -307,11 +325,14 @@ function start() {
         anim.yaw = Math.sign(dx) * 1.05;
       }
       anim.wave = 0; anim.point = 0;
+      float(dt, t, Math.sign(targetX - pos.x) * -0.06);
     } else {
       anim.yaw = 0;
       anim.point = 0;
       if (pendingGreet) { greet(pendingGreet); pendingGreet = null; }
+      float(dt, t, 0);
     }
+    if (mode === 'held' || mode === 'air') { anim.hover = 0.6; anim.lift = (pos.y - floor) / scale; }
 
     if (mode !== 'held' && mode !== 'air') anim.wave = now < waveUntil ? 1 : 0;
     faceTimer -= dt;
@@ -333,7 +354,11 @@ function start() {
       pivot.rotation.z = angle;
       pivot.scale.set(scale * (1 + squash * 0.6), scale * (1 - squash), scale);
       robot.update(dt, anim);
+      camera.left = pos.x - box / 2; camera.right = pos.x + box / 2;
+      camera.bottom = pos.y - box / 2; camera.top = pos.y + box / 2;
+      camera.updateProjectionMatrix();
       renderer.render(scene, camera);
+      canvas.style.transform = `translate(${pos.x - box / 2}px, ${H - pos.y - box / 2}px)`;
       // HTML hit area and bubble follow the robot (CSS coordinates are y-down).
       const size = radius * 2.1;
       hit.style.transform = `translate(${pos.x - size / 2}px, ${H - pos.y - size / 2}px)`;
