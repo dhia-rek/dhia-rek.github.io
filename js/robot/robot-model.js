@@ -248,22 +248,23 @@ export function createRobot() {
     hoverGlow.scale.setScalar(0.9 + Math.sin(time * 6) * 0.05);
 
     chassis.rotation.y += (state.yaw - chassis.rotation.y) * Math.min(1, dt * 6);
-    const moving = Math.abs(state.speed) > 0.01;
     body.position.y = 0.9 + Math.sin(time * 2) * 0.012;   // smooth float, no wheel jitter
     body.rotation.y += ((state.headYaw || 0) - body.rotation.y) * Math.min(1, dt * 5);
-    const lean = moving ? 0.08 * Math.sign(state.speed) : 0;
-    body.rotation.x += (lean - body.rotation.x) * Math.min(1, dt * 4);
-    body.rotation.z = Math.sin(time * 1.3) * 0.025 + (state.expression === 'curious' ? 0.12 : 0);
+    const lean = Math.max(-0.14, Math.min(0.14, (state.speed || 0) * 0.035));   // nose dips with speed
+    body.rotation.x += (lean - body.rotation.x) * Math.min(1, dt * 3);
+    const tilt = state.expression === 'curious' ? 0.12 : 0;
+    body.rotation.z += (tilt - body.rotation.z) * Math.min(1, dt * 4);
 
     magnifier.visible = !!state.magnify;
     for (const { shoulder, side } of arms) {
-      let roll = side * 0.25 + Math.sin(time * 2 + side) * 0.03;
+      // rest pose, a slow breath, and a trailing swing when the robot speeds up or slows down
+      let roll = side * 0.25 + Math.sin(time * 1.6 + side * 0.8) * 0.025 + (state.swing || 0) * 0.55;
       let pitch = 0;
       if (side === 1 && state.wave) roll = side * (2.5 + Math.sin(time * 12) * 0.35) * state.wave;
       if (side === -1 && state.point) { roll = side * 1.4 * state.point; pitch = -0.5 * state.point; }
       if (side === -1 && state.magnify && !state.point) { roll = -0.7; pitch = -1.1; }
-      shoulder.rotation.z += (roll - shoulder.rotation.z) * Math.min(1, dt * 10);
-      shoulder.rotation.x += (pitch - shoulder.rotation.x) * Math.min(1, dt * 10);
+      shoulder.rotation.z += (roll - shoulder.rotation.z) * Math.min(1, dt * 7);
+      shoulder.rotation.x += (pitch - shoulder.rotation.x) * Math.min(1, dt * 7);
     }
 
     blinkTimer -= dt;
