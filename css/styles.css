@@ -1479,6 +1479,26 @@ body.dark .hero-chat-feed .valek-suggestion {
   justify-content: center;
 }
 .project-icon-wrap svg { width: 18px; height: 18px; }
+.project-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 10px 0 auto;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.project-live-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
 .project-card-chevron {
   display: inline-flex;
   align-items: center;
