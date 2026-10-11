@@ -2,7 +2,6 @@
 // floating above the ground like the reference picture. Built from primitives so every part can move.
 // createRobot() returns the scene group plus update(dt, state), which animates the body, eyes and arms.
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const COLORS = {
   shell: 0xdde5ea,
@@ -194,18 +193,18 @@ export function createRobot() {
   // Flipper arms with a glowing seam at the shoulder.
   const arms = [-1, 1].map((side) => {
     const shoulder = new THREE.Group();
-    shoulder.position.set(side * 0.48, -0.2, 0.16);
-    const seam = new THREE.Mesh(new THREE.TorusGeometry(0.088, 0.011, 8, 32), glowMat());
+    shoulder.position.set(side * 0.5, -0.06, 0.1);
+    const seam = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.01, 8, 32), glowMat());
     seam.rotation.x = Math.PI / 2;
     shoulder.add(seam);
-    const flipper = new THREE.Mesh(new THREE.CapsuleGeometry(0.085, 0.3, 8, 16), matte(COLORS.shell, { roughness: 0.4 }));
+    const flipper = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.22, 8, 16), matte(COLORS.shell, { roughness: 0.4 }));
     flipper.scale.set(1, 1, 0.8);
-    flipper.position.y = -0.24;
+    flipper.position.y = -0.17;
     shoulder.add(flipper);
     const hand = new THREE.Group();
-    hand.position.y = -0.42;
+    hand.position.y = -0.33;
     shoulder.add(hand);
-    shoulder.rotation.z = side * 0.25;
+    shoulder.rotation.z = side * -0.06;
     body.add(shoulder);
     return { shoulder, hand, side };
   });
@@ -274,7 +273,7 @@ export function createRobot() {
     magnifier.visible = !!state.magnify;
     for (const { shoulder, side } of arms) {
       // rest pose, a slow breath, and a trailing swing when the robot speeds up or slows down
-      let roll = side * 0.25 + Math.sin(time * 1.6 + side * 0.8) * 0.025 + (state.swing || 0) * 0.55;
+      let roll = side * -0.06 + Math.sin(time * 1.6 + side * 0.8) * 0.02 + (state.swing || 0) * 0.45;
       let pitch = 0;
       if (side === 1 && state.wave) roll = side * (2.5 + Math.sin(time * 12) * 0.35) * state.wave;
       if (side === -1 && state.point) { roll = side * 1.4 * state.point; pitch = -0.5 * state.point; }
