@@ -37,7 +37,7 @@ function createFace() {
     }
   }
 
-  /** Redraw the face. expression: neutral | happy | curious | talk; blink 0..1; look -1..1. */
+  /** Redraw the face. expression: neutral | happy | curious | talk | dizzy | surprised; blink 0..1; look -1..1. */
   function draw({ expression = 'neutral', blink = 0, look = 0, mouth = 0 }) {
     const key = `${expression}|${blink.toFixed(2)}|${look.toFixed(2)}|${mouth.toFixed(2)}`;
     if (key === last) return;
@@ -49,7 +49,23 @@ function createFace() {
     ctx.shadowBlur = 16;
     const dx = look * 26;
     const eyes = [[118 + dx, 96], [202 + dx, 96]];
-    if (expression === 'happy') {
+    if (expression === 'dizzy') {
+      ctx.lineWidth = 9;
+      ctx.lineCap = 'round';
+      for (const [x, y] of eyes) {
+        ctx.beginPath();
+        ctx.moveTo(x - 16, y - 16); ctx.lineTo(x + 16, y + 16);
+        ctx.moveTo(x + 16, y - 16); ctx.lineTo(x - 16, y + 16);
+        ctx.stroke();
+      }
+    } else if (expression === 'surprised') {
+      ctx.lineWidth = 9;
+      for (const [x, y] of eyes) {
+        ctx.beginPath();
+        ctx.arc(x, y, 20, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    } else if (expression === 'happy') {
       ctx.lineWidth = 11;
       ctx.lineCap = 'round';
       for (const [x, y] of eyes) {
@@ -298,11 +314,11 @@ export function createRobot() {
     blink = Math.max(0, blink - dt * 7);
     face.draw({
       expression: state.talking ? 'talk' : state.expression,
-      blink: state.expression === 'happy' ? 0 : blink,
+      blink: ['happy', 'dizzy', 'surprised'].includes(state.expression) ? 0 : blink,
       look: state.look || 0,
       mouth: state.talking ? (Math.sin(time * 18) + 1) / 2 : 0,
     });
   }
 
-  return { root, update };
+  return { root, update, height: 1.55 };
 }
