@@ -3053,7 +3053,6 @@ textarea:focus-visible { outline: none; }
   top: 0;
   left: 0;
   display: block;
-  will-change: transform;
 }
 .robot-hit {
   position: fixed;
