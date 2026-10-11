@@ -3,7 +3,7 @@
 // Loaded as a module after the page; does nothing without WebGL or when the visitor hid it.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createRobot } from './robot-model.js?v=20261011-8';
+import { createRobot } from './robot-model.js?v=20261011-9';
 
 const STORE_KEY = 'valek-robot';
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -129,10 +129,11 @@ function start() {
   // ---- physics + behaviour state ----
   const pos = new THREE.Vector2(W < 700 ? 60 : 120, floor);
   const vel = new THREE.Vector2();
-  let angle = 0, spin = 0, squash = 0, lift = 0;
+  let angle = 0, spin = 0, squash = 0;
+  let vx = 0, yVel = 0, angVel = 0, swing = 0;   // springs for the natural float
   let mode = 'idle';                         // idle | drive | held | air | recover
   let targetX = pos.x, section = 'hero', faceTimer = 0, recoverTimer = 0;
-  const anim = { speed: 0, yaw: 0, headYaw: 0, look: 0, expression: 'neutral', wave: 0, point: 0, magnify: false, talking: false, hover: 0, lift: 0 };
+  const anim = { speed: 0, yaw: 0, headYaw: 0, look: 0, expression: 'neutral', wave: 0, point: 0, magnify: false, talking: false, hover: 0, lift: 0, swing: 0 };
   let hidden = storedHidden();
   let talkUntil = 0, waveUntil = 0;
 
@@ -249,16 +250,34 @@ function start() {
   hit.addEventListener('pointercancel', release);
   hit.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('valekFab')?.click(); } });
 
-  // ---- floating: hover above the ground, bob and sway ----
-  function float(dt, t, lean) {
-    const target = reducedMotion ? scale * 0.12 : scale * 0.24;
-    lift += (target - lift) * Math.min(1, dt * 2.5);
-    const bob = reducedMotion ? 0 : Math.sin(t * 2.3) * scale * 0.05;
-    pos.y = floor + lift + bob;
-    const sway = reducedMotion ? 0 : Math.sin(t * 1.4) * 0.035;
-    angle += (sway + lean - angle) * Math.min(1, dt * 4);
-    anim.lift = (lift + bob) / scale;
-    anim.hover = Math.min(1, lift / (scale * 0.2));
+  // ---- floating: springs instead of fixed waves, so it rises, drifts, overshoots and settles ----
+  function float(dt, t) {
+    const hover = reducedMotion ? scale * 0.12 : scale * 0.24;
+    const calm = 1 - Math.min(1, Math.abs(vx) / 220) * 0.6;          // less drift while travelling
+    const drift = reducedMotion ? 0 : scale * 0.055 * calm *
+      (0.55 * Math.sin(t * 1.13) + 0.3 * Math.sin(t * 2.71 + 1.3) + 0.15 * Math.sin(t * 4.3 + 0.4));
+    const targetY = floor + hover + drift;
+    yVel += ((targetY - pos.y) * 38 - yVel * 8.5) * dt;
+    pos.y += yVel * dt;
+    // Bank into the motion like a drone, with a small idle sway; the spring gives a soft overshoot.
+    const sway = reducedMotion ? 0 : 0.02 * Math.sin(t * 0.9) + 0.012 * Math.sin(t * 2.1 + 0.7);
+    const targetAngle = -vx * 0.0011 + sway;
+    angVel += ((targetAngle - angle) * 32 - angVel * 6.5) * dt;
+    angle += angVel * dt;
+    anim.lift = Math.max(0, (pos.y - floor) / scale);
+    anim.hover = Math.min(1, anim.lift / 0.2);
+  }
+
+  // Horizontal glide with smooth acceleration; arms trail behind changes of speed.
+  function glide(dt, desired) {
+    const before = vx;
+    vx += (desired - vx) * Math.min(1, dt * 3.2);
+    pos.x += vx * dt;
+    const accel = (vx - before) / Math.max(dt, 1e-3);
+    swing += ((-accel / 900) - swing) * Math.min(1, dt * 5);
+    anim.swing = Math.max(-1, Math.min(1, swing));
+    anim.speed = vx / scale;
+    anim.yaw = Math.max(-1, Math.min(1, vx / 200)) * 0.5;               // half-turn toward travel
   }
 
   // ---- simulation ----
@@ -305,7 +324,7 @@ function start() {
       if (faceTimer <= 0) anim.expression = 'surprised';
     } else if (mode === 'recover') {
       recoverTimer += dt;
-      lift = 0;
+      vx = 0; yVel = 0; angVel = 0;
       anim.lift = 0;
       anim.hover = 0;
       const upright = Math.round(angle / (Math.PI * 2)) * Math.PI * 2;
@@ -319,23 +338,19 @@ function start() {
       }
     } else if (mode === 'drive') {
       const dx = targetX - pos.x;
-      const speedPx = reducedMotion ? 0 : Math.sign(dx) * Math.min(220, Math.abs(dx) * 3 + 40);
-      if (Math.abs(dx) < 4 || reducedMotion) {
+      if (reducedMotion) pos.x = targetX;
+      glide(dt, reducedMotion ? 0 : Math.max(-200, Math.min(200, dx * 1.5)));
+      if (Math.abs(targetX - pos.x) < 3 && Math.abs(vx) < 12) {
         mode = 'idle';
-        anim.yaw = 0;
         if (pendingGreet) { greet(pendingGreet); pendingGreet = null; }
-      } else {
-        pos.x += speedPx * dt;
-        anim.speed = speedPx / scale;
-        anim.yaw = Math.sign(dx) * 1.05;
       }
       anim.wave = 0; anim.point = 0;
-      float(dt, t, Math.sign(targetX - pos.x) * -0.06);
+      float(dt, t);
     } else {
-      anim.yaw = 0;
       anim.point = 0;
       if (pendingGreet) { greet(pendingGreet); pendingGreet = null; }
-      float(dt, t, 0);
+      glide(dt, 0);
+      float(dt, t);
     }
     if (mode === 'held' || mode === 'air') { anim.hover = 0.6; anim.lift = (pos.y - floor) / scale; }
 
@@ -343,7 +358,7 @@ function start() {
     faceTimer -= dt;
     if (faceTimer <= 0 && (mode === 'idle' || mode === 'drive')) anim.expression = now < waveUntil ? 'happy' : 'neutral';
     anim.talking = now < talkUntil && anim.expression !== 'dizzy' && mode !== 'held' && mode !== 'air';
-    anim.look = mode === 'drive' ? Math.sign(targetX - pos.x) * 0.6 : 0;
+    anim.look = Math.max(-1, Math.min(1, vx / 160)) * 0.7;
     squash = Math.max(0, squash - dt * 1.6);
   }
 
