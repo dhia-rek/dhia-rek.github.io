@@ -109,6 +109,7 @@
     sending = true;
 
     hideChipsAll();
+    document.querySelectorAll('.valek-suggestions').forEach(s => s.remove());
     userBubble(text);
     instances.forEach(inst => {
       inst.input.value = '';
