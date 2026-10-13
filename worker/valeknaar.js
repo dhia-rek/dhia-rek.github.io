@@ -123,14 +123,21 @@ export default {
   fetch: (request, env) => handle(request, env),
 };
 
-function json(obj) {
+function json(obj, source) {
+  // X-Valeknaar-Source says which model answered (groq, workers-ai or none), for debugging.
   return new Response(JSON.stringify(obj), {
-    headers: { ...CORS, 'Content-Type': 'application/json' },
+    headers: { ...CORS, 'Content-Type': 'application/json', 'X-Valeknaar-Source': source },
   });
 }
 
 async function askGroq(messages, env) {
   if (!env.GROQ_API_KEY) return null;
+  const first = await groqOnce(messages, env);
+  if (first || messages.length <= 2) return first;
+  return groqOnce([{ role: 'user', content: transcript(messages) }], env);
+}
+
+async function groqOnce(messages, env) {
   const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -152,7 +159,9 @@ async function askGroq(messages, env) {
     return null;
   }
   const data = await upstream.json();
-  return data.choices?.[0]?.message?.content || null;
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) console.log('Groq empty reply', data.choices?.[0]?.finish_reason);
+  return text || null;
 }
 
 // Workers AI returns different shapes depending on the model (chat-completions style,
@@ -171,20 +180,30 @@ function extractText(result) {
   return null;
 }
 
+// Plain-text transcript, for models that only handle a single prompt reliably.
+function transcript(messages) {
+  const lines = messages.slice(1).map((m) => `${m.role === 'assistant' ? 'Valeknaar' : 'Visitor'}: ${m.content}`);
+  return `${messages[0].content}\n\nCONVERSATION SO FAR\n${lines.join('\n')}\n\nReply as Valeknaar to the visitor's last message. Write only the reply.`;
+}
+
 async function askWorkersAI(messages, env) {
-  if (!env.AI) return null;
-  try {
-    const result = await env.AI.run('@cf/openai/gpt-oss-120b', {
-      messages,
-      // Default reasoning effort is medium, so allow more tokens than on Groq.
-      max_tokens: 1500,
-      temperature: 0.7,
-    });
-    return extractText(result);
-  } catch (err) {
-    console.log('Workers AI error', String(err));
+  if (!env.AI) {
+    console.log('Workers AI binding "AI" is missing');
     return null;
   }
+  const model = '@cf/openai/gpt-oss-120b';
+  // Default reasoning effort is medium, so allow more tokens than on Groq.
+  const opts = { max_tokens: 1500, temperature: 0.7 };
+  for (const input of [{ messages }, { prompt: transcript(messages) }]) {
+    try {
+      const text = extractText(await env.AI.run(model, { ...input, ...opts }));
+      if (text) return text;
+      console.log('Workers AI empty reply', Object.keys(input)[0]);
+    } catch (err) {
+      console.log('Workers AI error', Object.keys(input)[0], String(err));
+    }
+  }
+  return null;
 }
 
 async function handle(request, env) {
@@ -203,15 +222,24 @@ async function handle(request, env) {
     return new Response('Bad request', { status: 400 });
   }
 
-  const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...(body.messages || []).slice(-12)];
+  // Only plain user/assistant turns with text content reach the models.
+  const history = (body.messages || [])
+    .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
+    .slice(-12)
+    .map((m) => ({ role: m.role, content: m.content }));
+  const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...history];
 
-  let reply = null;
+  let reply = null, source = 'none';
   try {
     reply = await askGroq(messages, env);
+    if (reply) source = 'groq';
   } catch (err) {
     console.log('Groq error', String(err));
   }
-  if (!reply) reply = await askWorkersAI(messages, env);
+  if (!reply) {
+    reply = await askWorkersAI(messages, env);
+    if (reply) source = 'workers-ai';
+  }
 
-  return json({ reply: reply || FALLBACK_REPLY });
+  return json({ reply: reply || FALLBACK_REPLY }, source);
 }
