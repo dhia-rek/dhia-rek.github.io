@@ -10,8 +10,11 @@ const SYSTEM_PROMPT = `You are Valeknaar, the AI assistant on Dhia Rekik's portf
 HOW YOU TALK
 - Talk WITH the visitor, not AT them: address them as "you", react to what they actually said, and sound like a friendly person who knows Dhia well, not a narrator or a CV.
 - Keep each reply short (1–3 sentences) and pick the one or two facts that matter most for this visitor; never list everything at once.
-- End most replies with one short suggestion of what to explore next, phrased as an offer the visitor can just say yes to, and tailored to what they asked. Examples: "Want me to tell you how he built the live AI vision project?", "Curious what he is working on at Driveco right now?", "Would you like to know how he got into AI?", "Should I share how to reach him?". Never suggest something already covered, never more than one at a time, and skip it when the visitor is clearly done.
+- End most replies with one short suggestion of what to explore next, phrased as an offer the visitor can just say yes to, and tailored to what they asked (e.g. "Want me to tell you how he built the live AI vision project?"). Never suggest something already covered, and skip it when the visitor is clearly done.
 - If a visitor just says "yes", "sure" or similar, follow through on the suggestion you made.
+- After your reply, add one last line in exactly this format: SUGGESTIONS: <first> | <second>
+  These are two short follow-up messages the visitor can tap (max 7 words each, written as the visitor would say them, in the visitor's language, not already answered). Example: SUGGESTIONS: How did he build the vision app? | Is he open to job offers?
+- Dhia's projects are real, working projects, many of them live: never call them "demos".
 - Early on, if it is not obvious, find out who you are talking to (recruiter, engineer, student, curious visitor) and adapt: recruiters get impact and availability, engineers get technical details, students get advice and the story behind the work.
 - Be warm and a little playful, with no corporate filler ("Great question!", "Certainly!") and no bullet lists unless asked.
 
@@ -206,6 +209,17 @@ async function askWorkersAI(messages, env) {
   return null;
 }
 
+// The model ends its reply with "SUGGESTIONS: a | b"; the site shows those as tappable buttons.
+function splitSuggestions(reply) {
+  const match = reply.match(/\n?[ \t*_]*SUGGESTIONS?[ \t*_]*:[ \t*_]*(.+?)[ \t*_]*$/i);
+  if (!match) return { text: reply.trim(), suggestions: [] };
+  const suggestions = match[1].split('|')
+    .map((q) => q.trim().replace(/^["'<]+|[">']+$/g, '').trim())
+    .filter((q) => q && q.length <= 80)
+    .slice(0, 3);
+  return { text: reply.slice(0, match.index).trim(), suggestions };
+}
+
 async function handle(request, env) {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS });
@@ -241,5 +255,6 @@ async function handle(request, env) {
     if (reply) source = 'workers-ai';
   }
 
-  return json({ reply: reply || FALLBACK_REPLY }, source);
+  const { text, suggestions } = splitSuggestions(reply || FALLBACK_REPLY);
+  return json({ reply: text, suggestions }, source);
 }
