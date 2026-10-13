@@ -191,7 +191,9 @@ async function start() {
   function spotFor(name) {
     const i = SECTIONS.indexOf(name);
     // desktop: stay right of the fixed social links rail on the left edge
-    const lo = W < 700 ? 50 : 170, hi = W < 700 ? W * 0.45 : Math.min(W * 0.34, 520);
+    // phones: keep one spot, so it does not shuffle sideways every time a section scrolls by
+    if (W < 700) return 50;
+    const lo = 170, hi = Math.min(W * 0.34, 520);
     return lo + ((i * 0.37) % 1) * (hi - lo);
   }
   function greet(name) {
@@ -219,7 +221,7 @@ async function start() {
   // ---- drag, throw, tap ----
   let dragId = null, downAt = 0, downPos = null, moved = false;
   const trail = [];
-  function pointerXY(e) { return { x: e.clientX, y: H - e.clientY }; }
+  function pointerXY(e) { return { x: e.clientX, y: innerHeight - e.clientY }; }
   hit.addEventListener('pointerdown', (e) => {
     if (hidden) return;
     dragId = e.pointerId;
@@ -391,19 +393,21 @@ async function start() {
       pivot.rotation.z = angle;
       pivot.scale.set(scale * (1 + squash * 0.6), scale * (1 - squash), scale);
       robot.update(dt, anim);
+      // Everything is anchored to the bottom of the screen (CSS bottom: 0), so the robot does not
+      // jump when a phone's URL bar shows or hides and the viewport height changes.
       // Snap to whole device pixels so the browser never resamples the canvas (keeps it sharp in Safari).
       const dpr = devicePixelRatio || 1;
-      const cx = Math.round((pos.x - box / 2) * dpr) / dpr, cy = Math.round((H - pos.y - box / 2) * dpr) / dpr;
-      camera.left = cx; camera.right = cx + box; camera.top = H - cy; camera.bottom = H - cy - box;
+      const cx = Math.round((pos.x - box / 2) * dpr) / dpr, cy = Math.round((pos.y - box / 2) * dpr) / dpr;
+      camera.left = cx; camera.right = cx + box; camera.top = cy + box; camera.bottom = cy;
       camera.updateProjectionMatrix();
       renderer.render(scene, camera);
-      canvas.style.transform = `translate(${cx}px, ${cy}px)`;
-      // HTML hit area and bubble follow the robot (CSS coordinates are y-down).
+      canvas.style.transform = `translate(${cx}px, ${-cy}px)`;
+      // HTML hit area and bubble follow the robot (CSS translateY is down, so negate).
       const size = radius * 2.1;
-      hit.style.transform = `translate(${pos.x - size / 2}px, ${H - pos.y - size / 2}px)`;
+      hit.style.transform = `translate(${pos.x - size / 2}px, ${-(pos.y - size / 2)}px)`;
       hit.style.width = hit.style.height = `${size}px`;
       const bx = Math.min(Math.max(pos.x - 30, 12), W - 292);
-      bubble.style.transform = `translate(${bx}px, ${H - pos.y - radius - 12}px) translateY(-100%)`;
+      bubble.style.transform = `translate(${bx}px, ${-(pos.y + radius + 12)}px)`;
     }
     requestAnimationFrame(frame);
   }

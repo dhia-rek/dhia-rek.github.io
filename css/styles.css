@@ -2288,13 +2288,13 @@ textarea:focus-visible { outline: none; }
 .robot-layer.off { display: none; }
 .robot-canvas {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   display: block;
 }
 .robot-hit {
   position: fixed;
-  top: 0;
+  bottom: 0;
   left: 0;
   z-index: 991;
   padding: 0;
@@ -2309,7 +2309,7 @@ textarea:focus-visible { outline: none; }
 .robot-hit:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .robot-bubble {
   position: fixed;
-  top: 0;
+  bottom: 0;
   left: 0;
   z-index: 992;
   width: max-content;
