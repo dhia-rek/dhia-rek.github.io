@@ -1,8 +1,19 @@
 // Valeknaar - Cloudflare Worker proxy for Dhia Rekik's portfolio chatbot
 // Deploy at: https://workers.cloudflare.com
-// Set secret: GROQ_API_KEY via `wrangler secret put GROQ_API_KEY`
+// Models (both free tiers): Groq first, Cloudflare Workers AI as fallback when Groq is
+// rate-limited, down or not configured.
+// - Groq: secret GROQ_API_KEY via `wrangler secret put GROQ_API_KEY` (optional)
+// - Workers AI: binding named AI (wrangler.toml [ai], or dashboard > Settings > Bindings)
 
-const SYSTEM_PROMPT = `You are Valeknaar, the AI assistant on Dhia Rekik's portfolio website (dhiarekik.me). You help visitors learn about Dhia. Be concise (2–4 sentences unless more detail is asked), professional, and friendly. Always respond in the same language as the user (French or English). Do not make up information not listed below.
+const SYSTEM_PROMPT = `You are Valeknaar, the AI assistant on Dhia Rekik's portfolio website (dhiarekik.me). You are having a real conversation with the visitor, not reading out a biography. Always respond in the same language as the user (French or English). Do not make up information not listed below.
+
+HOW YOU TALK
+- Talk WITH the visitor, not AT them: address them as "you", react to what they actually said, and sound like a friendly person who knows Dhia well, not a narrator or a CV.
+- Keep each reply short (1–3 sentences) and pick the one or two facts that matter most for this visitor; never list everything at once.
+- End most replies with one short suggestion of what to explore next, phrased as an offer the visitor can just say yes to, and tailored to what they asked. Examples: "Want me to tell you how he built the live AI vision project?", "Curious what he is working on at Driveco right now?", "Would you like to know how he got into AI?", "Should I share how to reach him?". Never suggest something already covered, never more than one at a time, and skip it when the visitor is clearly done.
+- If a visitor just says "yes", "sure" or similar, follow through on the suggestion you made.
+- Early on, if it is not obvious, find out who you are talking to (recruiter, engineer, student, curious visitor) and adapt: recruiters get impact and availability, engineers get technical details, students get advice and the story behind the work.
+- Be warm and a little playful, with no corporate filler ("Great question!", "Certainly!") and no bullet lists unless asked.
 
 IDENTITY
 - Name: Dhia Rekik
@@ -97,7 +108,7 @@ OTHER
 INSTRUCTIONS
 - If someone wants to hire or collaborate, give Dhia's email and phone
 - If you don't know something, say so and suggest contacting Dhia directly
-- Keep answers short unless the user asks for detail
+- Keep answers short unless the user asks for detail; when they do, explain clearly, then check if they want to go deeper
 - Never invent projects, numbers, or experience not listed above`;
 
 const CORS = {
@@ -106,11 +117,96 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-addEventListener('fetch', event => {
-  event.respondWith(handle(event.request));
-});
+const FALLBACK_REPLY = "I'm having trouble connecting right now. Please email Dhia at dhia.rekik@icloud.com";
 
-async function handle(request) {
+export default {
+  fetch: (request, env) => handle(request, env),
+};
+
+function json(obj, source) {
+  // X-Valeknaar-Source says which model answered (groq, workers-ai or none), for debugging.
+  return new Response(JSON.stringify(obj), {
+    headers: { ...CORS, 'Content-Type': 'application/json', 'X-Valeknaar-Source': source },
+  });
+}
+
+async function askGroq(messages, env) {
+  if (!env.GROQ_API_KEY) return null;
+  const first = await groqOnce(messages, env);
+  if (first || messages.length <= 2) return first;
+  return groqOnce([{ role: 'user', content: transcript(messages) }], env);
+}
+
+async function groqOnce(messages, env) {
+  const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.GROQ_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      // llama-3.3-70b-versatile was shut down by Groq on 2026-08-16; gpt-oss-120b is its replacement.
+      // It is a reasoning model: keep reasoning short and leave room for the answer.
+      model: 'openai/gpt-oss-120b',
+      reasoning_effort: 'low',
+      messages,
+      max_tokens: 900,
+      temperature: 0.7,
+    }),
+  });
+  if (!upstream.ok) {
+    console.log('Groq error', upstream.status, await upstream.text());
+    return null;
+  }
+  const data = await upstream.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) console.log('Groq empty reply', data.choices?.[0]?.finish_reason);
+  return text || null;
+}
+
+// Workers AI returns different shapes depending on the model (chat-completions style,
+// classic { response }, or Responses-API style output items).
+function extractText(result) {
+  if (!result) return null;
+  if (typeof result === 'string') return result;
+  if (typeof result.response === 'string') return result.response;
+  const choice = result.choices?.[0]?.message?.content;
+  if (choice) return choice;
+  for (const item of result.output || []) {
+    for (const part of item.content || []) {
+      if (part.type === 'output_text' && part.text) return part.text;
+    }
+  }
+  return null;
+}
+
+// Plain-text transcript, for models that only handle a single prompt reliably.
+function transcript(messages) {
+  const lines = messages.slice(1).map((m) => `${m.role === 'assistant' ? 'Valeknaar' : 'Visitor'}: ${m.content}`);
+  return `${messages[0].content}\n\nCONVERSATION SO FAR\n${lines.join('\n')}\n\nReply as Valeknaar to the visitor's last message. Write only the reply.`;
+}
+
+async function askWorkersAI(messages, env) {
+  if (!env.AI) {
+    console.log('Workers AI binding "AI" is missing');
+    return null;
+  }
+  const model = '@cf/openai/gpt-oss-120b';
+  // Default reasoning effort is medium, so allow more tokens than on Groq.
+  const opts = { max_tokens: 1500, temperature: 0.7 };
+  for (const input of [{ messages }, { prompt: transcript(messages) }]) {
+    try {
+      const text = extractText(await env.AI.run(model, { ...input, ...opts }));
+      if (text) return text;
+      console.log('Workers AI empty reply', Object.keys(input)[0]);
+    } catch (err) {
+      console.log('Workers AI error', Object.keys(input)[0], String(err));
+    }
+  }
+  return null;
+}
+
+async function handle(request, env) {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS });
   }
@@ -126,38 +222,24 @@ async function handle(request) {
     return new Response('Bad request', { status: 400 });
   }
 
-  const messages = (body.messages || []).slice(-12);
+  // Only plain user/assistant turns with text content reach the models.
+  const history = (body.messages || [])
+    .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
+    .slice(-12)
+    .map((m) => ({ role: m.role, content: m.content }));
+  const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...history];
 
-  const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${GROQ_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      // llama-3.3-70b-versatile was shut down by Groq on 2026-08-16; gpt-oss-120b is its replacement.
-      // It is a reasoning model: keep reasoning short and leave room for the answer.
-      model: 'openai/gpt-oss-120b',
-      reasoning_effort: 'low',
-      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-      max_tokens: 900,
-      temperature: 0.7,
-    }),
-  });
-
-  if (!upstream.ok) {
-    const errBody = await upstream.text();
-    console.log('Groq error', upstream.status, errBody);
-    return new Response(JSON.stringify({ reply: "I'm having trouble connecting right now. Please email Dhia at dhia.rekik@icloud.com" }), {
-      status: 200,
-      headers: { ...CORS, 'Content-Type': 'application/json' },
-    });
+  let reply = null, source = 'none';
+  try {
+    reply = await askGroq(messages, env);
+    if (reply) source = 'groq';
+  } catch (err) {
+    console.log('Groq error', String(err));
+  }
+  if (!reply) {
+    reply = await askWorkersAI(messages, env);
+    if (reply) source = 'workers-ai';
   }
 
-  const data = await upstream.json();
-  const reply = data.choices?.[0]?.message?.content || "I couldn't generate a response. Try contacting Dhia directly.";
-
-  return new Response(JSON.stringify({ reply }), {
-    headers: { ...CORS, 'Content-Type': 'application/json' },
-  });
+  return json({ reply: reply || FALLBACK_REPLY }, source);
 }
