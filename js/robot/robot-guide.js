@@ -381,17 +381,9 @@ async function start() {
   }
 
   // ---- render loop ----
-  let last = performance.now(), running = true, scrollingUntil = 0;
-  // The robot is fixed to the screen, so it needs no redraw while the page scrolls. Pause it until
-  // scrolling settles and give the whole frame budget to the browser (smooth scrolling on phones).
-  addEventListener('scroll', () => { scrollingUntil = performance.now() + 120; }, { passive: true });
+  let last = performance.now(), running = true;
   function frame(now) {
     if (!running) return;
-    if (now < scrollingUntil && mode !== 'held' && mode !== 'air') {
-      last = now;
-      requestAnimationFrame(frame);
-      return;
-    }
     // rAF timestamps can be older than performance.now() taken during setup: never step backwards
     // (a negative step flings the robot off-screen on load).
     const dt = Math.max(0, Math.min(0.033, (now - last) / 1000));
