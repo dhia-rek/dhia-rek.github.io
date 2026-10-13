@@ -1,6 +1,9 @@
 // Valeknaar - Cloudflare Worker proxy for Dhia Rekik's portfolio chatbot
 // Deploy at: https://workers.cloudflare.com
-// Set secret: GROQ_API_KEY via `wrangler secret put GROQ_API_KEY`
+// Models (both free tiers): Groq first, Cloudflare Workers AI as fallback when Groq is
+// rate-limited, down or not configured.
+// - Groq: secret GROQ_API_KEY via `wrangler secret put GROQ_API_KEY` (optional)
+// - Workers AI: binding named AI (wrangler.toml [ai], or dashboard > Settings > Bindings)
 
 const SYSTEM_PROMPT = `You are Valeknaar, the AI assistant on Dhia Rekik's portfolio website (dhiarekik.me). You help visitors learn about Dhia. Be concise (2–4 sentences unless more detail is asked), professional, and friendly. Always respond in the same language as the user (French or English). Do not make up information not listed below.
 
@@ -106,11 +109,77 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-addEventListener('fetch', event => {
-  event.respondWith(handle(event.request));
-});
+const FALLBACK_REPLY = "I'm having trouble connecting right now. Please email Dhia at dhia.rekik@icloud.com";
 
-async function handle(request) {
+export default {
+  fetch: (request, env) => handle(request, env),
+};
+
+function json(obj) {
+  return new Response(JSON.stringify(obj), {
+    headers: { ...CORS, 'Content-Type': 'application/json' },
+  });
+}
+
+async function askGroq(messages, env) {
+  if (!env.GROQ_API_KEY) return null;
+  const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.GROQ_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      // llama-3.3-70b-versatile was shut down by Groq on 2026-08-16; gpt-oss-120b is its replacement.
+      // It is a reasoning model: keep reasoning short and leave room for the answer.
+      model: 'openai/gpt-oss-120b',
+      reasoning_effort: 'low',
+      messages,
+      max_tokens: 900,
+      temperature: 0.7,
+    }),
+  });
+  if (!upstream.ok) {
+    console.log('Groq error', upstream.status, await upstream.text());
+    return null;
+  }
+  const data = await upstream.json();
+  return data.choices?.[0]?.message?.content || null;
+}
+
+// Workers AI returns different shapes depending on the model (chat-completions style,
+// classic { response }, or Responses-API style output items).
+function extractText(result) {
+  if (!result) return null;
+  if (typeof result === 'string') return result;
+  if (typeof result.response === 'string') return result.response;
+  const choice = result.choices?.[0]?.message?.content;
+  if (choice) return choice;
+  for (const item of result.output || []) {
+    for (const part of item.content || []) {
+      if (part.type === 'output_text' && part.text) return part.text;
+    }
+  }
+  return null;
+}
+
+async function askWorkersAI(messages, env) {
+  if (!env.AI) return null;
+  try {
+    const result = await env.AI.run('@cf/openai/gpt-oss-120b', {
+      messages,
+      // Default reasoning effort is medium, so allow more tokens than on Groq.
+      max_tokens: 1500,
+      temperature: 0.7,
+    });
+    return extractText(result);
+  } catch (err) {
+    console.log('Workers AI error', String(err));
+    return null;
+  }
+}
+
+async function handle(request, env) {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS });
   }
@@ -126,38 +195,15 @@ async function handle(request) {
     return new Response('Bad request', { status: 400 });
   }
 
-  const messages = (body.messages || []).slice(-12);
+  const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...(body.messages || []).slice(-12)];
 
-  const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${GROQ_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      // llama-3.3-70b-versatile was shut down by Groq on 2026-08-16; gpt-oss-120b is its replacement.
-      // It is a reasoning model: keep reasoning short and leave room for the answer.
-      model: 'openai/gpt-oss-120b',
-      reasoning_effort: 'low',
-      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-      max_tokens: 900,
-      temperature: 0.7,
-    }),
-  });
-
-  if (!upstream.ok) {
-    const errBody = await upstream.text();
-    console.log('Groq error', upstream.status, errBody);
-    return new Response(JSON.stringify({ reply: "I'm having trouble connecting right now. Please email Dhia at dhia.rekik@icloud.com" }), {
-      status: 200,
-      headers: { ...CORS, 'Content-Type': 'application/json' },
-    });
+  let reply = null;
+  try {
+    reply = await askGroq(messages, env);
+  } catch (err) {
+    console.log('Groq error', String(err));
   }
+  if (!reply) reply = await askWorkersAI(messages, env);
 
-  const data = await upstream.json();
-  const reply = data.choices?.[0]?.message?.content || "I couldn't generate a response. Try contacting Dhia directly.";
-
-  return new Response(JSON.stringify({ reply }), {
-    headers: { ...CORS, 'Content-Type': 'application/json' },
-  });
+  return json({ reply: reply || FALLBACK_REPLY });
 }
