@@ -95,9 +95,10 @@ async function start() {
   document.body.append(layer, hit, bubble, showBtn);
 
   // ---- three.js scene: orthographic camera in CSS pixels, y up ----
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   // The canvas only covers a box around the robot. Render at the screen's own resolution on
   // high-density screens (already sharp), and at 2x on standard screens for smooth edges.
+  // At 3x device pixels edges are already smooth, so skip the costly MSAA there.
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: devicePixelRatio < 3, alpha: true });
   renderer.setPixelRatio(Math.min(3, Math.max(2, devicePixelRatio)));
   const scene = new THREE.Scene();
   addRobotLights(scene, renderer, new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture);
@@ -120,9 +121,14 @@ async function start() {
     scale = W < 700 ? 52 : 70;              // pixels per robot unit
     radius = (robot.height / 2) * scale;
     floor = (W < 700 ? 10 : 16) + radius;   // centre height when standing on the bottom edge
-    box = Math.ceil(radius * 3.6);
-    renderer.setSize(box, box, false);
-    canvas.style.width = canvas.style.height = `${box}px`;
+    const nextBox = Math.ceil(radius * 3.6);
+    // On phones the URL bar hides and shows while scrolling, which fires resize with a new height
+    // only. Resizing the canvas reallocates its buffers, so only do it when the box really changes.
+    if (nextBox !== box || !canvas.style.width) {
+      box = nextBox;
+      renderer.setSize(box, box, false);
+      canvas.style.width = canvas.style.height = `${box}px`;
+    }
     pivot.scale.setScalar(scale);
   }
   layout();
@@ -366,9 +372,17 @@ async function start() {
   }
 
   // ---- render loop ----
-  let last = performance.now(), running = true;
+  let last = performance.now(), running = true, scrollingUntil = 0;
+  // The robot is fixed to the screen, so it needs no redraw while the page scrolls. Pause it until
+  // scrolling settles and give the whole frame budget to the browser (smooth scrolling on phones).
+  addEventListener('scroll', () => { scrollingUntil = performance.now() + 120; }, { passive: true });
   function frame(now) {
     if (!running) return;
+    if (now < scrollingUntil && mode !== 'held' && mode !== 'air') {
+      last = now;
+      requestAnimationFrame(frame);
+      return;
+    }
     const dt = Math.min(0.033, (now - last) / 1000);
     last = now;
     if (!hidden) {
