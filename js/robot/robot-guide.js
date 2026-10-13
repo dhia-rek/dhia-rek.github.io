@@ -118,9 +118,9 @@ async function start() {
   let W = 0, H = 0, scale = 60, radius = 50, floor = 0, box = 200;
   function layout() {
     W = innerWidth; H = innerHeight;
-    scale = W < 700 ? 52 : 70;              // pixels per robot unit
+    scale = W < 700 ? 44 : 70;              // pixels per robot unit
     radius = (robot.height / 2) * scale;
-    floor = (W < 700 ? 10 : 16) + radius;   // centre height when standing on the bottom edge
+    floor = (W < 700 ? 14 : 16) + radius;   // centre height when standing on the bottom edge
     const nextBox = Math.ceil(radius * 3.6);
     // On phones the URL bar hides and shows while scrolling, which fires resize with a new height
     // only. Resizing the canvas reallocates its buffers, so only do it when the box really changes.
@@ -134,8 +134,15 @@ async function start() {
   layout();
   addEventListener('resize', layout);
 
+  // Phones: sit just left of the chat button, on the same baseline, instead of covering text on the left.
+  function phoneSpot() {
+    const fab = document.getElementById('valekFab')?.getBoundingClientRect();
+    const fabLeft = fab && fab.width ? fab.left : W - 14;
+    return Math.round(fabLeft - 10 - radius);
+  }
+
   // ---- physics + behaviour state ----
-  const pos = new THREE.Vector2(W < 700 ? 60 : 120, floor);
+  const pos = new THREE.Vector2(W < 700 ? phoneSpot() : 120, floor);
   const vel = new THREE.Vector2();
   let angle = 0, spin = 0, squash = 0;
   let vx = 0, yVel = 0, angVel = 0, swing = 0;   // springs for the natural float
@@ -183,7 +190,7 @@ async function start() {
     bubble.classList.remove('show');
     showBtn.hidden = !value;
     showBtn.textContent = t('show');
-    if (!value) { pos.set(-radius, floor); mode = 'drive'; targetX = W < 700 ? 60 : 120; greet('hero'); }
+    if (!value) { pos.set(-radius, floor); mode = 'drive'; targetX = W < 700 ? phoneSpot() : 120; greet('hero'); }
   }
   showBtn.addEventListener('click', () => setHidden(false));
 
@@ -192,7 +199,7 @@ async function start() {
     const i = SECTIONS.indexOf(name);
     // desktop: stay right of the fixed social links rail on the left edge
     // phones: keep one spot, so it does not shuffle sideways every time a section scrolls by
-    if (W < 700) return 50;
+    if (W < 700) return phoneSpot();
     const lo = 170, hi = Math.min(W * 0.34, 520);
     return lo + ((i * 0.37) % 1) * (hi - lo);
   }
@@ -385,7 +392,9 @@ async function start() {
       requestAnimationFrame(frame);
       return;
     }
-    const dt = Math.min(0.033, (now - last) / 1000);
+    // rAF timestamps can be older than performance.now() taken during setup: never step backwards
+    // (a negative step flings the robot off-screen on load).
+    const dt = Math.max(0, Math.min(0.033, (now - last) / 1000));
     last = now;
     if (!hidden) {
       step(dt);
