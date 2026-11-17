@@ -30,6 +30,7 @@ export const LOOKS = {
     },
     trim: { color: 0xffffff, roughness: 0.2, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, iridescence: 0.6, iridescenceIOR: 1.3 },
     visor: 0x0a0f24, visorOpacity: 0.86,
+    visorWidth: 1.3, visorHeight: 0.52, visorDrop: 0.12,   // a smaller visor shows more of the core
     glow: 0xb39bff, eye: '#c9f3ff', eyeCore: '#ffffff',
     aura: 'rgba(167,139,250,0.42)', auraMid: 'rgba(244,114,182,0.14)',
     sparks: ['#7b61ff', '#ff5cc8', '#2ad4ff', '#ffbe0b'],
@@ -260,15 +261,17 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   const mask = roundedMask(0.45);
   const band = (radius, width, height, centre = Math.PI / 2 + 0.03) =>
     new THREE.SphereGeometry(radius, 64, 32, Math.PI / 2 - width / 2, width, centre - height / 2, height);
-  const bezel = new THREE.Mesh(band(R * 1.012, 2.05, 0.92), surface(palette.trim, { alphaMap: mask, transparent: true }));
+  const vw = palette.visorWidth ?? 1.88, vh = palette.visorHeight ?? 0.78;
+  const vc = Math.PI / 2 + 0.03 + (palette.visorDrop ?? 0);
+  const bezel = new THREE.Mesh(band(R * 1.012, vw + 0.17, vh + 0.14, vc), surface(palette.trim, { alphaMap: mask, transparent: true }));
   head.add(bezel);
-  const glass = new THREE.Mesh(band(R * 1.024, 1.88, 0.78), new THREE.MeshPhysicalMaterial({
+  const glass = new THREE.Mesh(band(R * 1.024, vw, vh, vc), new THREE.MeshPhysicalMaterial({
     color: palette.visor, roughness: 0.1, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04,
     emissive: 0xffffff, emissiveMap: face.texture, alphaMap: mask, transparent: true, toneMapped: false,
     opacity: palette.visorOpacity ?? 1,
   }));
   head.add(glass);
-  const shine = new THREE.Mesh(band(R * 1.032, 1.45, 0.1, Math.PI / 2 - 0.2), new THREE.MeshBasicMaterial({
+  const shine = new THREE.Mesh(band(R * 1.032, vw * 0.77, vh * 0.13, vc - vh / 2 + vh * 0.2), new THREE.MeshBasicMaterial({
     color: 0xffffff, transparent: true, opacity: 0.22, depthWrite: false, alphaMap: mask,
   }));
   head.add(shine);
