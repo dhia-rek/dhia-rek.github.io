@@ -1,17 +1,25 @@
-// Valeknaar's body: an egg-shaped robot with a glossy visor, flipper arms and a magnifying glass,
+// Valeknaar's body: a slim, tall robot with a glossy visor, an antenna light, flipper arms and a magnifying glass,
 // floating above the ground like the reference picture. Built from primitives so every part can move.
 // createRobot() returns the scene group plus update(dt, state), which animates the body, eyes and arms.
 import * as THREE from 'three';
 
+// Palette matched to the site: pearly white shell, deep navy glass, the site's blue for light.
 const COLORS = {
-  shell: 0xdde5ea,
-  visor: 0x0b0f14,
-  bezel: 0x1c232b,
-  glow: 0x4fd8ff,
+  shell: 0xf6f7fc,
+  visor: 0x0c1433,
+  bezel: 0xd5dcf6,
+  glow: 0x6ea8ff,
+  accent: 0x2f5bea,
+  eye: '#8cc4ff',
+  eyeCore: '#e9f4ff',
+  blush: 'rgba(255, 170, 150, 0.55)',
 };
 
-const matte = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.02, envMapIntensity: 0.45, ...extra });
-const glossy = (color, extra = {}) => new THREE.MeshPhysicalMaterial({ color, roughness: 0.12, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.08, ...extra });
+// Ceramic-like shell: soft lacquer, a faint periwinkle sheen at grazing angles.
+const ceramic = (color = COLORS.shell, extra = {}) => new THREE.MeshPhysicalMaterial({
+  color, roughness: 0.34, metalness: 0, clearcoat: 0.55, clearcoatRoughness: 0.22,
+  sheen: 0.35, sheenColor: new THREE.Color(0xc9d4ff), sheenRoughness: 0.5, envMapIntensity: 0.9, ...extra,
+});
 const glowMat = () => new THREE.MeshBasicMaterial({ color: COLORS.glow, toneMapped: false });
 
 
@@ -27,13 +35,23 @@ function createFace() {
   texture.anisotropy = 16;                          // smooth at small sizes (mipmaps on), no sparkle
   let last = '';
 
-  // Vertical eye made of horizontal glowing stripes, like a scanline display.
-  function stripedEye(cx, cy, w, h) {
-    const stripe = 8, gap = 3;
-    for (let y = cy - h / 2; y < cy + h / 2; y += stripe + gap) {
+  // Soft rounded eye: a glowing capsule with a lighter core and a small highlight.
+  function softEye(cx, cy, w, h) {
+    const grad = ctx.createLinearGradient(0, cy - h / 2, 0, cy + h / 2);
+    grad.addColorStop(0, COLORS.eyeCore);
+    grad.addColorStop(1, COLORS.eye);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(cx - w / 2, cy - h / 2, w, h, Math.min(w, h) / 2);
+    ctx.fill();
+    if (h > 18) {
+      ctx.save();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
       ctx.beginPath();
-      ctx.roundRect(cx - w / 2, y, w, Math.min(stripe, cy + h / 2 - y), 2);
+      ctx.arc(cx + w * 0.18, cy - h * 0.24, Math.max(2, w * 0.16), 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
     }
   }
 
@@ -43,10 +61,10 @@ function createFace() {
     if (key === last) return;
     last = key;
     ctx.clearRect(0, 0, 320, 200);
-    ctx.fillStyle = '#4fd8ff';
-    ctx.strokeStyle = '#4fd8ff';
-    ctx.shadowColor = '#4fd8ff';
-    ctx.shadowBlur = 16;
+    ctx.fillStyle = COLORS.eye;
+    ctx.strokeStyle = COLORS.eye;
+    ctx.shadowColor = COLORS.eye;
+    ctx.shadowBlur = 18;
     const dx = look * 26;
     const eyes = [[118 + dx, 96], [202 + dx, 96]];
     if (expression === 'dizzy') {
@@ -66,18 +84,28 @@ function createFace() {
         ctx.stroke();
       }
     } else if (expression === 'happy') {
-      ctx.lineWidth = 7;
+      ctx.lineWidth = 9;
       ctx.lineCap = 'round';
       for (const [x, y] of eyes) {
         ctx.beginPath();
         ctx.arc(x, y + 12, 17, Math.PI * 1.15, Math.PI * 1.85);
         ctx.stroke();
       }
+      // a little blush under each eye
+      ctx.save();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = COLORS.blush;
+      for (const [x, y] of eyes) {
+        ctx.beginPath();
+        ctx.ellipse(x + (x < 160 ? -14 : 14), y + 30, 14, 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
     } else {
       const open = Math.max(0.12, 1 - blink);
       for (const [i, [x, y]] of eyes.entries()) {
         const big = expression === 'curious' && i === 1 ? 1.2 : 1;
-        stripedEye(x, y, 19 * big, 54 * big * open);
+        softEye(x, y, 26 * big, 50 * big * open);
       }
     }
     if (expression === 'talk') {
@@ -94,11 +122,22 @@ function createFace() {
 
 // Egg profile: superellipse-like, fuller sides and soft round ends, a little wider at the top.
 function eggPoint(t, height, width) {
-  const r = Math.pow(Math.sin(t), 0.8) * width * (1 + 0.05 * -Math.cos(t));
+  // wider at the head, tapering towards the bottom: a sleek, light silhouette
+  const r = Math.pow(Math.sin(t), 0.88) * width * (1 + 0.15 * -Math.cos(t));
   const y = -Math.sign(Math.cos(t)) * Math.pow(Math.abs(Math.cos(t)), 0.92) * height / 2;
   return new THREE.Vector2(Math.max(r, 0.0001), y);
 }
-const EGG = { height: 1.34, width: 0.56 };
+const EGG = { height: 1.5, width: 0.37 };   // slim and tall, not round
+
+/** Radius of the body at a given height, for parts that hug the surface. */
+function radiusAt(y) {
+  let best = eggPoint(Math.PI / 2, EGG.height, EGG.width);
+  for (let i = 0; i <= 240; i++) {
+    const p = eggPoint((i / 240) * Math.PI, EGG.height, EGG.width);
+    if (Math.abs(p.y - y) < Math.abs(best.y - y)) best = p;
+  }
+  return best.x;
+}
 
 function eggGeometry(height = EGG.height, width = EGG.width) {
   const points = [];
@@ -133,7 +172,7 @@ function roundedMask(radius = 0.28) {
 
 function createMagnifier() {
   const group = new THREE.Group();
-  const chrome = new THREE.MeshStandardMaterial({ color: 0xdfe6ee, metalness: 1, roughness: 0.18 });
+  const chrome = new THREE.MeshStandardMaterial({ color: 0xe8ecf8, metalness: 0.9, roughness: 0.22 });
   const ring = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.028, 16, 48), chrome);
   group.add(ring);
   const glowRing = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.008, 8, 48, Math.PI * 0.5), glowMat());
@@ -141,10 +180,10 @@ function createMagnifier() {
   glowRing.rotation.z = Math.PI * 1.1;
   group.add(glowRing);
   const lens = new THREE.Mesh(new THREE.CircleGeometry(0.19, 40), new THREE.MeshPhysicalMaterial({
-    color: 0xcfefff, transparent: true, opacity: 0.22, roughness: 0.05,
+    color: 0xdbe8ff, transparent: true, opacity: 0.2, roughness: 0.05,
   }));
   group.add(lens);
-  const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.32, 16), matte(0x15191e, { roughness: 0.4 }));
+  const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.32, 16), ceramic(COLORS.accent, { roughness: 0.3 }));
   handle.position.set(0, -0.36, 0);
   group.add(handle);
   return group;
@@ -161,17 +200,17 @@ export function createRobot() {
   const body = new THREE.Group();
   body.position.y = 0.9;
   chassis.add(body);
-  const shell = new THREE.Mesh(eggGeometry(), matte(COLORS.shell, { roughness: 0.55 }));
+  const shell = new THREE.Mesh(eggGeometry(), ceramic());
   body.add(shell);
 
   // Visor: two curved bands of the egg surface (dark rim, glossy black glass) with rounded corners;
   // the eyes are drawn on the glass itself as an emissive texture.
   const face = createFace();
   const mask = roundedMask();
-  const bezel = new THREE.Mesh(eggBand(-0.2, 0.3, 1.75, 1.018), matte(COLORS.bezel, { roughness: 0.35, alphaMap: mask, transparent: true }));
+  const bezel = new THREE.Mesh(eggBand(-0.2, 0.3, 1.75, 1.018), ceramic(COLORS.bezel, { roughness: 0.4, alphaMap: mask, transparent: true }));
   body.add(bezel);
   const glass = new THREE.Mesh(eggBand(-0.165, 0.265, 1.55, 1.03), new THREE.MeshPhysicalMaterial({
-    color: COLORS.visor, roughness: 0.12, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.06,
+    color: COLORS.visor, roughness: 0.1, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04,
     emissive: 0xffffff, emissiveMap: face.texture, alphaMap: mask, transparent: true,
     toneMapped: false,                                // keep the cyan glow saturated
   }));
@@ -180,12 +219,12 @@ export function createRobot() {
   // Ears: black glossy domes with a glowing ring.
   for (const side of [-1, 1]) {
     const ear = new THREE.Group();
-    ear.position.set(side * 0.555, 0.1, 0.02);
+    ear.position.set(side * (radiusAt(0.1) - 0.004), 0.1, 0.02);
     ear.rotation.y = side * Math.PI / 2;
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.095, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), glossy(COLORS.visor));
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.07, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), ceramic(COLORS.bezel));
     dome.rotation.x = Math.PI / 2;
     ear.add(dome);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.012, 10, 40), glowMat());
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.074, 0.01, 10, 40), glowMat());
     ear.add(ring);
     body.add(ear);
   }
@@ -193,26 +232,41 @@ export function createRobot() {
   // Flipper arms with a glowing seam at the shoulder.
   const arms = [-1, 1].map((side) => {
     const shoulder = new THREE.Group();
-    shoulder.position.set(side * 0.5, -0.06, 0.1);
-    const seam = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.01, 8, 32), glowMat());
+    shoulder.position.set(side * (radiusAt(-0.06) - 0.03), -0.06, 0.08);
+    const seam = new THREE.Mesh(new THREE.TorusGeometry(0.056, 0.008, 8, 32), glowMat());
     seam.rotation.x = Math.PI / 2;
     shoulder.add(seam);
-    const flipper = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.22, 8, 16), matte(COLORS.shell, { roughness: 0.4 }));
-    flipper.scale.set(1, 1, 0.8);
-    flipper.position.y = -0.17;
+    const flipper = new THREE.Mesh(new THREE.CapsuleGeometry(0.062, 0.27, 8, 16), ceramic());
+    flipper.scale.set(1, 1, 0.75);
+    flipper.position.y = -0.19;
     shoulder.add(flipper);
     const hand = new THREE.Group();
-    hand.position.y = -0.33;
+    hand.position.y = -0.37;
     shoulder.add(hand);
     shoulder.rotation.z = side * -0.06;
     body.add(shoulder);
     return { shoulder, hand, side };
   });
 
+  // Antenna: a thin stalk with a softly pulsing light on top.
+  const top = EGG.height / 2;
+  const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.014, 0.17, 12), ceramic(COLORS.bezel));
+  stalk.position.y = top + 0.07;
+  body.add(stalk);
+  const antennaTip = new THREE.Mesh(new THREE.SphereGeometry(0.034, 20, 14), glowMat());
+  antennaTip.position.y = top + 0.17;
+  body.add(antennaTip);
+
+  // Waist: a thin glowing band that follows the body's curve.
+  const waist = new THREE.Mesh(new THREE.TorusGeometry(radiusAt(-0.3) * 1.004, 0.0065, 8, 96), glowMat());
+  waist.rotation.x = Math.PI / 2;
+  waist.position.y = -0.3;
+  body.add(waist);
+
   // Magnifying glass held up in front of the visor, like the reference picture: the lens sits over
   // the left half of the face and the handle runs down and out towards the left hand.
   const magnifier = createMagnifier();
-  magnifier.position.set(-0.24, 0.0, 0.64);
+  magnifier.position.set(-0.2, 0.0, 0.52);
   magnifier.rotation.set(0.05, 0.28, -0.55);
   body.add(magnifier);
 
@@ -221,11 +275,11 @@ export function createRobot() {
   shadowCanvas.width = shadowCanvas.height = 64;
   const sctx = shadowCanvas.getContext('2d');
   const grad = sctx.createRadialGradient(32, 32, 2, 32, 32, 32);
-  grad.addColorStop(0, 'rgba(10,14,31,0.35)');
-  grad.addColorStop(1, 'rgba(10,14,31,0)');
+  grad.addColorStop(0, 'rgba(24,34,84,0.28)');
+  grad.addColorStop(1, 'rgba(24,34,84,0)');
   sctx.fillStyle = grad;
   sctx.fillRect(0, 0, 64, 64);
-  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.85), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false }));
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.66), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2;
   shadow.position.y = 0.002;
   root.add(shadow);
@@ -235,12 +289,12 @@ export function createRobot() {
   glowCanvas.width = glowCanvas.height = 128;
   const gctx = glowCanvas.getContext('2d');
   const ggrad = gctx.createRadialGradient(64, 64, 4, 64, 64, 64);
-  ggrad.addColorStop(0, 'rgba(56,189,248,0.9)');
-  ggrad.addColorStop(0.4, 'rgba(56,189,248,0.4)');
-  ggrad.addColorStop(1, 'rgba(79,216,255,0)');
+  ggrad.addColorStop(0, 'rgba(110,168,255,0.85)');
+  ggrad.addColorStop(0.4, 'rgba(110,168,255,0.35)');
+  ggrad.addColorStop(1, 'rgba(110,168,255,0)');
   gctx.fillStyle = ggrad;
   gctx.fillRect(0, 0, 128, 128);
-  const hoverGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 0.55), new THREE.MeshBasicMaterial({
+  const hoverGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.45), new THREE.MeshBasicMaterial({
     map: new THREE.CanvasTexture(glowCanvas), transparent: true, depthWrite: false, opacity: 0, toneMapped: false,
   }));
   hoverGlow.rotation.x = -Math.PI / 2;
@@ -284,6 +338,8 @@ export function createRobot() {
       shoulder.rotation.x += (pitch - shoulder.rotation.x) * Math.min(1, dt * 7);
     }
 
+    antennaTip.scale.setScalar(1 + Math.sin(time * 3) * 0.12);
+
     blinkTimer -= dt;
     if (blinkTimer < 0) { blink = 1; blinkTimer = 2.5 + Math.random() * 3; }
     blink = Math.max(0, blink - dt * 7);
@@ -295,7 +351,7 @@ export function createRobot() {
     });
   }
 
-  return { root, update, height: 1.6 };
+  return { root, update, height: 1.85 };
 }
 
 /**
@@ -305,13 +361,16 @@ export function createRobot() {
 export function addRobotLights(scene, renderer, environment) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = 1.05;
   scene.environment = environment;
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a96ac, 0.75));
-  const key = new THREE.DirectionalLight(0xffffff, 2.6);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa6c8, 0.8));
+  const key = new THREE.DirectionalLight(0xfff6ee, 2.4);
   key.position.set(-2.5, 4, 5);
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0xcfeeff, 1.4);
+  const fill = new THREE.DirectionalLight(0xffd9c7, 0.7);   // peach, like the page washes
+  fill.position.set(-4, -1, 2);
+  scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xd4e2ff, 1.5);
   rim.position.set(3, 2, -4);
   scene.add(rim);
 }
