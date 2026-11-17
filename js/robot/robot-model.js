@@ -3,7 +3,7 @@
 // createRobot({ look }) returns the scene group plus update(dt, state), which animates everything.
 import * as THREE from 'three';
 
-export const DEFAULT_LOOK = 'neon';
+export const DEFAULT_LOOK = 'glass';
 
 export const LOOKS = {
   // dark graphite shell, cyan neon light
@@ -20,13 +20,20 @@ export const LOOKS = {
     visor: 0x0b1230, glow: 0x6ea8ff, eye: '#8cc4ff', eyeCore: '#e9f4ff', aura: 'rgba(110,168,255,0.45)', auraMid: 'rgba(110,168,255,0.14)',
     sparks: ['#3a86ff', '#00c2e8', '#ff6b57', '#ffbe0b'],
   },
-  // see-through glass with an energy core
+  // modern liquid glass: clear iridescent shell around a swirling aurora core
   glass: {
-    shell: { color: 0xd9e4ff, roughness: 0.04, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03, transparent: true, opacity: 0.32, depthWrite: false },
-    trim: { color: 0xc4d2ff, roughness: 0.2, metalness: 0.2, clearcoat: 1 },
-    visor: 0x0b1230, glow: 0x8a9bff, eye: '#a9b6ff', eyeCore: '#f1f3ff', aura: 'rgba(138,155,255,0.45)', auraMid: 'rgba(138,155,255,0.14)',
-    sparks: ['#7b61ff', '#3a86ff', '#ff6b57', '#ffbe0b'],
-    core: true,
+    shell: {
+      color: 0xf4f7ff, roughness: 0.05, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03,
+      transparent: true, opacity: 0.26, depthWrite: false,
+      iridescence: 1, iridescenceIOR: 1.33, iridescenceThicknessRange: [140, 520],
+      sheen: 1, sheenColor: 0xd7ecff, sheenRoughness: 0.28,
+    },
+    trim: { color: 0xffffff, roughness: 0.2, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, iridescence: 0.6, iridescenceIOR: 1.3 },
+    visor: 0x0a0f24, visorOpacity: 0.86,
+    glow: 0xb39bff, eye: '#c9f3ff', eyeCore: '#ffffff',
+    aura: 'rgba(167,139,250,0.42)', auraMid: 'rgba(244,114,182,0.14)',
+    sparks: ['#7b61ff', '#ff5cc8', '#2ad4ff', '#ffbe0b'],
+    core: ['#7b61ff', '#ff5cc8', '#2ad4ff'],
   },
 };
 
@@ -208,16 +215,43 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   head.renderOrder = 2;
   body.add(head);
 
-  // Glass look: a glowing energy core spinning inside the see-through shell.
-  let core = null;
+  // Glass look: an aurora of light swirling inside the clear shell.
+  let core = null, coreUniforms = null;
   if (palette.core) {
+    coreUniforms = {
+      uTime: { value: 0 },
+      uA: { value: new THREE.Color(palette.core[0]) },
+      uB: { value: new THREE.Color(palette.core[1]) },
+      uC: { value: new THREE.Color(palette.core[2]) },
+    };
+    const coreMat = new THREE.ShaderMaterial({
+      uniforms: coreUniforms,
+      vertexShader: `
+        varying vec3 vNormal; varying vec3 vPos;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          vPos = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragmentShader: `
+        uniform float uTime; uniform vec3 uA; uniform vec3 uB; uniform vec3 uC;
+        varying vec3 vNormal; varying vec3 vPos;
+        void main() {
+          float t = uTime * 0.7;
+          float w1 = 0.5 + 0.5 * sin(vPos.x * 9.0 + t * 1.3 + sin(vPos.y * 8.0 + t));
+          float w2 = 0.5 + 0.5 * sin(vPos.y * 10.0 - t * 1.1 + sin(vPos.z * 9.0 - t * 0.8));
+          vec3 colour = mix(mix(uA, uB, w1), uC, w2 * 0.7);
+          float rim = pow(1.0 - abs(vNormal.z), 2.2);
+          gl_FragColor = vec4(colour * 1.15 + rim * 0.45, 1.0);
+          #include <colorspace_fragment>
+        }`,
+    });
     core = new THREE.Group();
-    core.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.2, 1), glowMat({ wireframe: true, transparent: true, opacity: 0.85 })));
-    core.add(new THREE.Mesh(new THREE.SphereGeometry(0.11, 24, 16), glowMat()));
+    core.add(new THREE.Mesh(new THREE.SphereGeometry(0.27, 48, 32), coreMat));
     const coreGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: radialTexture(palette.aura, palette.auraMid), transparent: true, depthWrite: false, toneMapped: false }));
-    coreGlow.scale.set(0.9, 0.9, 1);
+    coreGlow.scale.set(1.15, 1.15, 1);
     core.add(coreGlow);
-    core.position.set(0, 0.05, -0.05);
+    core.position.set(0, 0.02, -0.06);
     body.add(core);
   }
 
@@ -231,6 +265,7 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   const glass = new THREE.Mesh(band(R * 1.024, 1.88, 0.78), new THREE.MeshPhysicalMaterial({
     color: palette.visor, roughness: 0.1, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04,
     emissive: 0xffffff, emissiveMap: face.texture, alphaMap: mask, transparent: true, toneMapped: false,
+    opacity: palette.visorOpacity ?? 1,
   }));
   head.add(glass);
   const shine = new THREE.Mesh(band(R * 1.032, 1.45, 0.1, Math.PI / 2 - 0.2), new THREE.MeshBasicMaterial({
@@ -376,9 +411,9 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
     halo.rotation.z += dt * 0.9;
     for (const { orbit, speed } of motes) orbit.rotation.y += dt * speed;
     if (core) {
-      core.rotation.y += dt * 1.2;
-      core.rotation.x += dt * 0.5;
-      core.scale.setScalar(1 + Math.sin(time * 3) * 0.06);
+      coreUniforms.uTime.value = time;
+      core.rotation.y += dt * 0.6;
+      core.scale.setScalar(1 + Math.sin(time * 2.2) * 0.05);
     }
 
     magnifier.visible = !!state.magnify;
