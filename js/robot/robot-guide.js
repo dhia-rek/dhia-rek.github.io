@@ -1,5 +1,6 @@
-// Valeknaar, the robot guide: drives along the bottom of the screen, stops near each section with a
-// suggestion, and can be grabbed, dragged and thrown. A quick tap opens the Valeknaar chat.
+// Valeknaar, the robot guide: flies to each section and hovers beside its title with a suggestion,
+// follows the cursor with its eyes, throws fireworks, and can be grabbed, dragged and thrown.
+// A quick tap opens the Valeknaar chat.
 // Loaded as a module after the page; does nothing without GPU-accelerated WebGL. three.js and the
 // model are imported only after that check passes, so visitors without a GPU never download them.
 
@@ -71,16 +72,20 @@ async function start() {
   const [THREE, { RoomEnvironment }, { createRobot, addRobotLights }] = await Promise.all([
     import('three'),
     import('three/addons/environments/RoomEnvironment.js'),
-    import('./robot-model.js?v=20261117-3'),
+    import('./robot-model.js?v=20261117-6'),
   ]);
 
   // ---- DOM: canvas, hit area, bubble, show button ----
   const layer = document.createElement('div');
   layer.className = 'robot-layer';
   layer.setAttribute('aria-hidden', 'true');
+  const sparkCanvas = document.createElement('canvas');
+  sparkCanvas.className = 'robot-sparks';
+  sparkCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none';
+  const sparkCtx = sparkCanvas.getContext('2d');
   const canvas = document.createElement('canvas');
   canvas.className = 'robot-canvas';
-  layer.append(canvas);
+  layer.append(sparkCanvas, canvas);
   const hit = document.createElement('button');
   hit.type = 'button';
   hit.className = 'robot-hit';
@@ -105,7 +110,8 @@ async function start() {
   const camera = new THREE.OrthographicCamera(0, 1, 1, 0, -2000, 2000);
   camera.position.z = 1000;
 
-  const robot = createRobot();
+  // ?look=neon|chrome|glass previews another style
+  const robot = createRobot({ look: new URLSearchParams(location.search).get('look') || undefined });
   const pivot = new THREE.Group();          // centre of the robot, so it tumbles around its middle
   const tilt = new THREE.Group();           // slight forward tilt so the top of the head shows
   tilt.rotation.x = 0.22;
@@ -130,6 +136,10 @@ async function start() {
       canvas.style.width = canvas.style.height = `${box}px`;
     }
     pivot.scale.setScalar(scale);
+    const sdpr = Math.min(2, devicePixelRatio || 1);
+    sparkCanvas.width = Math.round(W * sdpr);
+    sparkCanvas.height = Math.round(H * sdpr);
+    sparkCtx.setTransform(sdpr, 0, 0, sdpr, 0, 0);
   }
   layout();
   addEventListener('resize', layout);
@@ -147,7 +157,8 @@ async function start() {
   let angle = 0, spin = 0, squash = 0;
   let vx = 0, yVel = 0, angVel = 0, swing = 0;   // springs for the natural float
   let mode = 'idle';                         // idle | drive | held | air | recover
-  let targetX = pos.x, section = 'hero', faceTimer = 0, recoverTimer = 0;
+  let targetX = pos.x, restY = floor, section = 'hero', faceTimer = 0, recoverTimer = 0;
+  function setSpot(spot) { targetX = spot.x; restY = spot.y; }
   const anim = { speed: 0, yaw: 0, headYaw: 0, look: 0, expression: 'neutral', wave: 0, point: 0, magnify: false, talking: false, hover: 0, lift: 0, swing: 0 };
   // Eyes (and a little of the head) follow the cursor while the robot rests.
   let cursorX = null, cursorAt = 0;
@@ -193,32 +204,104 @@ async function start() {
     bubble.classList.remove('show');
     showBtn.hidden = !value;
     showBtn.textContent = t('show');
-    if (!value) { pos.set(-radius, floor); mode = 'drive'; targetX = W < 700 ? phoneSpot() : 120; greet('hero'); }
+    if (!value) { pos.set(-radius, floor); mode = 'drive'; setSpot(spotFor(section)); greet(section); }
   }
   showBtn.addEventListener('click', () => setHidden(false));
 
   // ---- sections: drive to a spot and suggest something ----
+  // Hover just right of the section's title, where there is empty space, so it never sits on the
+  // photo or the text. Phones keep one spot beside the chat button.
   function spotFor(name) {
-    // desktop: stay right of the fixed social links rail on the left edge
-    // phones: keep one spot, so it does not shuffle sideways every time a section scrolls by
-    // Rest beside the chat button on every screen size: it is the chat assistant, and the left
-    // side holds the photo and headlines it should not cover. (Visitors can still drag it anywhere.)
-    return phoneSpot();
+    if (W < 700) return { x: phoneSpot(), y: floor };
+    const el = name === 'hero' ? document.querySelector('.hero') : document.getElementById(name);
+    const title = el?.querySelector('h1, h2');
+    if (!title) return { x: phoneSpot(), y: floor };
+    const range = document.createRange();
+    range.selectNodeContents(title);
+    const box = range.getBoundingClientRect();
+    const x = Math.min(Math.max(box.right + 36 + radius, 150 + radius), W - 170 - radius);
+    // a little above the title's middle, so the hands and beam stay clear of the content below
+    const top = Math.min(Math.max(box.top + box.height / 2 - radius * 0.3, 120 + radius), H - 70 - radius);
+    return { x, y: H - top };
   }
+  // ---- fireworks: rockets from the robot that burst into sparks in its colours ----
+  const sparks = [];
+  const rockets = [];
+  function fireworks(count = 3) {
+    if (reducedMotion || hidden) return;
+    // Each rocket aims at a point on screen around the robot, so every burst is visible.
+    const x0 = pos.x, y0 = H - pos.y - radius * 0.3;
+    for (let i = 0; i < count; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const tx = Math.min(W - 60, Math.max(60, x0 + side * (120 + Math.random() * 180)));
+      const ty = Math.min(H - 140, Math.max(100, y0 - 200 + Math.random() * 230));
+      const life = 0.5 + Math.random() * 0.2 + i * 0.08;
+      rockets.push({
+        x: x0, y: y0,
+        vx: (tx - x0) / life, vy: (ty - y0) / life - 0.5 * 380 * life,   // cancels gravity on the way
+        life,
+        color: pick(robot.sparks),
+      });
+    }
+    anim.expression = 'happy';
+    faceTimer = 1.4;
+    waveUntil = performance.now() + 1400;
+  }
+  function burst(x, y, color) {
+    const n = 46 + Math.floor(Math.random() * 20);
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + Math.random() * 0.2;
+      const s = 110 + Math.random() * 180;
+      sparks.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1, decay: 0.7 + Math.random() * 0.5,
+        color: Math.random() < 0.3 ? pick(robot.sparks) : color });
+    }
+  }
+  function drawSparks(dt) {
+    if (!sparks.length && !rockets.length) { sparkCtx.clearRect(0, 0, W, H); return; }
+    sparkCtx.clearRect(0, 0, W, H);
+    for (let i = rockets.length - 1; i >= 0; i--) {
+      const r = rockets[i];
+      r.vy += 380 * dt; r.x += r.vx * dt; r.y += r.vy * dt; r.life -= dt;
+      sparkCtx.fillStyle = r.color;
+      sparkCtx.beginPath(); sparkCtx.arc(r.x, r.y, 3, 0, Math.PI * 2); sparkCtx.fill();
+      if (r.life <= 0) { burst(r.x, r.y, r.color); rockets.splice(i, 1); }
+    }
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const s = sparks[i];
+      s.vx *= 1 - dt * 1.6; s.vy = s.vy * (1 - dt * 1.6) + 160 * dt;
+      s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt * s.decay;
+      if (s.life <= 0) { sparks.splice(i, 1); continue; }
+      sparkCtx.globalAlpha = Math.min(1, s.life * 1.4);
+      sparkCtx.strokeStyle = s.color;
+      sparkCtx.lineWidth = 2.8;
+      sparkCtx.lineCap = 'round';
+      sparkCtx.beginPath(); sparkCtx.moveTo(s.x, s.y); sparkCtx.lineTo(s.x - s.vx * 0.035, s.y - s.vy * 0.035); sparkCtx.stroke();
+    }
+    sparkCtx.globalAlpha = 1;
+  }
+  const celebrated = new Set();
+
   function greet(name) {
+    if ((name === 'projects' || name === 'contact') && !celebrated.has(name)) {
+      celebrated.add(name);
+      setTimeout(() => fireworks(3), 250);
+    }
     const action = ACTIONS[name] ? { href: ACTIONS[name], label: t(`${name}Action`) } : null;
     say(t(name), { ms: name === 'projects' ? 7000 : 5000, action });
     anim.magnify = name === 'projects';
     if (name === 'hero') waveUntil = performance.now() + 1800;
   }
   let pendingGreet = 'hero';
+  let followDirty = true;                    // recompute the hover spot (first frame, scroll, resize)
+  addEventListener('scroll', () => { followDirty = true; }, { passive: true });
+  addEventListener('resize', () => { followDirty = true; });
   const observer = new IntersectionObserver((entries) => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
       const name = entry.target.classList.contains('hero') ? 'hero' : entry.target.id;
       if (!SECTIONS.includes(name) || name === section) continue;
       section = name;
-      if (mode === 'idle' || mode === 'drive') { targetX = spotFor(name); mode = 'drive'; }
+      if (mode === 'idle' || mode === 'drive') { setSpot(spotFor(name)); mode = 'drive'; }
       pendingGreet = name;
     }
   }, { threshold: 0.45 });
@@ -255,8 +338,8 @@ async function start() {
     if (e.pointerId !== dragId) return;
     dragId = null;
     if (!moved && performance.now() - downAt < 400) {
-      document.getElementById('valekFab')?.click();
-      waveUntil = performance.now() + 1200;
+      fireworks(2);
+      setTimeout(() => document.getElementById('valekFab')?.click(), 450);
       return;
     }
     if (mode !== 'held') return;
@@ -266,6 +349,12 @@ async function start() {
     spin = -vel.x * 0.006;
     mode = 'air';
   }
+  hit.addEventListener('pointerenter', () => {
+    if (hidden || reducedMotion || (mode !== 'idle' && mode !== 'drive')) return;
+    anim.expression = 'happy';
+    faceTimer = 1.2;
+    yVel += 260;                               // a little hop of joy
+  });
   hit.addEventListener('pointerup', release);
   hit.addEventListener('pointercancel', release);
   hit.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('valekFab')?.click(); } });
@@ -276,15 +365,16 @@ async function start() {
     const calm = 1 - Math.min(1, Math.abs(vx) / 220) * 0.6;          // less drift while travelling
     const drift = reducedMotion ? 0 : scale * 0.055 * calm *
       (0.55 * Math.sin(t * 1.13) + 0.3 * Math.sin(t * 2.71 + 1.3) + 0.15 * Math.sin(t * 4.3 + 0.4));
-    const targetY = floor + hover + drift;
-    yVel += ((targetY - pos.y) * 38 - yVel * 8.5) * dt;
+    const targetY = restY + (restY === floor ? hover : 0) + drift;
+    yVel += ((targetY - pos.y) * 30 - yVel * 8) * dt;
+    yVel = Math.max(-1100, Math.min(1100, yVel));
     pos.y += yVel * dt;
     // Bank into the motion like a drone, with a small idle sway; the spring gives a soft overshoot.
     const sway = reducedMotion ? 0 : 0.02 * Math.sin(t * 0.9) + 0.012 * Math.sin(t * 2.1 + 0.7);
     const targetAngle = -vx * 0.0011 + sway;
     angVel += ((targetAngle - angle) * 32 - angVel * 6.5) * dt;
     angle += angVel * dt;
-    anim.lift = Math.max(0, (pos.y - floor) / scale);
+    anim.lift = Math.max(0, (pos.y - restY) / scale);
     anim.hover = Math.min(1, anim.lift / 0.2);
   }
 
@@ -354,12 +444,13 @@ async function start() {
       if (recoverTimer > 0.9 && Math.abs(upright - angle) < 0.02) {
         angle = 0;
         mode = 'drive';
-        targetX = spotFor(section);
+        setSpot(spotFor(section));
       }
     } else if (mode === 'drive') {
       const dx = targetX - pos.x;
       if (reducedMotion) pos.x = targetX;
-      glide(dt, reducedMotion ? 0 : Math.max(-200, Math.min(200, dx * 1.5)));
+      glide(dt, reducedMotion ? 0 : Math.max(-650, Math.min(650, dx * 2.4)));
+      if (reducedMotion) pos.y = restY;
       if (Math.abs(targetX - pos.x) < 3 && Math.abs(vx) < 12) {
         mode = 'idle';
         if (pendingGreet) { greet(pendingGreet); pendingGreet = null; }
@@ -399,7 +490,14 @@ async function start() {
     const dt = Math.max(0, Math.min(0.033, (now - last) / 1000));
     last = now;
     if (!hidden) {
+      // keep hovering beside the current section's title while the page scrolls
+      if (followDirty && (mode === 'idle' || mode === 'drive')) {
+        followDirty = false;
+        setSpot(spotFor(section));
+        if (mode === 'idle') mode = 'drive';
+      }
       step(dt);
+      drawSparks(dt);
       pivot.position.set(pos.x, pos.y, 0);
       pivot.rotation.z = angle;
       pivot.scale.set(scale * (1 + squash * 0.6), scale * (1 - squash), scale);
