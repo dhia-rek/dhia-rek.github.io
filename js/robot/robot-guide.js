@@ -87,7 +87,7 @@ async function start() {
   const [THREE, { RoomEnvironment }, { createRobot, addRobotLights }] = await Promise.all([
     import('three'),
     import('three/addons/environments/RoomEnvironment.js'),
-    import('./robot-model.js?v=20261117-18'),
+    import('./robot-model.js?v=20261117-19'),
   ]);
 
   // ---- DOM: canvas, hit area, bubble, show button ----
@@ -244,8 +244,6 @@ async function start() {
   // photo or the text. Phones keep one spot beside the chat button.
   function spotFor(name) {
     if (W < 700) return { x: phoneSpot(), y: floor };
-    // Below the hero it moves aside, to the right edge, so it never sits on what you read.
-    if (name !== 'hero') return { x: W - radius - 14, y: Math.max(floor + radius * 2.2, H * 0.4) };
     const el = name === 'hero' ? document.querySelector('.hero') : document.getElementById(name);
     // the hero's whole text block (title and paragraph), other sections' title
     const parts = name === 'hero'
@@ -585,10 +583,11 @@ async function start() {
       const showScan = !talking && section !== 'hero' && W >= 700 && (mode === 'idle' || mode === 'drive') && now - lastTalkAt > 1200;
       scanPop.classList.toggle('show', showScan);
       if (showScan) {
-        // above the robot, in the right margin, so it stays off the content
-        const popW = 110;
-        const sx = Math.max(12, Math.min(W - popW - 10, pos.x + radius * 0.6 - popW));
-        scanPop.style.transform = `translate(${Math.round(sx)}px, ${Math.round(-(pos.y + radius + 10))}px)`;
+        // beside the robot in the title's row (empty space), on the left if the right has no room
+        const popW = 110, popH = 128;
+        const right = pos.x + radius + 12 + popW <= W - 10;
+        const sx = right ? pos.x + radius + 12 : Math.max(12, pos.x - radius - 12 - popW);
+        scanPop.style.transform = `translate(${Math.round(sx)}px, ${Math.round(-(pos.y - popH / 2))}px)`;
       }
 
     }
