@@ -71,7 +71,7 @@ async function start() {
   const [THREE, { RoomEnvironment }, { createRobot, addRobotLights }] = await Promise.all([
     import('three'),
     import('three/addons/environments/RoomEnvironment.js'),
-    import('./robot-model.js?v=20261117-2'),
+    import('./robot-model.js?v=20261117-3'),
   ]);
 
   // ---- DOM: canvas, hit area, bubble, show button ----
@@ -118,7 +118,7 @@ async function start() {
   let W = 0, H = 0, scale = 60, radius = 50, floor = 0, box = 200;
   function layout() {
     W = innerWidth; H = innerHeight;
-    scale = W < 700 ? 44 : 70;              // pixels per robot unit
+    scale = W < 700 ? 50 : 92;              // pixels per robot unit
     radius = (robot.height / 2) * scale;
     floor = (W < 700 ? 14 : 16) + radius;   // centre height when standing on the bottom edge
     const nextBox = Math.ceil(radius * 3.6);
@@ -149,6 +149,9 @@ async function start() {
   let mode = 'idle';                         // idle | drive | held | air | recover
   let targetX = pos.x, section = 'hero', faceTimer = 0, recoverTimer = 0;
   const anim = { speed: 0, yaw: 0, headYaw: 0, look: 0, expression: 'neutral', wave: 0, point: 0, magnify: false, talking: false, hover: 0, lift: 0, swing: 0 };
+  // Eyes (and a little of the head) follow the cursor while the robot rests.
+  let cursorX = null, cursorAt = 0;
+  addEventListener('pointermove', (e) => { cursorX = e.clientX; cursorAt = performance.now(); }, { passive: true });
   let hidden = storedHidden();
   let talkUntil = 0, waveUntil = 0;
 
@@ -375,7 +378,15 @@ async function start() {
     faceTimer -= dt;
     if (faceTimer <= 0 && (mode === 'idle' || mode === 'drive')) anim.expression = now < waveUntil ? 'happy' : 'neutral';
     anim.talking = now < talkUntil && anim.expression !== 'dizzy' && mode !== 'held' && mode !== 'air';
-    anim.look = Math.max(-1, Math.min(1, vx / 160)) * 0.7;
+    const following = !reducedMotion && cursorX !== null && now - cursorAt < 4000 && (mode === 'idle' || mode === 'drive');
+    if (following) {
+      const dx = cursorX - pos.x;
+      anim.look = Math.max(-1, Math.min(1, dx / 260));
+      anim.headYaw = Math.max(-0.45, Math.min(0.45, dx / 900));
+    } else {
+      anim.look = Math.max(-1, Math.min(1, vx / 160)) * 0.7;
+      anim.headYaw = 0;
+    }
     squash = Math.max(0, squash - dt * 1.6);
   }
 

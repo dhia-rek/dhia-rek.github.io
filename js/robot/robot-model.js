@@ -5,9 +5,9 @@ import * as THREE from 'three';
 
 // Palette matched to the site: pearly white shell, deep navy glass, the site's blue for light.
 const COLORS = {
-  shell: 0xf6f7fc,
+  shell: 0xeef1fb,
   visor: 0x0c1433,
-  bezel: 0xd5dcf6,
+  bezel: 0xbfc9ef,
   glow: 0x6ea8ff,
   accent: 0x2f5bea,
   eye: '#8cc4ff',
@@ -17,8 +17,8 @@ const COLORS = {
 
 // Ceramic-like shell: soft lacquer, a faint periwinkle sheen at grazing angles.
 const ceramic = (color = COLORS.shell, extra = {}) => new THREE.MeshPhysicalMaterial({
-  color, roughness: 0.34, metalness: 0, clearcoat: 0.55, clearcoatRoughness: 0.22,
-  sheen: 0.35, sheenColor: new THREE.Color(0xc9d4ff), sheenRoughness: 0.5, envMapIntensity: 0.9, ...extra,
+  color, roughness: 0.26, metalness: 0, clearcoat: 0.9, clearcoatRoughness: 0.1,
+  sheen: 0.12, sheenColor: new THREE.Color(0xc9d4ff), sheenRoughness: 0.5, envMapIntensity: 0.55, ...extra,
 });
 const glowMat = () => new THREE.MeshBasicMaterial({ color: COLORS.glow, toneMapped: false });
 
@@ -153,6 +153,20 @@ function createMagnifier() {
   return group;
 }
 
+/** A soft radial gradient texture (centre colour fading out), for glows. */
+function radialTexture(inner, middle) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  const grad = ctx.createRadialGradient(64, 64, 8, 64, 64, 64);
+  grad.addColorStop(0, inner);
+  grad.addColorStop(0.5, middle);
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 128);
+  return new THREE.CanvasTexture(c);
+}
+
 // ---- the robot: a floating AI orb ----
 const R = 0.42;          // head radius
 const BASE_Y = 0.8;      // hover height of the head's centre
@@ -207,11 +221,47 @@ export function createRobot() {
   satellite.position.x = 0.64;
   halo.add(satellite);
 
+  // Halo bloom: a wide, faint ring around the thin one, like light spilling from it.
+  const haloGlow = new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.04, 10, 160), new THREE.MeshBasicMaterial({
+    color: COLORS.glow, transparent: true, opacity: 0.16, depthWrite: false, toneMapped: false,
+  }));
+  halo.add(haloGlow);
+
+  // Aura: a soft blue glow behind the head so the orb stands out on a light page.
+  const aura = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: radialTexture('rgba(110,168,255,0.5)', 'rgba(110,168,255,0.16)'), transparent: true, depthWrite: false, toneMapped: false,
+  }));
+  aura.scale.set(1.9, 1.9, 1);
+  aura.position.z = -0.7;
+  body.add(aura);
+
+  // Visor shine: a soft reflection streak across the top of the glass.
+  const shine = new THREE.Mesh(band(R * 1.032, 1.45, 0.1, Math.PI / 2 - 0.2), new THREE.MeshBasicMaterial({
+    color: 0xffffff, transparent: true, opacity: 0.22, depthWrite: false, alphaMap: mask,
+  }));
+  head.add(shine);
+
   // Hover jet: a soft ring of light under the head.
   const jet = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.012, 10, 48), glowMat());
   jet.rotation.x = Math.PI / 2;
   jet.position.y = -R * 0.94 - 0.05;
   body.add(jet);
+
+  // Hover beam: light fading downwards from the jet, like a small thruster.
+  const beamCanvas = document.createElement('canvas');
+  beamCanvas.width = 4;
+  beamCanvas.height = 64;
+  const bctx = beamCanvas.getContext('2d');
+  const bgrad = bctx.createLinearGradient(0, 0, 0, 64);
+  bgrad.addColorStop(0, 'rgba(110,168,255,0.6)');
+  bgrad.addColorStop(1, 'rgba(110,168,255,0)');
+  bctx.fillStyle = bgrad;
+  bctx.fillRect(0, 0, 4, 64);
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.19, 0.3, 32, 1, true), new THREE.MeshBasicMaterial({
+    map: new THREE.CanvasTexture(beamCanvas), transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false,
+  }));
+  beam.position.y = jet.position.y - 0.15;
+  body.add(beam);
 
   // Floating hands: they swing around a shoulder pivot (wave, point, hold the magnifier).
   const arms = [-1, 1].map((side) => {
@@ -287,6 +337,8 @@ export function createRobot() {
     hoverGlow.material.opacity = Math.max(0.35, state.hover || 0) * (0.75 + Math.sin(time * 6) * 0.15);
     hoverGlow.scale.setScalar(0.9 + Math.sin(time * 6) * 0.05);
     jet.scale.setScalar(1 + Math.sin(time * 6) * 0.08);
+    beam.material.opacity = 0.8 + Math.sin(time * 6) * 0.15;
+    aura.material.opacity = 0.85 + Math.sin(time * 1.5) * 0.15;
 
     chassis.rotation.y += (state.yaw - chassis.rotation.y) * Math.min(1, dt * 6);
     body.position.y = BASE_Y + Math.sin(time * 2) * 0.02;   // gentle float
@@ -331,16 +383,18 @@ export function createRobot() {
 export function addRobotLights(scene, renderer, environment) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = 1.0;
   scene.environment = environment;
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa6c8, 0.8));
-  const key = new THREE.DirectionalLight(0xfff6ee, 2.4);
-  key.position.set(-2.5, 4, 5);
+  // Little flat fill, a strong key from the upper left and a blue rim behind the right edge:
+  // the shading carries the round form even at a small size on a light page.
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x6c78a6, 0.38));
+  const key = new THREE.DirectionalLight(0xfff4ea, 3.4);
+  key.position.set(-3, 4.5, 4);
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0xffd9c7, 0.7);   // peach, like the page washes
+  const fill = new THREE.DirectionalLight(0xffd9c7, 0.35);  // peach, like the page washes
   fill.position.set(-4, -1, 2);
   scene.add(fill);
-  const rim = new THREE.DirectionalLight(0xd4e2ff, 1.5);
-  rim.position.set(3, 2, -4);
+  const rim = new THREE.DirectionalLight(0x9fbcff, 2.4);
+  rim.position.set(3.5, 2.5, -3);
   scene.add(rim);
 }
