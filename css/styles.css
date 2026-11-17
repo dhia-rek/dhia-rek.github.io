@@ -1807,71 +1807,46 @@ footer a:hover { color: var(--accent-ink); }
   .robot-bubble { max-width: 220px; font-size: 0.84rem; }
 }
 
-/* ===== Robot QR hologram ===== */
-.robot-holo {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  z-index: 991;
-  display: grid;
-  justify-items: center;
-  gap: 6px;
-  width: 128px;
-  padding: 10px 10px 9px;
-  border-radius: 18px;
-  color: var(--ink-2);
-  text-decoration: none;
-  background: color-mix(in oklch, var(--card) 62%, transparent);
-  -webkit-backdrop-filter: blur(12px) saturate(1.5);
-  backdrop-filter: blur(12px) saturate(1.5);
-  border: 1px solid color-mix(in oklch, var(--holo, #b39bff) 65%, transparent);
-  box-shadow:
-    0 0 0 4px color-mix(in oklch, var(--holo, #b39bff) 12%, transparent),
-    0 14px 34px -12px var(--holo, #b39bff),
-    inset 0 0 24px -10px var(--holo, #b39bff);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .35s ease, border-color .6s ease, box-shadow .6s ease;
-}
-.robot-holo.show { opacity: 1; pointer-events: auto; }
-.robot-holo img {
-  position: relative;
-  z-index: 1;
-  width: 96px;
-  height: 96px;
-  padding: 5px;
-  border-radius: 10px;
-  background: #fff;
-}
-.robot-holo span { position: relative; z-index: 1; font-size: 0.72rem; font-weight: 650; letter-spacing: 0.01em; text-align: center; }
-/* a light beam from the robot to the card */
-.robot-holo::before {
+/* ===== Section tint: the page takes a light wash of the robot's current colour ===== */
+@property --section-tint { syntax: '<color>'; inherits: true; initial-value: #b39bff; }
+html { transition: --section-tint 0.9s ease; }
+body::before {
   content: '';
-  position: absolute;
-  top: 50%;
-  right: 100%;
-  width: 20px;
-  height: 64%;
-  transform: translateY(-50%);
-  background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--holo, #b39bff) 45%, transparent));
-  clip-path: polygon(0 44%, 100% 0, 100% 100%, 0 56%);
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 45% at 88% 10%, color-mix(in oklch, var(--section-tint) 13%, transparent), transparent 72%),
+    radial-gradient(48% 40% at 6% 94%, color-mix(in oklch, var(--section-tint) 9%, transparent), transparent 72%);
 }
-.robot-holo.left::before { right: auto; left: 100%; transform: translateY(-50%) scaleX(-1); }
-/* a scan line sweeping over the card */
-.robot-holo::after {
+
+/* ===== Hero QR as a holographic panel on the page; it lights up when the robot talks about it ===== */
+.hero-qr {
+  border-color: color-mix(in oklch, var(--section-tint) 45%, var(--line));
+  box-shadow: var(--shadow), inset 0 0 28px -14px var(--section-tint);
+  transition: border-color .6s ease, box-shadow .6s ease;
+}
+.hero-qr::after {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(180deg, transparent 40%, color-mix(in oklch, var(--holo, #b39bff) 28%, transparent) 50%, transparent 60%);
-  background-size: 100% 260%;
-  animation: holo-scan 3s linear infinite;
   pointer-events: none;
+  background: linear-gradient(180deg, transparent 42%, color-mix(in oklch, var(--section-tint) 22%, transparent) 50%, transparent 58%);
+  background-size: 100% 260%;
+  opacity: 0;
+  transition: opacity .5s ease;
 }
+.hero-qr.holo-active {
+  border-color: color-mix(in oklch, var(--section-tint) 80%, transparent);
+  box-shadow: 0 0 0 5px color-mix(in oklch, var(--section-tint) 16%, transparent), 0 18px 44px -14px var(--section-tint);
+}
+.hero-qr.holo-active::after { opacity: 1; animation: holo-scan 2.6s linear infinite; }
+.hero-qr.holo-active .hero-qr-code { animation: qr-pulse 1.6s ease-in-out infinite; }
 @keyframes holo-scan { from { background-position: 0 110%; } to { background-position: 0 -10%; } }
-@media (prefers-reduced-motion: reduce) { .robot-holo::after { animation: none; } }
-
-/* While the robot carries the QR code, the hero's QR card steps aside. */
-.robot-on .hero-qr { display: none; }
-.robot-on .hero-grid { grid-template-columns: minmax(0, 1fr); }
+@keyframes qr-pulse { 50% { transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) {
+  .hero-qr.holo-active::after, .hero-qr.holo-active .hero-qr-code { animation: none; }
+}
 

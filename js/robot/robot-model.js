@@ -462,6 +462,7 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
       if (side === 1 && state.wave) roll = side * (2.5 + Math.sin(time * 12) * 0.35) * state.wave;
       if (side === -1 && state.point) { roll = side * 1.4 * state.point; pitch = -0.5 * state.point; }
       if (side === -1 && state.magnify && !state.point) { roll = -0.12; pitch = -0.45; }
+      if (side === 1 && state.pointRight) { roll = side * 1.3 * state.pointRight; pitch = -0.35 * state.pointRight; }
       shoulder.rotation.z += (roll - shoulder.rotation.z) * Math.min(1, dt * 7);
       shoulder.rotation.x += (pitch - shoulder.rotation.x) * Math.min(1, dt * 7);
     }

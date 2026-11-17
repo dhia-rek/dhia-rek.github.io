@@ -9,7 +9,7 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const TEXT = {
   en: {
-    hero: "Hi, I'm Valeknaar! Drag me around, or tap me to chat.",
+    hero: "Hi, I'm Valeknaar! Scan the code to connect with Dhia, or tap me to chat.",
     experience: 'Dhia is an AI Integration Intern at Driveco. Ask me about it!',
     education: 'MSc in Artificial Intelligence at ECE Paris.',
     projects: 'Psst: the vision project runs live in your browser.',
@@ -21,11 +21,9 @@ const TEXT = {
     ouch: ['Ouch!', 'Whoa!', 'I saw stars…', 'Again?!'],
     hide: 'Hide',
     show: 'Show robot',
-    scan: 'Scan to connect',
-    qrAlt: "QR code to all of Dhia's links",
   },
   fr: {
-    hero: 'Salut, je suis Valeknaar ! Déplace-moi, ou touche-moi pour discuter.',
+    hero: 'Salut, je suis Valeknaar ! Scanne le code pour retrouver Dhia, ou touche-moi pour discuter.',
     experience: "Dhia est stagiaire en intégration IA chez Driveco. Demande-moi !",
     education: "MSc en intelligence artificielle à l'ECE Paris.",
     projects: 'Psst : le projet vision tourne en direct dans ton navigateur.',
@@ -37,8 +35,6 @@ const TEXT = {
     ouch: ['Aïe !', 'Oups !', "J'ai vu des étoiles…", 'Encore ?!'],
     hide: 'Masquer',
     show: 'Afficher le robot',
-    scan: 'Scanner pour me retrouver',
-    qrAlt: 'QR code vers tous les liens de Dhia',
   },
 };
 const SECTIONS = ['hero', 'experience', 'education', 'projects', 'capabilities', 'shipped', 'contact'];
@@ -52,7 +48,7 @@ const THEMES = {
   shipped: { glow: '#34d399', a: '#22c55e', b: '#06b6d4', c: '#a3e635' },
   contact: { glow: '#ff6fae', a: '#ff5c8a', b: '#ffb38a', c: '#c084fc' },
 };
-const QR_SECTIONS = new Set(['hero', 'contact']);   // where the robot projects the QR code
+
 const ACTIONS = { projects: 'https://dhiarekik.me/ai-vision-detection/' };
 
 const lang = () => (window.i18n && window.i18n.lang === 'fr' ? 'fr' : 'en');
@@ -87,7 +83,7 @@ async function start() {
   const [THREE, { RoomEnvironment }, { createRobot, addRobotLights }] = await Promise.all([
     import('three'),
     import('three/addons/environments/RoomEnvironment.js'),
-    import('./robot-model.js?v=20261117-10'),
+    import('./robot-model.js?v=20261117-12'),
   ]);
 
   // ---- DOM: canvas, hit area, bubble, show button ----
@@ -112,22 +108,8 @@ async function start() {
   const showBtn = document.createElement('button');
   showBtn.type = 'button';
   showBtn.className = 'robot-show';
-  // Holographic QR card the robot projects beside itself (hero and contact).
-  const holo = document.createElement('a');
-  holo.className = 'robot-holo';
-  holo.href = 'links/';
-  const holoImg = document.createElement('img');
-  holoImg.src = 'assets/qr/dhiarekik-links.svg';
-  holoImg.width = holoImg.height = 104;
-  const holoLabel = document.createElement('span');
-  holo.append(holoImg, holoLabel);
-  document.body.append(layer, hit, bubble, showBtn, holo);
-  // While the robot is on screen it carries the QR code, so the hero's QR card steps aside.
-  document.documentElement.classList.add('robot-on');
-  const labelHolo = () => { holoLabel.textContent = t('scan'); holoImg.alt = t('qrAlt'); };
-  labelHolo();
-  // the site sets <html lang> when the visitor switches language
-  new MutationObserver(labelHolo).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  document.body.append(layer, hit, bubble, showBtn);
+  const heroQr = document.querySelector('.hero-qr');   // the QR panel on the page
 
   // ---- three.js scene: orthographic camera in CSS pixels, y up ----
   // The canvas only covers a box around the robot. Render at the screen's own resolution on
@@ -194,7 +176,7 @@ async function start() {
   let cursorX = null, cursorAt = 0;
   addEventListener('pointermove', (e) => { cursorX = e.clientX; cursorAt = performance.now(); }, { passive: true });
   let hidden = storedHidden();
-  let talkUntil = 0, waveUntil = 0;
+  let talkUntil = 0, waveUntil = 0, pointRightUntil = 0, qrTimer = 0;
 
   // ---- bubble ----
   let bubbleTimer = 0;
@@ -234,8 +216,7 @@ async function start() {
     bubble.classList.remove('show');
     showBtn.hidden = !value;
     showBtn.textContent = t('show');
-    document.documentElement.classList.toggle('robot-on', !value);
-    holo.classList.remove('show');
+
     if (!value) { pos.set(-radius, floor); mode = 'drive'; setSpot(spotFor(section)); greet(section); }
   }
   showBtn.addEventListener('click', () => setHidden(false));
@@ -245,6 +226,8 @@ async function start() {
   // photo or the text. Phones keep one spot beside the chat button.
   function spotFor(name) {
     if (W < 700) return { x: phoneSpot(), y: floor };
+    // Below the hero it moves aside, to the right edge, so it never sits on what you read.
+    if (name !== 'hero') return { x: W - radius - 14, y: Math.max(floor + radius * 2.2, H * 0.4) };
     const el = name === 'hero' ? document.querySelector('.hero') : document.getElementById(name);
     const title = el?.querySelector('h1, h2');
     if (!title) return { x: phoneSpot(), y: floor };
@@ -317,7 +300,7 @@ async function start() {
   function applyTheme(name) {
     const colours = THEMES[name] ?? THEMES.hero;
     robot.setTheme(colours);
-    holo.style.setProperty('--holo', colours.glow);
+    document.documentElement.style.setProperty('--section-tint', colours.glow);
   }
 
   function greet(name) {
@@ -328,6 +311,12 @@ async function start() {
     const action = ACTIONS[name] ? { href: ACTIONS[name], label: t(`${name}Action`) } : null;
     say(t(name), { ms: name === 'projects' ? 7000 : 5000, action });
     anim.magnify = name === 'projects';
+    if (name === 'hero' && heroQr) {
+      pointRightUntil = performance.now() + 3200;
+      heroQr.classList.add('holo-active');
+      clearTimeout(qrTimer);
+      qrTimer = setTimeout(() => heroQr.classList.remove('holo-active'), 5000);
+    }
     if (name === 'hero') waveUntil = performance.now() + 1800;
   }
   let pendingGreet = 'hero';
@@ -504,6 +493,7 @@ async function start() {
     if (mode === 'held' || mode === 'air') { anim.hover = 0.6; anim.lift = (pos.y - floor) / scale; }
 
     if (mode !== 'held' && mode !== 'air') anim.wave = now < waveUntil ? 1 : 0;
+    anim.pointRight = (mode === 'idle' || mode === 'drive') && now < pointRightUntil ? 1 : 0;
     faceTimer -= dt;
     if (faceTimer <= 0 && (mode === 'idle' || mode === 'drive')) anim.expression = now < waveUntil ? 'happy' : 'neutral';
     anim.talking = now < talkUntil && anim.expression !== 'dizzy' && mode !== 'held' && mode !== 'air';
@@ -559,16 +549,7 @@ async function start() {
       hit.style.width = hit.style.height = `${size}px`;
       const bx = Math.min(Math.max(pos.x - 30, 12), W - 292);
       bubble.style.transform = `translate(${bx}px, ${-(pos.y + radius + 12)}px)`;
-      // QR hologram: to the right of the robot, or to its left when there is no room.
-      const showHolo = QR_SECTIONS.has(section) && (mode === 'idle' || mode === 'drive') && !bubble.classList.contains('show');
-      holo.classList.toggle('show', showHolo);
-      if (showHolo) {
-        const holoW = 128, holoH = 150;
-        const left = pos.x + radius * 0.95 + holoW + 18 > W - 8;
-        holo.classList.toggle('left', left);
-        const hx = left ? pos.x - radius * 0.95 - 18 - holoW : pos.x + radius * 0.95 + 18;
-        holo.style.transform = `translate(${Math.round(hx)}px, ${Math.round(-(pos.y - holoH / 2))}px)`;
-      }
+
     }
     requestAnimationFrame(frame);
   }
