@@ -83,7 +83,7 @@ async function start() {
   const [THREE, { RoomEnvironment }, { createRobot, addRobotLights }] = await Promise.all([
     import('three'),
     import('three/addons/environments/RoomEnvironment.js'),
-    import('./robot-model.js?v=20261117-12'),
+    import('./robot-model.js?v=20261117-13'),
   ]);
 
   // ---- DOM: canvas, hit area, bubble, show button ----
@@ -234,7 +234,10 @@ async function start() {
     const range = document.createRange();
     range.selectNodeContents(title);
     const box = range.getBoundingClientRect();
-    const x = Math.min(Math.max(box.right + 36 + radius, 150 + radius), W - 170 - radius);
+    let x = Math.min(Math.max(box.right + 36 + radius, 150 + radius), W - 170 - radius);
+    // in the hero, stay between the headline and the QR panel set into the same card
+    const qrBox = name === 'hero' ? heroQr?.getBoundingClientRect() : null;
+    if (qrBox && qrBox.width && qrBox.left > box.right) x = Math.min(x, qrBox.left - radius - 14);
     // a little above the title's middle, so the hands and beam stay clear of the content below
     const top = Math.min(Math.max(box.top + box.height / 2 - radius * 0.3, 120 + radius), H - 70 - radius);
     return { x, y: H - top };

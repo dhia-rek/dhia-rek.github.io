@@ -1850,3 +1850,20 @@ body::before {
   .hero-qr.holo-active::after, .hero-qr.holo-active .hero-qr-code { animation: none; }
 }
 
+/* ===== The QR panel sits inside the intro card, on its right side (wide screens) ===== */
+@media (min-width: 1000px) {
+  .hero-grid { position: relative; grid-template-columns: minmax(0, 1fr); }
+  .hero-qr {
+    position: absolute;
+    top: 50%;
+    right: clamp(28px, 3.6vw, 60px);
+    transform: translateY(-50%);
+    width: clamp(210px, 18vw, 250px);
+    padding: 22px 18px;
+    background: color-mix(in oklch, var(--card) 58%, transparent);
+    -webkit-backdrop-filter: blur(10px) saturate(1.3);
+    backdrop-filter: blur(10px) saturate(1.3);
+    box-shadow: 0 10px 30px -16px var(--section-tint), inset 0 0 28px -14px var(--section-tint);
+  }
+}
+
