@@ -21,6 +21,8 @@ const TEXT = {
     ouch: ['Ouch!', 'Whoa!', 'I saw stars…', 'Again?!'],
     hide: 'Hide',
     show: 'Show robot',
+    scan: 'Scan to connect',
+    qrAlt: "QR code to all of Dhia's links",
   },
   fr: {
     hero: 'Salut, je suis Valeknaar ! Déplace-moi, ou touche-moi pour discuter.',
@@ -35,9 +37,22 @@ const TEXT = {
     ouch: ['Aïe !', 'Oups !', "J'ai vu des étoiles…", 'Encore ?!'],
     hide: 'Masquer',
     show: 'Afficher le robot',
+    scan: 'Scanner pour me retrouver',
+    qrAlt: 'QR code vers tous les liens de Dhia',
   },
 };
 const SECTIONS = ['hero', 'experience', 'education', 'projects', 'capabilities', 'shipped', 'contact'];
+// The robot's colours for each section: halo/glow, and the three aurora colours of its core.
+const THEMES = {
+  hero: { glow: '#b39bff', a: '#7b61ff', b: '#ff5cc8', c: '#2ad4ff' },
+  experience: { glow: '#5aa9ff', a: '#3a86ff', b: '#2ad4ff', c: '#7b61ff' },
+  education: { glow: '#3ddc97', a: '#10b981', b: '#2ad4ff', c: '#a3e635' },
+  projects: { glow: '#ffb020', a: '#ff8a00', b: '#ff5c5c', c: '#ffd60a' },
+  capabilities: { glow: '#8b8cff', a: '#6366f1', b: '#a855f7', c: '#22d3ee' },
+  shipped: { glow: '#34d399', a: '#22c55e', b: '#06b6d4', c: '#a3e635' },
+  contact: { glow: '#ff6fae', a: '#ff5c8a', b: '#ffb38a', c: '#c084fc' },
+};
+const QR_SECTIONS = new Set(['hero', 'contact']);   // where the robot projects the QR code
 const ACTIONS = { projects: 'https://dhiarekik.me/ai-vision-detection/' };
 
 const lang = () => (window.i18n && window.i18n.lang === 'fr' ? 'fr' : 'en');
@@ -72,7 +87,7 @@ async function start() {
   const [THREE, { RoomEnvironment }, { createRobot, addRobotLights }] = await Promise.all([
     import('three'),
     import('three/addons/environments/RoomEnvironment.js'),
-    import('./robot-model.js?v=20261117-8'),
+    import('./robot-model.js?v=20261117-10'),
   ]);
 
   // ---- DOM: canvas, hit area, bubble, show button ----
@@ -97,7 +112,22 @@ async function start() {
   const showBtn = document.createElement('button');
   showBtn.type = 'button';
   showBtn.className = 'robot-show';
-  document.body.append(layer, hit, bubble, showBtn);
+  // Holographic QR card the robot projects beside itself (hero and contact).
+  const holo = document.createElement('a');
+  holo.className = 'robot-holo';
+  holo.href = 'links/';
+  const holoImg = document.createElement('img');
+  holoImg.src = 'assets/qr/dhiarekik-links.svg';
+  holoImg.width = holoImg.height = 104;
+  const holoLabel = document.createElement('span');
+  holo.append(holoImg, holoLabel);
+  document.body.append(layer, hit, bubble, showBtn, holo);
+  // While the robot is on screen it carries the QR code, so the hero's QR card steps aside.
+  document.documentElement.classList.add('robot-on');
+  const labelHolo = () => { holoLabel.textContent = t('scan'); holoImg.alt = t('qrAlt'); };
+  labelHolo();
+  // the site sets <html lang> when the visitor switches language
+  new MutationObserver(labelHolo).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
   // ---- three.js scene: orthographic camera in CSS pixels, y up ----
   // The canvas only covers a box around the robot. Render at the screen's own resolution on
@@ -204,6 +234,8 @@ async function start() {
     bubble.classList.remove('show');
     showBtn.hidden = !value;
     showBtn.textContent = t('show');
+    document.documentElement.classList.toggle('robot-on', !value);
+    holo.classList.remove('show');
     if (!value) { pos.set(-radius, floor); mode = 'drive'; setSpot(spotFor(section)); greet(section); }
   }
   showBtn.addEventListener('click', () => setHidden(false));
@@ -227,6 +259,7 @@ async function start() {
   // ---- fireworks: rockets from the robot that burst into sparks in its colours ----
   const sparks = [];
   const rockets = [];
+  const sparkColours = () => { const c = THEMES[section] ?? THEMES.hero; return [c.a, c.b, c.c, c.glow]; };
   function fireworks(count = 3) {
     if (reducedMotion || hidden) return;
     // Each rocket aims at a point on screen around the robot, so every burst is visible.
@@ -240,7 +273,7 @@ async function start() {
         x: x0, y: y0,
         vx: (tx - x0) / life, vy: (ty - y0) / life - 0.5 * 380 * life,   // cancels gravity on the way
         life,
-        color: pick(robot.sparks),
+        color: pick(sparkColours()),
       });
     }
     anim.expression = 'happy';
@@ -253,7 +286,7 @@ async function start() {
       const a = (i / n) * Math.PI * 2 + Math.random() * 0.2;
       const s = 110 + Math.random() * 180;
       sparks.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1, decay: 0.7 + Math.random() * 0.5,
-        color: Math.random() < 0.3 ? pick(robot.sparks) : color });
+        color: Math.random() < 0.3 ? pick(sparkColours()) : color });
     }
   }
   function drawSparks(dt) {
@@ -281,6 +314,12 @@ async function start() {
   }
   const celebrated = new Set();
 
+  function applyTheme(name) {
+    const colours = THEMES[name] ?? THEMES.hero;
+    robot.setTheme(colours);
+    holo.style.setProperty('--holo', colours.glow);
+  }
+
   function greet(name) {
     if ((name === 'projects' || name === 'contact') && !celebrated.has(name)) {
       celebrated.add(name);
@@ -295,20 +334,19 @@ async function start() {
   let followDirty = true;                    // recompute the hover spot (first frame, scroll, resize)
   addEventListener('scroll', () => { followDirty = true; }, { passive: true });
   addEventListener('resize', () => { followDirty = true; });
-  const observer = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
-      const name = entry.target.classList.contains('hero') ? 'hero' : entry.target.id;
-      if (!SECTIONS.includes(name) || name === section) continue;
-      section = name;
-      if (mode === 'idle' || mode === 'drive') { setSpot(spotFor(name)); mode = 'drive'; }
-      pendingGreet = name;
+  // Current section: the last one whose top has passed 40% of the screen; at the very bottom of the
+  // page, the last section (a short final section may never reach that line).
+  function currentSection() {
+    const atBottom = innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
+    let current = 'hero';
+    for (const name of SECTIONS) {
+      const el = name === 'hero' ? document.querySelector('.hero') : document.getElementById(name);
+      if (!el) continue;
+      if (atBottom || el.getBoundingClientRect().top <= innerHeight * 0.4) current = name;
     }
-  }, { threshold: 0.45 });
-  for (const name of SECTIONS) {
-    const el = name === 'hero' ? document.querySelector('.hero') : document.getElementById(name);
-    if (el) observer.observe(el);
+    return current;
   }
+  applyTheme(section);
 
   // ---- drag, throw, tap ----
   let dragId = null, downAt = 0, downPos = null, moved = false;
@@ -491,10 +529,14 @@ async function start() {
     last = now;
     if (!hidden) {
       // keep hovering beside the current section's title while the page scrolls
-      if (followDirty && (mode === 'idle' || mode === 'drive')) {
+      if (followDirty) {
         followDirty = false;
-        setSpot(spotFor(section));
-        if (mode === 'idle') mode = 'drive';
+        const name = currentSection();
+        if (name !== section) { section = name; applyTheme(name); pendingGreet = name; }
+        if (mode === 'idle' || mode === 'drive') {
+          setSpot(spotFor(section));
+          if (mode === 'idle') mode = 'drive';
+        }
       }
       step(dt);
       drawSparks(dt);
@@ -517,6 +559,16 @@ async function start() {
       hit.style.width = hit.style.height = `${size}px`;
       const bx = Math.min(Math.max(pos.x - 30, 12), W - 292);
       bubble.style.transform = `translate(${bx}px, ${-(pos.y + radius + 12)}px)`;
+      // QR hologram: to the right of the robot, or to its left when there is no room.
+      const showHolo = QR_SECTIONS.has(section) && (mode === 'idle' || mode === 'drive') && !bubble.classList.contains('show');
+      holo.classList.toggle('show', showHolo);
+      if (showHolo) {
+        const holoW = 128, holoH = 150;
+        const left = pos.x + radius * 0.95 + holoW + 18 > W - 8;
+        holo.classList.toggle('left', left);
+        const hx = left ? pos.x - radius * 0.95 - 18 - holoW : pos.x + radius * 0.95 + 18;
+        holo.style.transform = `translate(${Math.round(hx)}px, ${Math.round(-(pos.y - holoH / 2))}px)`;
+      }
     }
     requestAnimationFrame(frame);
   }

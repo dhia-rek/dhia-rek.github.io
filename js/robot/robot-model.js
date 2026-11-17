@@ -29,8 +29,8 @@ export const LOOKS = {
       sheen: 1, sheenColor: 0xd7ecff, sheenRoughness: 0.28,
     },
     trim: { color: 0xffffff, roughness: 0.2, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, iridescence: 0.6, iridescenceIOR: 1.3 },
-    visor: 0x0a0f24, visorOpacity: 0.86,
-    visorWidth: 1.3, visorHeight: 0.52, visorDrop: 0.12,   // a smaller visor shows more of the core
+    visor: 0x0a0f24,
+    eyesOnly: true,                                        // just two glowing eyes on the glass
     glow: 0xb39bff, eye: '#c9f3ff', eyeCore: '#ffffff',
     aura: 'rgba(167,139,250,0.42)', auraMid: 'rgba(244,114,182,0.14)',
     sparks: ['#7b61ff', '#ff5cc8', '#2ad4ff', '#ffbe0b'],
@@ -201,7 +201,13 @@ const BASE_Y = 0.8;      // hover height of the head's centre
 
 export function createRobot({ look = DEFAULT_LOOK } = {}) {
   const palette = LOOKS[look] ?? LOOKS[DEFAULT_LOOK];
-  const glowMat = (extra = {}) => new THREE.MeshBasicMaterial({ color: palette.glow, toneMapped: false, ...extra });
+  const glowMats = [];
+  const glowMat = (extra = {}) => {
+    const material = new THREE.MeshBasicMaterial({ color: palette.glow, toneMapped: false, ...extra });
+    glowMats.push(material);
+    return material;
+  };
+  const WHITE_GLOW = ['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.15)'];
 
   const root = new THREE.Group();      // moved around the page
   const chassis = new THREE.Group();   // yaw (turning)
@@ -217,7 +223,7 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   body.add(head);
 
   // Glass look: an aurora of light swirling inside the clear shell.
-  let core = null, coreUniforms = null;
+  let core = null, coreUniforms = null, coreGlow = null;
   if (palette.core) {
     coreUniforms = {
       uTime: { value: 0 },
@@ -249,7 +255,7 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
     });
     core = new THREE.Group();
     core.add(new THREE.Mesh(new THREE.SphereGeometry(0.27, 48, 32), coreMat));
-    const coreGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: radialTexture(palette.aura, palette.auraMid), transparent: true, depthWrite: false, toneMapped: false }));
+    coreGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: radialTexture(...WHITE_GLOW), color: palette.core[1], transparent: true, depthWrite: false, toneMapped: false }));
     coreGlow.scale.set(1.15, 1.15, 1);
     core.add(coreGlow);
     core.position.set(0, 0.02, -0.06);
@@ -261,20 +267,27 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   const mask = roundedMask(0.45);
   const band = (radius, width, height, centre = Math.PI / 2 + 0.03) =>
     new THREE.SphereGeometry(radius, 64, 32, Math.PI / 2 - width / 2, width, centre - height / 2, height);
-  const vw = palette.visorWidth ?? 1.88, vh = palette.visorHeight ?? 0.78;
-  const vc = Math.PI / 2 + 0.03 + (palette.visorDrop ?? 0);
-  const bezel = new THREE.Mesh(band(R * 1.012, vw + 0.17, vh + 0.14, vc), surface(palette.trim, { alphaMap: mask, transparent: true }));
-  head.add(bezel);
-  const glass = new THREE.Mesh(band(R * 1.024, vw, vh, vc), new THREE.MeshPhysicalMaterial({
-    color: palette.visor, roughness: 0.1, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04,
-    emissive: 0xffffff, emissiveMap: face.texture, alphaMap: mask, transparent: true, toneMapped: false,
-    opacity: palette.visorOpacity ?? 1,
-  }));
-  head.add(glass);
-  const shine = new THREE.Mesh(band(R * 1.032, vw * 0.77, vh * 0.13, vc - vh / 2 + vh * 0.2), new THREE.MeshBasicMaterial({
-    color: 0xffffff, transparent: true, opacity: 0.22, depthWrite: false, alphaMap: mask,
-  }));
-  head.add(shine);
+  if (palette.eyesOnly) {
+    // Only the eyes, glowing on the glass over the aurora.
+    const eyes = new THREE.Mesh(band(R * 1.03, 1.5, 0.66, Math.PI / 2 + 0.02), new THREE.MeshBasicMaterial({
+      map: face.texture, transparent: true, depthWrite: false, toneMapped: false,
+    }));
+    eyes.renderOrder = 3;
+    head.add(eyes);
+  } else {
+    const vw = 1.88, vh = 0.78, vc = Math.PI / 2 + 0.03;
+    const bezel = new THREE.Mesh(band(R * 1.012, vw + 0.17, vh + 0.14, vc), surface(palette.trim, { alphaMap: mask, transparent: true }));
+    head.add(bezel);
+    const glass = new THREE.Mesh(band(R * 1.024, vw, vh, vc), new THREE.MeshPhysicalMaterial({
+      color: palette.visor, roughness: 0.1, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04,
+      emissive: 0xffffff, emissiveMap: face.texture, alphaMap: mask, transparent: true, toneMapped: false,
+    }));
+    head.add(glass);
+    const shine = new THREE.Mesh(band(R * 1.032, vw * 0.77, vh * 0.13, vc - vh / 2 + vh * 0.2), new THREE.MeshBasicMaterial({
+      color: 0xffffff, transparent: true, opacity: 0.22, depthWrite: false, alphaMap: mask,
+    }));
+    head.add(shine);
+  }
 
   // Seam: a thin line of light around the head, below the visor.
   const seam = new THREE.Mesh(new THREE.TorusGeometry(R * 0.985, 0.0055, 8, 128), glowMat());
@@ -319,7 +332,7 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   });
 
   // Aura: a soft glow behind the head so it stands out on any page.
-  const aura = new THREE.Sprite(new THREE.SpriteMaterial({ map: radialTexture(palette.aura, palette.auraMid), transparent: true, depthWrite: false, toneMapped: false }));
+  const aura = new THREE.Sprite(new THREE.SpriteMaterial({ map: radialTexture(...WHITE_GLOW), color: palette.glow, transparent: true, depthWrite: false, toneMapped: false }));
   aura.scale.set(1.9, 1.9, 1);
   aura.position.z = -0.7;
   body.add(aura);
@@ -334,12 +347,12 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   beamCanvas.height = 64;
   const bctx = beamCanvas.getContext('2d');
   const bgrad = bctx.createLinearGradient(0, 0, 0, 64);
-  bgrad.addColorStop(0, palette.aura);
+  bgrad.addColorStop(0, 'rgba(255,255,255,0.6)');
   bgrad.addColorStop(1, 'rgba(0,0,0,0)');
   bctx.fillStyle = bgrad;
   bctx.fillRect(0, 0, 4, 64);
   const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.19, 0.3, 32, 1, true), new THREE.MeshBasicMaterial({
-    map: new THREE.CanvasTexture(beamCanvas), transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false,
+    map: new THREE.CanvasTexture(beamCanvas), color: palette.glow, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false,
   }));
   beam.position.y = jet.position.y - 0.15;
   body.add(beam);
@@ -377,11 +390,33 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   shadow.position.y = 0.002;
   root.add(shadow);
   const hoverGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.4), new THREE.MeshBasicMaterial({
-    map: radialTexture(palette.aura, palette.auraMid), transparent: true, depthWrite: false, opacity: 0, toneMapped: false,
+    map: radialTexture(...WHITE_GLOW), color: palette.glow, transparent: true, depthWrite: false, opacity: 0, toneMapped: false,
   }));
   hoverGlow.rotation.x = -Math.PI / 2;
   hoverGlow.position.y = 0.05;
   root.add(hoverGlow);
+
+  // ---- colour theme: eases towards the colours of the section on screen ----
+  const theme = { glow: new THREE.Color(palette.glow) };
+  const themeTarget = { glow: new THREE.Color(palette.glow) };
+  if (coreUniforms) {
+    for (const key of ['a', 'b', 'c']) {
+      theme[key] = coreUniforms[`u${key.toUpperCase()}`].value;
+      themeTarget[key] = theme[key].clone();
+    }
+  }
+  function setTheme(colours) {
+    for (const key of Object.keys(themeTarget)) if (colours[key]) themeTarget[key].set(colours[key]);
+  }
+  function easeTheme(dt) {
+    const k = Math.min(1, dt * 2.5);
+    for (const key of Object.keys(theme)) theme[key].lerp(themeTarget[key], k);
+    for (const material of glowMats) material.color.copy(theme.glow);
+    aura.material.color.copy(theme.glow);
+    beam.material.color.copy(theme.glow);
+    hoverGlow.material.color.copy(theme.glow);
+    if (coreGlow) coreGlow.material.color.copy(theme.b);
+  }
 
   // ---- animation ----
   let time = 0, blinkTimer = 2 + Math.random() * 2, blink = 0, scanTimer = 2.5, scan = -1;
@@ -393,6 +428,7 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
    */
   function update(dt, state) {
     time += dt;
+    easeTheme(dt);
     const lift = state.lift || 0;
     shadow.position.y = 0.002 - lift;
     shadow.scale.setScalar(Math.max(0.35, 1 - lift * 0.9));
@@ -447,7 +483,7 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
     });
   }
 
-  return { root, update, height: 1.45, sparks: palette.sparks };
+  return { root, update, setTheme, height: 1.45, sparks: palette.sparks };
 }
 
 /**
