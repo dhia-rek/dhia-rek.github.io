@@ -71,7 +71,7 @@ async function start() {
   const [THREE, { RoomEnvironment }, { createRobot, addRobotLights }] = await Promise.all([
     import('three'),
     import('three/addons/environments/RoomEnvironment.js'),
-    import('./robot-model.js?v=20261117-1'),
+    import('./robot-model.js?v=20261117-2'),
   ]);
 
   // ---- DOM: canvas, hit area, bubble, show button ----
@@ -142,7 +142,7 @@ async function start() {
   }
 
   // ---- physics + behaviour state ----
-  const pos = new THREE.Vector2(W < 700 ? phoneSpot() : 120, floor);
+  const pos = new THREE.Vector2(phoneSpot(), floor);
   const vel = new THREE.Vector2();
   let angle = 0, spin = 0, squash = 0;
   let vx = 0, yVel = 0, angVel = 0, swing = 0;   // springs for the natural float
@@ -196,12 +196,11 @@ async function start() {
 
   // ---- sections: drive to a spot and suggest something ----
   function spotFor(name) {
-    const i = SECTIONS.indexOf(name);
     // desktop: stay right of the fixed social links rail on the left edge
     // phones: keep one spot, so it does not shuffle sideways every time a section scrolls by
-    if (W < 700) return phoneSpot();
-    const lo = 170, hi = Math.min(W * 0.34, 520);
-    return lo + ((i * 0.37) % 1) * (hi - lo);
+    // Rest beside the chat button on every screen size: it is the chat assistant, and the left
+    // side holds the photo and headlines it should not cover. (Visitors can still drag it anywhere.)
+    return phoneSpot();
   }
   function greet(name) {
     const action = ACTIONS[name] ? { href: ACTIONS[name], label: t(`${name}Action`) } : null;

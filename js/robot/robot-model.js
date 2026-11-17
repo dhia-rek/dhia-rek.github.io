@@ -1,4 +1,4 @@
-// Valeknaar's body: a slim, tall robot with a glossy visor, an antenna light, flipper arms and a magnifying glass,
+// Valeknaar's body: a floating AI orb with a glossy visor, an orbiting halo, floating hands and a magnifying glass,
 // floating above the ground like the reference picture. Built from primitives so every part can move.
 // createRobot() returns the scene group plus update(dt, state), which animates the body, eyes and arms.
 import * as THREE from 'three';
@@ -120,42 +120,6 @@ function createFace() {
   return { texture, draw };
 }
 
-// Egg profile: superellipse-like, fuller sides and soft round ends, a little wider at the top.
-function eggPoint(t, height, width) {
-  // wider at the head, tapering towards the bottom: a sleek, light silhouette
-  const r = Math.pow(Math.sin(t), 0.88) * width * (1 + 0.15 * -Math.cos(t));
-  const y = -Math.sign(Math.cos(t)) * Math.pow(Math.abs(Math.cos(t)), 0.92) * height / 2;
-  return new THREE.Vector2(Math.max(r, 0.0001), y);
-}
-const EGG = { height: 1.5, width: 0.37 };   // slim and tall, not round
-
-/** Radius of the body at a given height, for parts that hug the surface. */
-function radiusAt(y) {
-  let best = eggPoint(Math.PI / 2, EGG.height, EGG.width);
-  for (let i = 0; i <= 240; i++) {
-    const p = eggPoint((i / 240) * Math.PI, EGG.height, EGG.width);
-    if (Math.abs(p.y - y) < Math.abs(best.y - y)) best = p;
-  }
-  return best.x;
-}
-
-function eggGeometry(height = EGG.height, width = EGG.width) {
-  const points = [];
-  for (let i = 0; i <= 72; i++) points.push(eggPoint((i / 72) * Math.PI, height, width));
-  return new THREE.LatheGeometry(points, 96);
-}
-
-// A band of the egg's own surface between two heights and around the front, pushed out slightly:
-// the visor follows the body's curve instead of sitting on it like a flat box.
-function eggBand(yMin, yMax, arc, grow) {
-  const points = [];
-  for (let i = 0; i <= 240; i++) {
-    const p = eggPoint((i / 240) * Math.PI, EGG.height, EGG.width);
-    if (p.y >= yMin && p.y <= yMax) points.push(new THREE.Vector2(p.x * grow, p.y));
-  }
-  return new THREE.LatheGeometry(points, 48, -arc / 2, arc);
-}
-
 // Rounded-rectangle mask, used as alphaMap so the visor bands get soft corners.
 function roundedMask(radius = 0.28) {
   const c = document.createElement('canvas');
@@ -189,84 +153,89 @@ function createMagnifier() {
   return group;
 }
 
-// ---- the robot ----
+// ---- the robot: a floating AI orb ----
+const R = 0.42;          // head radius
+const BASE_Y = 0.8;      // hover height of the head's centre
+
 export function createRobot() {
   const root = new THREE.Group();      // moved around the page
-  const chassis = new THREE.Group();   // yaw (turning) and bounce
+  const chassis = new THREE.Group();   // yaw (turning)
   root.add(chassis);
 
-
-  // Body: one egg; it leans and turns as a whole, like the reference.
+  // The head floats; it leans, turns and bobs as a whole.
   const body = new THREE.Group();
-  body.position.y = 0.9;
+  body.position.y = BASE_Y;
   chassis.add(body);
-  const shell = new THREE.Mesh(eggGeometry(), ceramic());
-  body.add(shell);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(R, 64, 48), ceramic());
+  head.scale.set(1.08, 0.94, 1);
+  body.add(head);
 
-  // Visor: two curved bands of the egg surface (dark rim, glossy black glass) with rounded corners;
-  // the eyes are drawn on the glass itself as an emissive texture.
+  // Visor: bands of slightly larger spheres across the front (light rim, navy glass with the eyes).
   const face = createFace();
-  const mask = roundedMask();
-  const bezel = new THREE.Mesh(eggBand(-0.2, 0.3, 1.75, 1.018), ceramic(COLORS.bezel, { roughness: 0.4, alphaMap: mask, transparent: true }));
-  body.add(bezel);
-  const glass = new THREE.Mesh(eggBand(-0.165, 0.265, 1.55, 1.03), new THREE.MeshPhysicalMaterial({
+  const mask = roundedMask(0.45);
+  const band = (radius, width, height, centre = Math.PI / 2 + 0.03) =>
+    new THREE.SphereGeometry(radius, 64, 32, Math.PI / 2 - width / 2, width, centre - height / 2, height);
+  const bezel = new THREE.Mesh(band(R * 1.012, 2.05, 0.92), ceramic(COLORS.bezel, { roughness: 0.4, alphaMap: mask, transparent: true }));
+  head.add(bezel);
+  const glass = new THREE.Mesh(band(R * 1.024, 1.88, 0.78), new THREE.MeshPhysicalMaterial({
     color: COLORS.visor, roughness: 0.1, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04,
     emissive: 0xffffff, emissiveMap: face.texture, alphaMap: mask, transparent: true,
-    toneMapped: false,                                // keep the cyan glow saturated
+    toneMapped: false,                                // keep the eyes' glow saturated
   }));
-  body.add(glass);
+  head.add(glass);
 
-  // Ears: black glossy domes with a glowing ring.
+  // Ears: small light discs ringed with light.
   for (const side of [-1, 1]) {
     const ear = new THREE.Group();
-    ear.position.set(side * (radiusAt(0.1) - 0.004), 0.1, 0.02);
+    ear.position.set(side * R * 0.99, 0.02, 0);
     ear.rotation.y = side * Math.PI / 2;
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.07, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), ceramic(COLORS.bezel));
-    dome.rotation.x = Math.PI / 2;
-    ear.add(dome);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.074, 0.01, 10, 40), glowMat());
+    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.03, 32), ceramic(COLORS.bezel));
+    disc.rotation.x = Math.PI / 2;
+    ear.add(disc);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.064, 0.007, 8, 40), glowMat());
+    ring.position.z = 0.016;
     ear.add(ring);
-    body.add(ear);
+    head.add(ear);
   }
 
-  // Flipper arms with a glowing seam at the shoulder.
+  // Halo: a thin tilted ring of light orbiting the head, with a small light travelling along it.
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.009, 10, 160), glowMat());
+  halo.rotation.x = Math.PI / 2 - 0.38;
+  halo.rotation.y = 0.18;
+  body.add(halo);
+  const satellite = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 12), glowMat());
+  satellite.position.x = 0.64;
+  halo.add(satellite);
+
+  // Hover jet: a soft ring of light under the head.
+  const jet = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.012, 10, 48), glowMat());
+  jet.rotation.x = Math.PI / 2;
+  jet.position.y = -R * 0.94 - 0.05;
+  body.add(jet);
+
+  // Floating hands: they swing around a shoulder pivot (wave, point, hold the magnifier).
   const arms = [-1, 1].map((side) => {
     const shoulder = new THREE.Group();
-    shoulder.position.set(side * (radiusAt(-0.06) - 0.03), -0.06, 0.08);
-    const seam = new THREE.Mesh(new THREE.TorusGeometry(0.056, 0.008, 8, 32), glowMat());
-    seam.rotation.x = Math.PI / 2;
-    shoulder.add(seam);
-    const flipper = new THREE.Mesh(new THREE.CapsuleGeometry(0.062, 0.27, 8, 16), ceramic());
-    flipper.scale.set(1, 1, 0.75);
-    flipper.position.y = -0.19;
-    shoulder.add(flipper);
+    shoulder.position.set(side * 0.53, -0.1, 0.06);
     const hand = new THREE.Group();
-    hand.position.y = -0.37;
+    hand.position.y = -0.2;
+    const palm = new THREE.Mesh(new THREE.SphereGeometry(0.08, 32, 24), ceramic());
+    palm.scale.set(1, 1.12, 0.9);
+    hand.add(palm);
+    const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.058, 0.006, 8, 32), glowMat());
+    cuff.rotation.x = Math.PI / 2;
+    cuff.position.y = 0.06;
+    hand.add(cuff);
     shoulder.add(hand);
     shoulder.rotation.z = side * -0.06;
     body.add(shoulder);
     return { shoulder, hand, side };
   });
 
-  // Antenna: a thin stalk with a softly pulsing light on top.
-  const top = EGG.height / 2;
-  const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.014, 0.17, 12), ceramic(COLORS.bezel));
-  stalk.position.y = top + 0.07;
-  body.add(stalk);
-  const antennaTip = new THREE.Mesh(new THREE.SphereGeometry(0.034, 20, 14), glowMat());
-  antennaTip.position.y = top + 0.17;
-  body.add(antennaTip);
-
-  // Waist: a thin glowing band that follows the body's curve.
-  const waist = new THREE.Mesh(new THREE.TorusGeometry(radiusAt(-0.3) * 1.004, 0.0065, 8, 96), glowMat());
-  waist.rotation.x = Math.PI / 2;
-  waist.position.y = -0.3;
-  body.add(waist);
-
-  // Magnifying glass held up in front of the visor, like the reference picture: the lens sits over
-  // the left half of the face and the handle runs down and out towards the left hand.
+  // Magnifying glass held up in front of the visor.
   const magnifier = createMagnifier();
-  magnifier.position.set(-0.2, 0.0, 0.52);
+  magnifier.scale.setScalar(0.8);
+  magnifier.position.set(-0.2, -0.02, 0.5);
   magnifier.rotation.set(0.05, 0.28, -0.55);
   body.add(magnifier);
 
@@ -275,16 +244,16 @@ export function createRobot() {
   shadowCanvas.width = shadowCanvas.height = 64;
   const sctx = shadowCanvas.getContext('2d');
   const grad = sctx.createRadialGradient(32, 32, 2, 32, 32, 32);
-  grad.addColorStop(0, 'rgba(24,34,84,0.28)');
+  grad.addColorStop(0, 'rgba(24,34,84,0.24)');
   grad.addColorStop(1, 'rgba(24,34,84,0)');
   sctx.fillStyle = grad;
   sctx.fillRect(0, 0, 64, 64);
-  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.66), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false }));
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.56), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2;
   shadow.position.y = 0.002;
   root.add(shadow);
 
-  // Hover glow: a soft cyan disc under the body, like a hover light.
+  // Hover glow on the ground under the jet.
   const glowCanvas = document.createElement('canvas');
   glowCanvas.width = glowCanvas.height = 128;
   const gctx = glowCanvas.getContext('2d');
@@ -294,11 +263,11 @@ export function createRobot() {
   ggrad.addColorStop(1, 'rgba(110,168,255,0)');
   gctx.fillStyle = ggrad;
   gctx.fillRect(0, 0, 128, 128);
-  const hoverGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.45), new THREE.MeshBasicMaterial({
+  const hoverGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.4), new THREE.MeshBasicMaterial({
     map: new THREE.CanvasTexture(glowCanvas), transparent: true, depthWrite: false, opacity: 0, toneMapped: false,
   }));
   hoverGlow.rotation.x = -Math.PI / 2;
-  hoverGlow.position.y = 0.14;                       // just under the egg
+  hoverGlow.position.y = 0.05;
   root.add(hoverGlow);
 
   // ---- animation ----
@@ -317,28 +286,29 @@ export function createRobot() {
     shadow.material.opacity = Math.max(0, 1 - lift * 0.8);
     hoverGlow.material.opacity = Math.max(0.35, state.hover || 0) * (0.75 + Math.sin(time * 6) * 0.15);
     hoverGlow.scale.setScalar(0.9 + Math.sin(time * 6) * 0.05);
+    jet.scale.setScalar(1 + Math.sin(time * 6) * 0.08);
 
     chassis.rotation.y += (state.yaw - chassis.rotation.y) * Math.min(1, dt * 6);
-    body.position.y = 0.9 + Math.sin(time * 2) * 0.012;   // smooth float, no wheel jitter
+    body.position.y = BASE_Y + Math.sin(time * 2) * 0.02;   // gentle float
     body.rotation.y += ((state.headYaw || 0) - body.rotation.y) * Math.min(1, dt * 5);
-    const lean = Math.max(-0.14, Math.min(0.14, (state.speed || 0) * 0.035));   // nose dips with speed
+    const lean = Math.max(-0.14, Math.min(0.14, (state.speed || 0) * 0.035));
     body.rotation.x += (lean - body.rotation.x) * Math.min(1, dt * 3);
     const tilt = state.expression === 'curious' ? 0.12 : 0;
     body.rotation.z += (tilt - body.rotation.z) * Math.min(1, dt * 4);
 
+    halo.rotation.z += dt * 0.9;                              // the light travels round the halo
+
     magnifier.visible = !!state.magnify;
     for (const { shoulder, side } of arms) {
       // rest pose, a slow breath, and a trailing swing when the robot speeds up or slows down
-      let roll = side * -0.06 + Math.sin(time * 1.6 + side * 0.8) * 0.02 + (state.swing || 0) * 0.45;
+      let roll = side * -0.06 + Math.sin(time * 1.6 + side * 0.8) * 0.03 + (state.swing || 0) * 0.45;
       let pitch = 0;
       if (side === 1 && state.wave) roll = side * (2.5 + Math.sin(time * 12) * 0.35) * state.wave;
       if (side === -1 && state.point) { roll = side * 1.4 * state.point; pitch = -0.5 * state.point; }
-      if (side === -1 && state.magnify && !state.point) { roll = -0.12; pitch = -0.45; }   // flipper tip at the end of the handle
+      if (side === -1 && state.magnify && !state.point) { roll = -0.12; pitch = -0.45; }
       shoulder.rotation.z += (roll - shoulder.rotation.z) * Math.min(1, dt * 7);
       shoulder.rotation.x += (pitch - shoulder.rotation.x) * Math.min(1, dt * 7);
     }
-
-    antennaTip.scale.setScalar(1 + Math.sin(time * 3) * 0.12);
 
     blinkTimer -= dt;
     if (blinkTimer < 0) { blink = 1; blinkTimer = 2.5 + Math.random() * 3; }
@@ -351,7 +321,7 @@ export function createRobot() {
     });
   }
 
-  return { root, update, height: 1.85 };
+  return { root, update, height: 1.45 };
 }
 
 /**
