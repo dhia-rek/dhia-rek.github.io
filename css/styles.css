@@ -471,38 +471,75 @@ nav.scrolled .nav-inner { box-shadow: var(--shadow); }
 }
 .hero-trust strong { color: var(--ink); font-weight: 700; }
 
+/* The QR card continues the intro card: same washes, no frame around the
+   code, quieter text, so the hero reads as one piece. */
 .hero-qr {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 28px 24px;
+  gap: 8px;
+  padding: 26px 22px;
   text-align: center;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r-xl);
   box-shadow: var(--shadow);
 }
-.hero-qr-code {
-  width: 172px;
-  height: 172px;
-  padding: 10px;
-  background: var(--tile);
-  border: 1px solid var(--line);
-  border-radius: 20px;
+.hero-qr::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(70% 55% at 0% 0%, var(--peach) 0%, transparent 70%),
+    radial-gradient(80% 60% at 30% 100%, var(--sky) 0%, transparent 72%);
+  opacity: 0.85;
 }
-.hero-qr-title { margin-top: 8px; font-size: 1.28rem; font-weight: 700; letter-spacing: -0.025em; }
-.hero-qr-sub { max-width: 26ch; font-size: 0.9rem; line-height: 1.5; color: var(--muted); }
+.hero-qr-code {
+  width: 138px;
+  height: 138px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  /* The white around the modules melts into the card; modules stay dark. */
+  mix-blend-mode: multiply;
+}
+.hero-qr-title {
+  margin-top: 6px;
+  font-size: 1.02rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--ink-2);
+}
+.hero-qr-sub { max-width: 26ch; font-size: 0.84rem; line-height: 1.5; color: var(--muted); }
 .hero-qr-download {
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  color: var(--accent-ink);
+  color: var(--muted);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
-.hero-qr-links { margin-top: 4px; min-height: 42px; padding: 0 18px; }
+.hero-qr-download:hover { color: var(--accent-ink); }
+.hero-qr-links {
+  margin-top: 2px;
+  min-height: 36px;
+  padding: 0 16px;
+  font-size: 0.86rem;
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+}
+/* Dark theme: phones need a light quiet zone to scan, so keep a soft tile. */
+body.dark .hero-qr-code {
+  padding: 8px;
+  background: oklch(97% 0.008 268);
+  border-radius: 16px;
+  mix-blend-mode: normal;
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .hero-content,
