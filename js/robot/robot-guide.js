@@ -9,7 +9,9 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const TEXT = {
   en: {
-    hero: "Hi, I'm Valeknaar! Scan the code to connect with Dhia, or tap me to chat.",
+    hero: 'Scan to connect',
+    scanMe: 'Scan me',
+    qrAlt: "QR code to all of Dhia's links",
     experience: 'Dhia is an AI Integration Intern at Driveco. Ask me about it!',
     education: 'MSc in Artificial Intelligence at ECE Paris.',
     projects: 'Psst: the vision project runs live in your browser.',
@@ -23,7 +25,9 @@ const TEXT = {
     show: 'Show robot',
   },
   fr: {
-    hero: 'Salut, je suis Valeknaar ! Scanne le code pour retrouver Dhia, ou touche-moi pour discuter.',
+    hero: 'Scanner pour me retrouver',
+    scanMe: 'Scanne-moi',
+    qrAlt: 'QR code vers tous les liens de Dhia',
     experience: "Dhia est stagiaire en intégration IA chez Driveco. Demande-moi !",
     education: "MSc en intelligence artificielle à l'ECE Paris.",
     projects: 'Psst : le projet vision tourne en direct dans ton navigateur.',
@@ -40,7 +44,7 @@ const TEXT = {
 const SECTIONS = ['hero', 'experience', 'education', 'projects', 'capabilities', 'shipped', 'contact'];
 // The robot's colours for each section: halo/glow, and the three aurora colours of its core.
 const THEMES = {
-  hero: { glow: '#b39bff', a: '#7b61ff', b: '#ff5cc8', c: '#2ad4ff' },
+  hero: { glow: '#8b9cff', a: '#6d5dfc', b: '#22d3ee', c: '#a855f7' },
   experience: { glow: '#5aa9ff', a: '#3a86ff', b: '#2ad4ff', c: '#7b61ff' },
   education: { glow: '#3ddc97', a: '#10b981', b: '#2ad4ff', c: '#a3e635' },
   projects: { glow: '#ffb020', a: '#ff8a00', b: '#ff5c5c', c: '#ffd60a' },
@@ -83,7 +87,7 @@ async function start() {
   const [THREE, { RoomEnvironment }, { createRobot, addRobotLights }] = await Promise.all([
     import('three'),
     import('three/addons/environments/RoomEnvironment.js'),
-    import('./robot-model.js?v=20261117-13'),
+    import('./robot-model.js?v=20261117-18'),
   ]);
 
   // ---- DOM: canvas, hit area, bubble, show button ----
@@ -108,7 +112,20 @@ async function start() {
   const showBtn = document.createElement('button');
   showBtn.type = 'button';
   showBtn.className = 'robot-show';
-  document.body.append(layer, hit, bubble, showBtn);
+  // "Scan me": a small QR the robot pops up when it has nothing to say (below the hero, desktop).
+  const scanPop = document.createElement('a');
+  scanPop.className = 'robot-scan';
+  scanPop.href = 'links/';
+  const scanImg = document.createElement('img');
+  scanImg.src = 'assets/qr/dhiarekik-links.svg';
+  scanImg.width = scanImg.height = 84;
+  const scanLabel = document.createElement('span');
+  scanPop.append(scanImg, scanLabel);
+  document.body.append(layer, hit, bubble, showBtn, scanPop);
+  const labelScan = () => { scanLabel.textContent = t('scanMe'); scanImg.alt = t('qrAlt'); };
+  labelScan();
+  new MutationObserver(labelScan).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  let lastTalkAt = performance.now();
   const heroQr = document.querySelector('.hero-qr');   // the QR panel on the page
 
   // ---- three.js scene: orthographic camera in CSS pixels, y up ----
@@ -216,6 +233,7 @@ async function start() {
     bubble.classList.remove('show');
     showBtn.hidden = !value;
     showBtn.textContent = t('show');
+    scanPop.classList.remove('show');
 
     if (!value) { pos.set(-radius, floor); mode = 'drive'; setSpot(spotFor(section)); greet(section); }
   }
@@ -229,11 +247,21 @@ async function start() {
     // Below the hero it moves aside, to the right edge, so it never sits on what you read.
     if (name !== 'hero') return { x: W - radius - 14, y: Math.max(floor + radius * 2.2, H * 0.4) };
     const el = name === 'hero' ? document.querySelector('.hero') : document.getElementById(name);
-    const title = el?.querySelector('h1, h2');
-    if (!title) return { x: phoneSpot(), y: floor };
-    const range = document.createRange();
-    range.selectNodeContents(title);
-    const box = range.getBoundingClientRect();
+    // the hero's whole text block (title and paragraph), other sections' title
+    const parts = name === 'hero'
+      ? [...(el?.querySelectorAll('h1, .hero-role, .hero-sub') ?? [])]
+      : [el?.querySelector('h1, h2')].filter(Boolean);
+    if (!parts.length) return { x: phoneSpot(), y: floor };
+    const box = { right: -Infinity, top: Infinity, bottom: -Infinity };
+    for (const part of parts) {
+      const range = document.createRange();
+      range.selectNodeContents(part);
+      const r = range.getBoundingClientRect();
+      box.right = Math.max(box.right, r.right);
+      box.top = Math.min(box.top, r.top);
+      box.bottom = Math.max(box.bottom, r.bottom);
+    }
+    box.height = box.bottom - box.top;
     let x = Math.min(Math.max(box.right + 36 + radius, 150 + radius), W - 170 - radius);
     // in the hero, stay between the headline and the QR panel set into the same card
     const qrBox = name === 'hero' ? heroQr?.getBoundingClientRect() : null;
@@ -481,10 +509,9 @@ async function start() {
       if (reducedMotion) pos.x = targetX;
       glide(dt, reducedMotion ? 0 : Math.max(-650, Math.min(650, dx * 2.4)));
       if (reducedMotion) pos.y = restY;
-      if (Math.abs(targetX - pos.x) < 3 && Math.abs(vx) < 12) {
-        mode = 'idle';
-        if (pendingGreet) { greet(pendingGreet); pendingGreet = null; }
-      }
+      // speak as it arrives, not only once it has fully settled
+      if (pendingGreet && Math.abs(targetX - pos.x) < 60) { greet(pendingGreet); pendingGreet = null; }
+      if (Math.abs(targetX - pos.x) < 3 && Math.abs(vx) < 12) mode = 'idle';
       anim.wave = 0; anim.point = 0;
       float(dt, t);
     } else {
@@ -552,6 +579,17 @@ async function start() {
       hit.style.width = hit.style.height = `${size}px`;
       const bx = Math.min(Math.max(pos.x - 30, 12), W - 292);
       bubble.style.transform = `translate(${bx}px, ${-(pos.y + radius + 12)}px)`;
+      // When silent for a moment (below the hero, on a large screen), pop up "Scan me" beside it.
+      const talking = bubble.classList.contains('show');
+      if (talking) lastTalkAt = now;
+      const showScan = !talking && section !== 'hero' && W >= 700 && (mode === 'idle' || mode === 'drive') && now - lastTalkAt > 1200;
+      scanPop.classList.toggle('show', showScan);
+      if (showScan) {
+        // above the robot, in the right margin, so it stays off the content
+        const popW = 110;
+        const sx = Math.max(12, Math.min(W - popW - 10, pos.x + radius * 0.6 - popW));
+        scanPop.style.transform = `translate(${Math.round(sx)}px, ${Math.round(-(pos.y + radius + 10))}px)`;
+      }
 
     }
     requestAnimationFrame(frame);

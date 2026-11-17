@@ -1867,3 +1867,32 @@ body::before {
   }
 }
 
+/* ===== "Scan me" pop-up the robot shows when it is silent ===== */
+.robot-scan {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 991;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  width: 110px;
+  padding: 9px 9px 8px;
+  border-radius: 16px;
+  color: var(--ink-2);
+  text-decoration: none;
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid color-mix(in oklch, var(--section-tint) 55%, transparent);
+  box-shadow: 0 12px 30px -14px var(--section-tint);
+  opacity: 0;
+  scale: 0.86;
+  pointer-events: none;
+  transition: opacity .3s ease, scale .35s cubic-bezier(.2, 1.4, .4, 1), border-color .6s ease, box-shadow .6s ease;
+}
+.robot-scan.show { opacity: 1; scale: 1; pointer-events: auto; }
+.robot-scan img { width: 84px; height: 84px; padding: 4px; border-radius: 8px; background: #fff; }
+.robot-scan span { font-size: 0.72rem; font-weight: 650; }
+@media (prefers-reduced-motion: reduce) { .robot-scan { transition: opacity .2s ease; scale: 1; } }
+

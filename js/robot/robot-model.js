@@ -3,7 +3,7 @@
 // createRobot({ look }) returns the scene group plus update(dt, state), which animates everything.
 import * as THREE from 'three';
 
-export const DEFAULT_LOOK = 'glass';
+export const DEFAULT_LOOK = 'aurora';
 
 export const LOOKS = {
   // dark graphite shell, cyan neon light
@@ -20,6 +20,41 @@ export const LOOKS = {
     visor: 0x0b1230, glow: 0x6ea8ff, eye: '#8cc4ff', eyeCore: '#e9f4ff', aura: 'rgba(110,168,255,0.45)', auraMid: 'rgba(110,168,255,0.14)',
     sparks: ['#3a86ff', '#00c2e8', '#ff6b57', '#ffbe0b'],
   },
+  // smoked glass orb: a dark translucent shell, a cool aurora glowing inside, two bright eyes
+  smoke: {
+    shell: {
+      color: 0x0f1324, roughness: 0.08, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04,
+      transparent: true, opacity: 0.6, depthWrite: false,
+      iridescence: 0.7, iridescenceIOR: 1.35, iridescenceThicknessRange: [180, 520],
+      sheen: 0.6, sheenColor: 0x8fb4ff, sheenRoughness: 0.3,
+    },
+    trim: { color: 0x1c2238, roughness: 0.2, metalness: 0.3, clearcoat: 1 },
+    visor: 0x0a0f24,
+    glow: 0x8b9cff, eye: '#dff6ff', eyeCore: '#ffffff',
+    aura: 'rgba(139,156,255,0.42)', auraMid: 'rgba(34,211,238,0.14)',
+    sparks: ['#6d5dfc', '#22d3ee', '#a855f7', '#ffbe0b'],
+    core: ['#6d5dfc', '#22d3ee', '#a855f7'],
+    coreRadius: 0.3,
+    eyesOnly: true,
+    minimal: true,
+  },
+  // faceless aurora orb: a clear shell around a vivid swirl of light, no eyes
+  aurora: {
+    shell: {
+      color: 0xf4f7ff, roughness: 0.05, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03,
+      transparent: true, opacity: 0.22, depthWrite: false,
+      iridescence: 1, iridescenceIOR: 1.33, iridescenceThicknessRange: [140, 520],
+    },
+    trim: { color: 0xffffff, roughness: 0.2, metalness: 0, clearcoat: 1 },
+    visor: 0x0a0f24,
+    glow: 0x8b9cff, eye: '#dff6ff', eyeCore: '#ffffff',
+    aura: 'rgba(139,156,255,0.42)', auraMid: 'rgba(34,211,238,0.14)',
+    sparks: ['#6d5dfc', '#22d3ee', '#a855f7', '#ffbe0b'],
+    core: ['#6d5dfc', '#22d3ee', '#a855f7'],
+    coreRadius: 0.37,
+    faceless: true,
+    minimal: true,
+  },
   // modern liquid glass: clear iridescent shell around a swirling aurora core
   glass: {
     shell: {
@@ -31,6 +66,7 @@ export const LOOKS = {
     trim: { color: 0xffffff, roughness: 0.2, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, iridescence: 0.6, iridescenceIOR: 1.3 },
     visor: 0x0a0f24,
     eyesOnly: true,                                        // just two glowing eyes on the glass
+    minimal: true,                                         // orb, aurora and eyes: no rings, hands or beams
     glow: 0xb39bff, eye: '#c9f3ff', eyeCore: '#ffffff',
     aura: 'rgba(167,139,250,0.42)', auraMid: 'rgba(244,114,182,0.14)',
     sparks: ['#7b61ff', '#ff5cc8', '#2ad4ff', '#ffbe0b'],
@@ -201,6 +237,7 @@ const BASE_Y = 0.8;      // hover height of the head's centre
 
 export function createRobot({ look = DEFAULT_LOOK } = {}) {
   const palette = LOOKS[look] ?? LOOKS[DEFAULT_LOOK];
+  const minimal = !!palette.minimal;
   const glowMats = [];
   const glowMat = (extra = {}) => {
     const material = new THREE.MeshBasicMaterial({ color: palette.glow, toneMapped: false, ...extra });
@@ -254,7 +291,7 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
         }`,
     });
     core = new THREE.Group();
-    core.add(new THREE.Mesh(new THREE.SphereGeometry(0.27, 48, 32), coreMat));
+    core.add(new THREE.Mesh(new THREE.SphereGeometry(palette.coreRadius ?? 0.27, 48, 32), coreMat));
     coreGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: radialTexture(...WHITE_GLOW), color: palette.core[1], transparent: true, depthWrite: false, toneMapped: false }));
     coreGlow.scale.set(1.15, 1.15, 1);
     core.add(coreGlow);
@@ -267,9 +304,11 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   const mask = roundedMask(0.45);
   const band = (radius, width, height, centre = Math.PI / 2 + 0.03) =>
     new THREE.SphereGeometry(radius, 64, 32, Math.PI / 2 - width / 2, width, centre - height / 2, height);
-  if (palette.eyesOnly) {
+  if (palette.faceless) {
+    // no face: the orb itself shows the mood (pulse, bounce, wiggle)
+  } else if (palette.eyesOnly) {
     // Only the eyes, glowing on the glass over the aurora.
-    const eyes = new THREE.Mesh(band(R * 1.03, 1.5, 0.66, Math.PI / 2 + 0.02), new THREE.MeshBasicMaterial({
+    const eyes = new THREE.Mesh(band(R * 1.03, 1.55, 0.74, Math.PI / 2 - 0.1), new THREE.MeshBasicMaterial({
       map: face.texture, transparent: true, depthWrite: false, toneMapped: false,
     }));
     eyes.renderOrder = 3;
@@ -290,14 +329,16 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   }
 
   // Seam: a thin line of light around the head, below the visor.
-  const seam = new THREE.Mesh(new THREE.TorusGeometry(R * 0.985, 0.0055, 8, 128), glowMat());
-  seam.rotation.x = Math.PI / 2;
-  seam.position.y = -0.2;
-  seam.scale.set(1.08, 1, 1);
-  body.add(seam);
+  if (!minimal) {
+    const seam = new THREE.Mesh(new THREE.TorusGeometry(R * 0.985, 0.0055, 8, 128), glowMat());
+    seam.rotation.x = Math.PI / 2;
+    seam.position.y = -0.2;
+    seam.scale.set(1.08, 1, 1);
+    body.add(seam);
+  }
 
   // Ears: small discs ringed with light.
-  for (const side of [-1, 1]) {
+  for (const side of minimal ? [] : [-1, 1]) {
     const ear = new THREE.Group();
     ear.position.set(side * R * 0.99, 0.02, 0);
     ear.rotation.y = side * Math.PI / 2;
@@ -311,17 +352,20 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   }
 
   // Halo: a thin tilted ring of light with a soft bloom and a light travelling along it.
-  const halo = new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.009, 10, 160), glowMat());
-  halo.rotation.x = Math.PI / 2 - 0.38;
-  halo.rotation.y = 0.18;
-  body.add(halo);
-  halo.add(new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.04, 10, 160), glowMat({ transparent: true, opacity: 0.16, depthWrite: false })));
-  const satellite = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 12), glowMat());
-  satellite.position.x = 0.64;
-  halo.add(satellite);
+  let halo = null;
+  if (!minimal) {
+    halo = new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.009, 10, 160), glowMat());
+    halo.rotation.x = Math.PI / 2 - 0.38;
+    halo.rotation.y = 0.18;
+    body.add(halo);
+    halo.add(new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.04, 10, 160), glowMat({ transparent: true, opacity: 0.16, depthWrite: false })));
+    const satellite = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 12), glowMat());
+    satellite.position.x = 0.64;
+    halo.add(satellite);
+  }
 
   // Motes: tiny lights orbiting on their own tilted paths.
-  const motes = [[0.82, 0.9, 1.3], [0.74, -0.6, -1.7], [0.9, 0.3, 0.9]].map(([radius, tilt, speed]) => {
+  const motes = (minimal ? [] : [[0.82, 0.9, 1.3], [0.74, -0.6, -1.7], [0.9, 0.3, 0.9]]).map(([radius, tilt, speed]) => {
     const orbit = new THREE.Group();
     orbit.rotation.set(tilt, 0, tilt * 0.6);
     const dot = new THREE.Mesh(new THREE.SphereGeometry(0.018, 10, 8), glowMat());
@@ -333,12 +377,15 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
 
   // Aura: a soft glow behind the head so it stands out on any page.
   const aura = new THREE.Sprite(new THREE.SpriteMaterial({ map: radialTexture(...WHITE_GLOW), color: palette.glow, transparent: true, depthWrite: false, toneMapped: false }));
-  aura.scale.set(1.9, 1.9, 1);
+  aura.scale.setScalar(minimal ? 1.45 : 1.9);
+  const auraStrength = minimal ? 0.5 : 1;
   aura.position.z = -0.7;
   body.add(aura);
 
   // Hover jet and beam under the head.
-  const jet = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.012, 10, 48), glowMat());
+  let jet = null, beam = null;
+  if (!minimal) {
+  jet = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.012, 10, 48), glowMat());
   jet.rotation.x = Math.PI / 2;
   jet.position.y = -R * 0.94 - 0.05;
   body.add(jet);
@@ -351,14 +398,15 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   bgrad.addColorStop(1, 'rgba(0,0,0,0)');
   bctx.fillStyle = bgrad;
   bctx.fillRect(0, 0, 4, 64);
-  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.19, 0.3, 32, 1, true), new THREE.MeshBasicMaterial({
+  beam = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.19, 0.3, 32, 1, true), new THREE.MeshBasicMaterial({
     map: new THREE.CanvasTexture(beamCanvas), color: palette.glow, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false,
   }));
   beam.position.y = jet.position.y - 0.15;
   body.add(beam);
+  }
 
   // Floating hands: they swing around a shoulder pivot (wave, point, hold the magnifier).
-  const arms = [-1, 1].map((side) => {
+  const arms = (minimal ? [] : [-1, 1]).map((side) => {
     const shoulder = new THREE.Group();
     shoulder.position.set(side * 0.53, -0.1, 0.06);
     const hand = new THREE.Group();
@@ -376,11 +424,13 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
     return { shoulder, hand, side };
   });
 
-  const magnifier = createMagnifier(palette);
-  magnifier.scale.setScalar(0.8);
-  magnifier.position.set(-0.2, -0.02, 0.5);
-  magnifier.rotation.set(0.05, 0.28, -0.55);
-  body.add(magnifier);
+  const magnifier = minimal ? null : createMagnifier(palette);
+  if (magnifier) {
+    magnifier.scale.setScalar(0.8);
+    magnifier.position.set(-0.2, -0.02, 0.5);
+    magnifier.rotation.set(0.05, 0.28, -0.55);
+    body.add(magnifier);
+  }
 
   // Soft contact shadow and hover glow on the ground.
   const shadow = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.56), new THREE.MeshBasicMaterial({
@@ -413,7 +463,7 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
     for (const key of Object.keys(theme)) theme[key].lerp(themeTarget[key], k);
     for (const material of glowMats) material.color.copy(theme.glow);
     aura.material.color.copy(theme.glow);
-    beam.material.color.copy(theme.glow);
+    if (beam) beam.material.color.copy(theme.glow);
     hoverGlow.material.color.copy(theme.glow);
     if (coreGlow) coreGlow.material.color.copy(theme.b);
   }
@@ -435,27 +485,34 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
     shadow.material.opacity = Math.max(0, 1 - lift * 0.8);
     hoverGlow.material.opacity = Math.max(0.35, state.hover || 0) * (0.75 + Math.sin(time * 6) * 0.15);
     hoverGlow.scale.setScalar(0.9 + Math.sin(time * 6) * 0.05);
-    jet.scale.setScalar(1 + Math.sin(time * 6) * 0.08);
-    beam.material.opacity = 0.8 + Math.sin(time * 6) * 0.15;
-    aura.material.opacity = 0.85 + Math.sin(time * 1.5) * 0.15;
+    if (jet) jet.scale.setScalar(1 + Math.sin(time * 6) * 0.08);
+    if (beam) beam.material.opacity = 0.8 + Math.sin(time * 6) * 0.15;
+    aura.material.opacity = (0.85 + Math.sin(time * 1.5) * 0.15) * auraStrength;
+    hoverGlow.visible = !minimal;
 
     chassis.rotation.y += (state.yaw - chassis.rotation.y) * Math.min(1, dt * 6);
     body.position.y = BASE_Y + Math.sin(time * 2) * 0.02;
     body.rotation.y += ((state.headYaw || 0) - body.rotation.y) * Math.min(1, dt * 5);
     const lean = Math.max(-0.14, Math.min(0.14, (state.speed || 0) * 0.035));
     body.rotation.x += (lean - body.rotation.x) * Math.min(1, dt * 3);
-    const tilt = state.expression === 'curious' ? 0.12 : 0;
-    body.rotation.z += (tilt - body.rotation.z) * Math.min(1, dt * 4);
+    let tilt = state.expression === 'curious' ? 0.12 : 0;
+    if (minimal) {
+      // body language instead of hands: a happy wiggle, and a lean towards what it shows
+      if (state.wave) tilt = Math.sin(time * 9) * 0.12;
+      if (state.pointRight) tilt = -0.2;
+    }
+    body.rotation.z += (tilt - body.rotation.z) * Math.min(1, dt * 6);
 
-    halo.rotation.z += dt * 0.9;
+    if (halo) halo.rotation.z += dt * 0.9;
     for (const { orbit, speed } of motes) orbit.rotation.y += dt * speed;
     if (core) {
-      coreUniforms.uTime.value = time;
+      coreUniforms.uTime.value = time * (state.talking ? 2.2 : 1);
       core.rotation.y += dt * 0.6;
-      core.scale.setScalar(1 + Math.sin(time * 2.2) * 0.05);
+      const talkPulse = palette.faceless && state.talking ? Math.abs(Math.sin(time * 9)) * 0.08 : 0;
+      core.scale.setScalar(1 + Math.sin(time * 2.2) * 0.05 + talkPulse);
     }
 
-    magnifier.visible = !!state.magnify;
+    if (magnifier) magnifier.visible = !!state.magnify;
     for (const { shoulder, side } of arms) {
       let roll = side * -0.06 + Math.sin(time * 1.6 + side * 0.8) * 0.03 + (state.swing || 0) * 0.45;
       let pitch = 0;
@@ -478,7 +535,7 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
     face.draw({
       expression: state.talking ? 'talk' : state.expression,
       blink: ['happy', 'dizzy', 'surprised'].includes(state.expression) ? 0 : blink,
-      look: state.look || 0,
+      look: state.pointRight ? 1 : (state.look || 0),
       mouth: state.talking ? (Math.sin(time * 18) + 1) / 2 : 0,
       scan,
     });
