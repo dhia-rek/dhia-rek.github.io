@@ -1,0 +1,23 @@
+Copyright (c) 2026 Dhia Rekik. All rights reserved.
+
+This repository holds the website https://dhiarekik.me: its source code,
+design, text, photos, CV and other files (together, "the Work").
+
+No licence is granted. Without prior written permission from the copyright
+holder, you may not copy, modify, adapt, translate, publish, host, deploy,
+distribute, sublicense or sell the Work or any part of it, or create works
+derived from it.
+
+You may read the source on GitHub and visit the website. GitHub's Terms of
+Service let GitHub users view and fork public repositories on GitHub; a fork
+grants no other rights, and the Work in it may not be used, published or
+deployed.
+
+Exceptions, under their own terms:
+- three.js, in vendor/three/: MIT License, Copyright (c) 2010-2023 three.js
+  authors. See vendor/three/LICENSE.
+- Company names and logos in assets/logos/ belong to their owners.
+
+Permission requests: https://dhiarekik.me/#contact
+
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.

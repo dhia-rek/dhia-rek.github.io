@@ -55,4 +55,4 @@ Add `?robot` to the URL to force the robot on machines without a GPU. The chat a
 
 ## Licence
 
-The code is free to read and learn from. The text, photo and CV are mine; please don't reuse them.
+All rights reserved. The source is public so it can be read, but it may not be copied, modified, reused or deployed elsewhere without my written permission: see [LICENSE](LICENSE). three.js in `vendor/three/` keeps its own MIT licence, and company logos belong to their owners.
