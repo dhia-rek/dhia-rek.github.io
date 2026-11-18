@@ -14,7 +14,7 @@
     localStorage.setItem('theme', t);
     document.body.classList.toggle('dark', t === 'dark');
     document.body.classList.toggle('light', t === 'light');
-    document.querySelector('meta[name="theme-color"]').setAttribute('content', t === 'light' ? '#f6f9fd' : '#0b1220');
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', t === 'light' ? '#f4f6fd' : '#0f121c');
     if (themeIcon) themeIcon.innerHTML = t === 'dark' ? sun : moon;
     window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: t } }));
   }
