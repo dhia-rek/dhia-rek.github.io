@@ -132,7 +132,9 @@
       showSuggestions(data.suggestions);
     } catch {
       removeFromAll(dots);
-      await aiBubble("I can't reach my server right now. You can email Dhia directly at dhia.rekik@icloud.com");
+      await aiBubble(window.i18n && window.i18n.lang === 'fr'
+        ? "Je n'arrive pas à joindre mon serveur pour le moment. Tu peux écrire à Dhia avec le formulaire de contact en bas de la page."
+        : "I can't reach my server right now. You can write to Dhia with the contact form at the bottom of the page.");
     } finally {
       sending = false;
       instances.forEach(inst => {
@@ -153,7 +155,8 @@
     }
   });
 
-  // ---- Floating chat button: always visible (the robot also opens the chat) ----
+  // ---- The chat panel: opened by Aurora (js/robot/robot-guide.js), or by the "Ask Aurora" button when
+  // Aurora is not running (no GPU) or the visitor hid her ----
   const fab = document.getElementById('valekFab');
   const popEl = document.getElementById('valekPop');
   const popCloseBtn = document.getElementById('valekPopClose');
@@ -165,6 +168,7 @@
     fab.setAttribute('aria-expanded', 'true');
     fab.classList.add('hidden');
     setTimeout(() => { pop.input && pop.input.focus({ preventScroll: true }); }, 60);
+    dispatchEvent(new Event('aurora-chat'));
   }
   function closePop() {
     popEl.classList.remove('open');
@@ -172,6 +176,7 @@
     popEl.inert = true;
     fab.setAttribute('aria-expanded', 'false');
     fab.classList.remove('hidden');
+    dispatchEvent(new Event('aurora-chat'));
   }
 
   if (fab && popEl) {
@@ -181,5 +186,6 @@
       if (e.key === 'Escape' && popEl.classList.contains('open')) closePop();
     });
     fab.classList.add('show');
+    window.auroraChat = { open: openPop, close: closePop, isOpen: () => popEl.classList.contains('open') };
   }
 })();

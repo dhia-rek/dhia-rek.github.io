@@ -1357,7 +1357,7 @@ footer a:hover { color: var(--accent-ink); }
 }
 .cmdk-footer kbd { font-size: 0.66rem; }
 
-/* ===== CHAT (Valeknaar) ===== */
+/* ===== CHAT (Aurora) ===== */
 .valek-fab {
   position: fixed;
   right: 22px;
@@ -1597,21 +1597,12 @@ footer a:hover { color: var(--accent-ink); }
 .robot-bubble-actions a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .robot-bubble-actions button { padding: 0; font: inherit; color: var(--muted); }
 .robot-bubble-actions button:hover { color: var(--ink); }
-.robot-show {
-  position: fixed;
-  left: 16px;
-  bottom: 16px;
-  z-index: 991;
-  padding: 8px 15px;
-  font: 600 0.8rem var(--sans);
-  color: var(--ink-2);
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-}
-.robot-show[hidden] { display: none; }
+.robot-bubble-actions .robot-bubble-ask { font-weight: 700; color: var(--accent-ink); }
+.robot-bubble-actions .robot-bubble-ask:hover { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
+/* Aurora on screen: she is the way into the chat, so the fallback button goes, and the panel opens
+   just above her corner (--aurora-dock is set by js/robot/robot-guide.js). */
+.aurora-on .valek-fab { display: none; }
+.aurora-on .valek-pop { bottom: var(--aurora-dock, 88px); max-height: min(580px, calc(100vh - var(--aurora-dock, 88px) - 40px)); }
 
 /* ===== MOTION ===== */
 .reveal {

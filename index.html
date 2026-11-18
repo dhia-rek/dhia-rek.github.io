@@ -67,7 +67,7 @@
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..700&family=Figtree:wght@400..700&display=swap"></noscript>
 
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.js?v=0.160.0","three/addons/":"/vendor/three/addons/"}}</script>
-<link rel="stylesheet" href="css/styles.css?v=20261117-c9">
+<link rel="stylesheet" href="css/styles.css?v=20261118-aurora">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 </head>
 <body>
@@ -675,15 +675,16 @@
   </div>
 </div>
 
-<!-- Floating Valeknaar chat: appears after scrolling past hero -->
-<button type="button" class="valek-fab" id="valekFab" aria-label="Ask Valeknaar" aria-expanded="false">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-  <span data-i18n="chat.ask">Ask Valeknaar</span>
+<!-- Aurora's chat. Aurora (the 3D orb) opens it; this button is the fallback when she is not running
+     (no GPU) or the visitor hid her, and is hidden by CSS while she is on screen (body.aurora-on). -->
+<button type="button" class="valek-fab" id="valekFab" aria-label="Ask Aurora" aria-expanded="false">
+  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="fabOrb" cx="40%" cy="35%" r="70%"><stop offset="0%" stop-color="#22d3ee"/><stop offset="50%" stop-color="#6d5dfc"/><stop offset="100%" stop-color="#a855f7"/></radialGradient></defs><circle cx="12" cy="12" r="10" fill="url(#fabOrb)" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/></svg>
+  <span data-i18n="chat.ask">Ask Aurora</span>
 </button>
 
 <div class="valek-pop" id="valekPop" role="dialog" aria-modal="false" aria-labelledby="valekPopTitle" aria-hidden="true" inert>
   <div class="valek-pop-head">
-    <strong id="valekPopTitle" data-i18n="chat.title">Want to ask me about Dhia?</strong>
+    <strong id="valekPopTitle" data-i18n="chat.title">Hi, I'm Aurora. Ask me about Dhia</strong>
     <button type="button" class="valek-pop-close" id="valekPopClose" aria-label="Close chat">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
@@ -709,13 +710,13 @@
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>
 </button>
 
-<script src="js/translations.js?v=20261011-24"></script>
+<script src="js/translations.js?v=20261118-aurora"></script>
 <script src="js/i18n.js?v=20261011-12"></script>
 <script src="js/main.js?v=20261117-c1"></script>
 <script src="js/projects.js?v=20261011-23"></script>
 <script src="js/command-palette.js?v=20261011-12"></script>
-<script src="js/valeknaar.js?v=20261013-1"></script>
-<script type="module" src="js/robot/robot-guide.js?v=20261117-24"></script>
+<script src="js/valeknaar.js?v=20261118-aurora2"></script>
+<script type="module" src="js/robot/robot-guide.js?v=20261118-aurora"></script>
 
 <!-- Cloudflare Web Analytics -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;82fdba3ce2a249d98680ab49ec8379f4&quot;}"></script>
