@@ -120,7 +120,7 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-const FALLBACK_REPLY = "I'm having trouble connecting right now. Please email Dhia at dhia.rekik@icloud.com";
+const FALLBACK_REPLY = "I'm having trouble connecting right now. You can write to Dhia with the contact form on this page.";
 
 export default {
   fetch: (request, env) => handle(request, env),

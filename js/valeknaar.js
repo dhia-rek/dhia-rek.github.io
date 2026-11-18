@@ -132,7 +132,9 @@
       showSuggestions(data.suggestions);
     } catch {
       removeFromAll(dots);
-      await aiBubble("I can't reach my server right now. You can email Dhia directly at dhia.rekik@icloud.com");
+      await aiBubble(window.i18n && window.i18n.lang === 'fr'
+        ? "Je n'arrive pas à joindre mon serveur pour le moment. Tu peux écrire à Dhia avec le formulaire de contact en bas de la page."
+        : "I can't reach my server right now. You can write to Dhia with the contact form at the bottom of the page.");
     } finally {
       sending = false;
       instances.forEach(inst => {
