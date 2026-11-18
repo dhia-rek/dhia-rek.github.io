@@ -7,14 +7,14 @@ window.translations = {
     'hero.sub-prefix': "I'm an",
     'hero.sub-suffix': "Based in Paris. I build multi-agent LLM systems with RAG, computer vision that runs in the browser, and automation workflows.",
     'hero.cta1': 'See the projects', 'hero.cta2': 'Get in touch',
-    'chat.title': 'Want to ask me about Dhia?',
+    'chat.title': "Hi, I'm Aurora. Ask me about Dhia",
     'chat.placeholder': 'Ask, write or search for anything…',
     'chat.q1': 'What are his AI skills?',
     'chat.q2': 'What does he do at Driveco?',
     'qr.title': 'Scan to connect',
     'chat.q3': 'Tell me about his projects.',
     'chat.q4': 'His experience at KPIT?',
-    'chat.ask': 'Ask Valeknaar',
+    'chat.ask': 'Ask Aurora',
 
 
 
@@ -125,14 +125,14 @@ window.translations = {
     'hero.sub-prefix': 'Je suis',
     'hero.sub-suffix': "Basé à Paris. Je construis des systèmes multi-agents à base de LLM avec RAG, de la vision par ordinateur qui tourne dans le navigateur, et des workflows d'automatisation.",
     'hero.cta1': 'Voir les projets', 'hero.cta2': 'Me contacter',
-    'chat.title': 'Une question sur Dhia ?',
+    'chat.title': "Salut, moi c'est Aurora. Une question sur Dhia ?",
     'chat.placeholder': 'Demandez, écrivez ou cherchez n\'importe quoi…',
     'chat.q1': 'Quelles sont ses compétences IA ?',
     'chat.q2': 'Que fait-il chez Driveco ?',
     'qr.title': 'Scanner pour me retrouver',
     'chat.q3': 'Parle-moi de ses projets.',
     'chat.q4': 'Son expérience chez KPIT ?',
-    'chat.ask': 'Parler à Valeknaar',
+    'chat.ask': 'Demander à Aurora',
 
 
 

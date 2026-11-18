@@ -1,6 +1,8 @@
-// Valeknaar, the robot guide: flies to each section and hovers beside its title with a suggestion,
+// Aurora, the guide orb: flies to each section and hovers beside its title with a suggestion,
 // follows the cursor with its eyes, throws fireworks, and can be grabbed, dragged and thrown.
-// A quick tap opens the Valeknaar chat.
+// A quick tap opens the chat, where Aurora answers questions about Dhia. When no title has room
+// beside it (and while the chat is open) Aurora waits in the bottom-right corner, so the chat is
+// always one tap away. The "Ask Aurora" button (#valekFab) only shows when Aurora is not running.
 // Loaded as a module after the page; does nothing without GPU-accelerated WebGL. three.js and the
 // model are imported only after that check passes, so visitors without a GPU never download them.
 
@@ -9,7 +11,8 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const TEXT = {
   en: {
-    hero: 'Scan to connect',
+    hero: "Hi, I'm Aurora. Ask me anything about Dhia!",
+    ask: 'Ask me',
     scanMe: 'Scan me',
     qrAlt: "QR code to all of Dhia's links",
     experience: 'Dhia is an AI Integration Intern at Driveco. Ask me about it!',
@@ -22,10 +25,10 @@ const TEXT = {
     held: ['Wheee!', 'Put me down!', 'Where are we going?'],
     ouch: ['Ouch!', 'Whoa!', 'I saw stars…', 'Again?!'],
     hide: 'Hide',
-    show: 'Show robot',
   },
   fr: {
-    hero: 'Scanner pour me retrouver',
+    hero: "Salut, moi c'est Aurora. Pose-moi tes questions sur Dhia !",
+    ask: 'Me demander',
     scanMe: 'Scanne-moi',
     qrAlt: 'QR code vers tous les liens de Dhia',
     experience: "Dhia est stagiaire en intégration IA chez Driveco. Demande-moi !",
@@ -38,7 +41,6 @@ const TEXT = {
     held: ['Wiii !', 'Pose-moi !', 'On va où ?'],
     ouch: ['Aïe !', 'Oups !', "J'ai vu des étoiles…", 'Encore ?!'],
     hide: 'Masquer',
-    show: 'Afficher le robot',
   },
 };
 const SECTIONS = ['hero', 'experience', 'education', 'projects', 'capabilities', 'shipped', 'contact'];
@@ -90,7 +92,7 @@ async function start() {
     import('./robot-model.js?v=20261117-24'),
   ]);
 
-  // ---- DOM: canvas, hit area, bubble, show button ----
+  // ---- DOM: canvas, hit area, bubble ----
   const layer = document.createElement('div');
   layer.className = 'robot-layer';
   layer.setAttribute('aria-hidden', 'true');
@@ -104,14 +106,12 @@ async function start() {
   const hit = document.createElement('button');
   hit.type = 'button';
   hit.className = 'robot-hit';
-  hit.setAttribute('aria-label', 'Valeknaar robot: tap to chat, drag to move');
+  hit.setAttribute('aria-label', 'Aurora: tap to ask about Dhia, drag to move');
+  hit.setAttribute('aria-haspopup', 'dialog');
   const bubble = document.createElement('div');
   bubble.className = 'robot-bubble';
   bubble.setAttribute('role', 'status');
   bubble.setAttribute('aria-live', 'polite');
-  const showBtn = document.createElement('button');
-  showBtn.type = 'button';
-  showBtn.className = 'robot-show';
   // "Scan me": a small QR the robot pops up when it has nothing to say (below the hero, desktop).
   const scanPop = document.createElement('a');
   scanPop.className = 'robot-scan';
@@ -121,7 +121,12 @@ async function start() {
   scanImg.width = scanImg.height = 72;
   const scanLabel = document.createElement('span');
   scanPop.append(scanImg, scanLabel);
-  document.body.append(layer, hit, bubble, showBtn, scanPop);
+  document.body.append(layer, hit, bubble, scanPop);
+  // The chat (js/valeknaar.js) and its fallback button.
+  const fab = document.getElementById('valekFab');
+  const chat = () => window.auroraChat;
+  const chatOpen = () => !!chat()?.isOpen();
+  function openChat() { bubble.classList.remove('show'); chat()?.open(); }
   const labelScan = () => { scanLabel.textContent = t('scanMe'); scanImg.alt = t('qrAlt'); };
   labelScan();
   new MutationObserver(labelScan).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
@@ -165,6 +170,8 @@ async function start() {
       canvas.style.width = canvas.style.height = `${box}px`;
     }
     pivot.scale.setScalar(scale);
+    // the chat panel opens just above Aurora's corner (above the top of her float, too)
+    document.documentElement.style.setProperty('--aurora-dock', `${Math.round(floor + radius + scale * 0.24 + 16)}px`);
     const sdpr = Math.min(2, devicePixelRatio || 1);
     sparkCanvas.width = Math.round(W * sdpr);
     sparkCanvas.height = Math.round(H * sdpr);
@@ -173,15 +180,14 @@ async function start() {
   layout();
   addEventListener('resize', layout);
 
-  // Phones: sit just left of the chat button, on the same baseline, instead of covering text on the left.
-  function phoneSpot() {
-    const fab = document.getElementById('valekFab')?.getBoundingClientRect();
-    const fabLeft = fab && fab.width ? fab.left : W - 14;
-    return Math.round(fabLeft - 10 - radius);
+  // The bottom-right corner, where a chat button usually sits: Aurora's spot on phones, while the chat
+  // is open, and whenever no section title has room beside it. Fixed to the screen, not the page.
+  function dockSpot() {
+    return { x: Math.round(W - (W < 700 ? 14 : 22) - radius), y: floor, visible: true, name: 'dock' };
   }
 
   // ---- physics + behaviour state ----
-  const pos = new THREE.Vector2(phoneSpot(), floor);
+  const pos = new THREE.Vector2(dockSpot().x, floor);
   const vel = new THREE.Vector2();
   let angle = 0, spin = 0, squash = 0;
   let vx = 0, yVel = 0, angVel = 0, swing = 0;   // springs for the natural float
@@ -194,17 +200,27 @@ async function start() {
   addEventListener('pointermove', (e) => { cursorX = e.clientX; cursorAt = performance.now(); }, { passive: true });
   let hidden = storedHidden();
   let talkUntil = 0, waveUntil = 0, pointRightUntil = 0, qrTimer = 0;
+  // greetings that offer the chat (the ones that are not about something else on the page)
+  const ASKS = new Set(['hero', 'experience', 'education', 'capabilities']);
 
   // ---- bubble ----
   let bubbleTimer = 0;
-  function say(text, { ms = 4500, action = null } = {}) {
-    if (hidden || away) return;
+  function say(text, { ms = 4500, action = null, ask = false } = {}) {
+    if (hidden || away || chatOpen()) return;
     bubble.replaceChildren();
     const p = document.createElement('p');
     p.textContent = text;
     bubble.append(p);
     const row = document.createElement('div');
     row.className = 'robot-bubble-actions';
+    if (ask) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'robot-bubble-ask';
+      b.textContent = t('ask');
+      b.addEventListener('click', openChat);
+      row.append(b);
+    }
     if (action) {
       const a = document.createElement('a');
       a.href = action.href;
@@ -231,17 +247,19 @@ async function start() {
     layer.classList.toggle('off', value);
     hit.hidden = value;
     bubble.classList.remove('show');
-    showBtn.hidden = !value;
-    showBtn.textContent = t('show');
+    document.body.classList.toggle('aurora-on', !value);   // the CSS hides the fallback button
     scanPop.classList.remove('show');
 
     if (!value) { away = true; layer.classList.add('away'); anchorName = null; mode = 'idle'; followDirty = true; pendingGreet = section; }
   }
-  showBtn.addEventListener('click', () => setHidden(false));
+  // Hidden by the visitor: the "Ask Aurora" button brings Aurora back (and opens the chat).
+  fab?.addEventListener('click', () => { if (hidden) setHidden(false); });
+  // Opening the chat sends Aurora to her corner, under the panel; closing lets her go back to a title.
+  addEventListener('aurora-chat', () => { followDirty = true; if (chatOpen()) { bubble.classList.remove('show'); scanPop.classList.remove('show'); } });
 
   // ---- sections: drive to a spot and suggest something ----
   // Hover just right of the section's title, where there is empty space, so it never sits on the
-  // photo or the text. Phones keep one spot beside the chat button.
+  // photo or the text. Phones keep to the bottom-right corner.
   const navEl = document.querySelector('nav');
   function textBox(el) {
     const range = document.createRange();
@@ -252,7 +270,7 @@ async function start() {
   // the content. y is measured from the bottom of the screen. visible is false when the title is out
   // of view or has no free space beside it; the robot then steps out of view instead of covering things.
   function spotFor(name) {
-    if (W < 700) return { x: phoneSpot(), y: floor, visible: true, name: 'phone' };
+    if (W < 700) return dockSpot();
     const el = name === 'hero' ? document.querySelector('.hero') : document.getElementById(name);
     const none = { x: pos.x, y: pos.y, visible: false, name };
     if (!el) return none;
@@ -307,8 +325,9 @@ async function start() {
     return { top, bottom };
   }
   // The current section's title when it is in view; otherwise the nearest title in view (the robot
-  // waits beside it); otherwise none.
+  // waits beside it); otherwise the corner. Always the corner while the chat is open.
   function anchorFor(name) {
+    if (chatOpen()) return dockSpot();
     const own = spotFor(name);
     if (own.visible || W < 700) return own;
     let best = own, bestD = Infinity;
@@ -318,7 +337,7 @@ async function start() {
       const d = Math.abs(H - spot.y - H * 0.4);
       if (spot.visible && d < bestD) { best = spot; bestD = d; }
     }
-    return best;
+    return best.visible ? best : dockSpot();
   }
   // ---- fireworks: rockets from the robot that burst into sparks in its colours ----
   const sparks = [];
@@ -390,7 +409,7 @@ async function start() {
       setTimeout(() => fireworks(3), 250);
     }
     const action = ACTIONS[name] ? { href: ACTIONS[name], label: t(`${name}Action`) } : null;
-    say(t(name), { ms: name === 'projects' ? 7000 : 5000, action });
+    say(t(name), { ms: name === 'projects' || name === 'hero' ? 7000 : 5000, action, ask: ASKS.has(name) });
     anim.magnify = name === 'projects';
     if (name === 'hero' && heroQr) {
       pointRightUntil = performance.now() + 3200;
@@ -426,8 +445,8 @@ async function start() {
     anchorName = spot.name;
     if (mode === 'drive') mode = 'idle';
   }
-  // greet a section only once it is visible beside that section's own title
-  const canGreet = () => !away && (W < 700 || spotNow?.name === pendingGreet);
+  // greet a section only once it is visible beside that section's own title (phones: from the corner)
+  const canGreet = () => !away && !chatOpen() && (W < 700 || spotNow?.name === pendingGreet);
   addEventListener('scroll', () => { followDirty = true; }, { passive: true });
   addEventListener('resize', () => { followDirty = true; });
   // Sections slide into place as they are revealed (and images and fonts load) without any scroll:
@@ -478,7 +497,7 @@ async function start() {
     dragId = null;
     if (!moved && performance.now() - downAt < 400) {
       fireworks(2);
-      setTimeout(() => document.getElementById('valekFab')?.click(), 450);
+      setTimeout(openChat, 450);
       return;
     }
     if (mode !== 'held') return;
@@ -496,7 +515,7 @@ async function start() {
   });
   hit.addEventListener('pointerup', release);
   hit.addEventListener('pointercancel', release);
-  hit.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('valekFab')?.click(); } });
+  hit.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openChat(); } });
 
   // ---- floating: springs instead of fixed waves, so it rises, drifts, overshoots and settles ----
   function float(dt, t) {
@@ -629,10 +648,10 @@ async function start() {
     const dt = Math.max(0, Math.min(0.033, (now - last) / 1000));
     last = now;
     // The page scrolls under the robot: move with it, so it stays beside its title instead of
-    // sliding over the content (desktop; on phones it sits on the bottom edge).
+    // sliding over the content (not in the corner, which is fixed to the screen).
     const sy = scrollY, dy = sy - lastSY;
     lastSY = sy;
-    if (dy && W >= 700 && (mode === 'idle' || mode === 'drive')) { pos.y += dy; restY += dy; }
+    if (dy && anchorName !== 'dock' && (mode === 'idle' || mode === 'drive')) { pos.y += dy; restY += dy; }
     // while it is on screen, re-measure every frame (sections slide into place as they are revealed)
     if (!away || now > remeasureAt) { remeasureAt = now + 250; followDirty = true; }
     if (!hidden) {
@@ -710,8 +729,7 @@ async function start() {
     if (running) { last = performance.now(); requestAnimationFrame(frame); }
   });
 
-  if (hidden) setHidden(true);
-  else showBtn.hidden = true;
+  setHidden(hidden);
   requestAnimationFrame(frame);
   window.valekRobot = { say, setHidden };
 }

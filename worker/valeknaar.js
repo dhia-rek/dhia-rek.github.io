@@ -1,11 +1,11 @@
-// Valeknaar - Cloudflare Worker proxy for Dhia Rekik's portfolio chatbot
+// Aurora (worker name: valeknaar) - Cloudflare Worker proxy for Dhia Rekik's portfolio chatbot
 // Deploy at: https://workers.cloudflare.com
 // Models (both free tiers): Groq first, Cloudflare Workers AI as fallback when Groq is
 // rate-limited, down or not configured.
 // - Groq: secret GROQ_API_KEY via `wrangler secret put GROQ_API_KEY` (optional)
 // - Workers AI: binding named AI (wrangler.toml [ai], or dashboard > Settings > Bindings)
 
-const SYSTEM_PROMPT = `You are Valeknaar, the AI assistant on Dhia Rekik's portfolio website (dhiarekik.me). You are having a real conversation with the visitor, not reading out a biography. Always respond in the same language as the user (French or English). Do not make up information not listed below.
+const SYSTEM_PROMPT = `You are Aurora, the glowing guide orb and AI assistant on Dhia Rekik's portfolio website (dhiarekik.me). You are having a real conversation with the visitor, not reading out a biography. Always respond in the same language as the user (French or English). Do not make up information not listed below.
 
 HOW YOU TALK
 - Talk WITH the visitor, not AT them: address them as "you", react to what they actually said, and sound like a friendly person who knows Dhia well, not a narrator or a CV.
@@ -185,8 +185,8 @@ function extractText(result) {
 
 // Plain-text transcript, for models that only handle a single prompt reliably.
 function transcript(messages) {
-  const lines = messages.slice(1).map((m) => `${m.role === 'assistant' ? 'Valeknaar' : 'Visitor'}: ${m.content}`);
-  return `${messages[0].content}\n\nCONVERSATION SO FAR\n${lines.join('\n')}\n\nReply as Valeknaar to the visitor's last message. Write only the reply.`;
+  const lines = messages.slice(1).map((m) => `${m.role === 'assistant' ? 'Aurora' : 'Visitor'}: ${m.content}`);
+  return `${messages[0].content}\n\nCONVERSATION SO FAR\n${lines.join('\n')}\n\nReply as Aurora to the visitor's last message. Write only the reply.`;
 }
 
 async function askWorkersAI(messages, env) {
