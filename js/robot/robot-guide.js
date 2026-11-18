@@ -87,7 +87,7 @@ async function start() {
   const [THREE, { RoomEnvironment }, { createRobot, addRobotLights }] = await Promise.all([
     import('three'),
     import('three/addons/environments/RoomEnvironment.js'),
-    import('./robot-model.js?v=20261117-19'),
+    import('./robot-model.js?v=20261117-24'),
   ]);
 
   // ---- DOM: canvas, hit area, bubble, show button ----
@@ -118,7 +118,7 @@ async function start() {
   scanPop.href = 'links/';
   const scanImg = document.createElement('img');
   scanImg.src = 'assets/qr/dhiarekik-links.svg';
-  scanImg.width = scanImg.height = 84;
+  scanImg.width = scanImg.height = 72;
   const scanLabel = document.createElement('span');
   scanPop.append(scanImg, scanLabel);
   document.body.append(layer, hit, bubble, showBtn, scanPop);
@@ -144,7 +144,7 @@ async function start() {
   const pivot = new THREE.Group();          // centre of the robot, so it tumbles around its middle
   const tilt = new THREE.Group();           // slight forward tilt so the top of the head shows
   tilt.rotation.x = 0.22;
-  robot.root.position.y = -robot.height / 2;
+  robot.root.position.y = -(robot.center ?? robot.height / 2);
   tilt.add(robot.root);
   pivot.add(tilt);
   scene.add(pivot);
@@ -154,9 +154,9 @@ async function start() {
   function layout() {
     W = innerWidth; H = innerHeight;
     scale = W < 700 ? 50 : 92;              // pixels per robot unit
-    radius = (robot.height / 2) * scale;
+    radius = (robot.reach ?? robot.height / 2) * scale;
     floor = (W < 700 ? 14 : 16) + radius;   // centre height when standing on the bottom edge
-    const nextBox = Math.ceil(radius * 3.6);
+    const nextBox = Math.ceil(Math.max(radius * 3.6, scale * 1.75));
     // On phones the URL bar hides and shows while scrolling, which fires resize with a new height
     // only. Resizing the canvas reallocates its buffers, so only do it when the box really changes.
     if (nextBox !== box || !canvas.style.width) {
@@ -198,7 +198,7 @@ async function start() {
   // ---- bubble ----
   let bubbleTimer = 0;
   function say(text, { ms = 4500, action = null } = {}) {
-    if (hidden) return;
+    if (hidden || away) return;
     bubble.replaceChildren();
     const p = document.createElement('p');
     p.textContent = text;
@@ -235,38 +235,90 @@ async function start() {
     showBtn.textContent = t('show');
     scanPop.classList.remove('show');
 
-    if (!value) { pos.set(-radius, floor); mode = 'drive'; setSpot(spotFor(section)); greet(section); }
+    if (!value) { away = true; layer.classList.add('away'); anchorName = null; mode = 'idle'; followDirty = true; pendingGreet = section; }
   }
   showBtn.addEventListener('click', () => setHidden(false));
 
   // ---- sections: drive to a spot and suggest something ----
   // Hover just right of the section's title, where there is empty space, so it never sits on the
   // photo or the text. Phones keep one spot beside the chat button.
+  const navEl = document.querySelector('nav');
+  function textBox(el) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    return range.getBoundingClientRect();
+  }
+  // Where the robot rests for a section: beside its title, in the empty space around it, never on
+  // the content. y is measured from the bottom of the screen. visible is false when the title is out
+  // of view or has no free space beside it; the robot then steps out of view instead of covering things.
   function spotFor(name) {
-    if (W < 700) return { x: phoneSpot(), y: floor };
+    if (W < 700) return { x: phoneSpot(), y: floor, visible: true, name: 'phone' };
     const el = name === 'hero' ? document.querySelector('.hero') : document.getElementById(name);
-    // the hero's whole text block (title and paragraph), other sections' title
-    const parts = name === 'hero'
-      ? [...(el?.querySelectorAll('h1, .hero-role, .hero-sub') ?? [])]
-      : [el?.querySelector('h1, h2')].filter(Boolean);
-    if (!parts.length) return { x: phoneSpot(), y: floor };
-    const box = { right: -Infinity, top: Infinity, bottom: -Infinity };
-    for (const part of parts) {
-      const range = document.createRange();
-      range.selectNodeContents(part);
-      const r = range.getBoundingClientRect();
-      box.right = Math.max(box.right, r.right);
-      box.top = Math.min(box.top, r.top);
-      box.bottom = Math.max(box.bottom, r.bottom);
+    const none = { x: pos.x, y: pos.y, visible: false, name };
+    if (!el) return none;
+    const top0 = (navEl ? navEl.getBoundingClientRect().bottom : 0) + 8, bottom0 = H - 8;
+    if (name === 'hero') {
+      // the whole text block (title and paragraph), between it and the QR panel in the same card
+      const parts = [...el.querySelectorAll('h1, .hero-role, .hero-sub')];
+      if (!parts.length) return none;
+      const b = { right: -Infinity, top: Infinity, bottom: -Infinity };
+      for (const part of parts) {
+        const r = textBox(part);
+        b.right = Math.max(b.right, r.right);
+        b.top = Math.min(b.top, r.top);
+        b.bottom = Math.max(b.bottom, r.bottom);
+      }
+      let x = Math.min(Math.max(b.right + 36 + scale * 0.725, 150 + radius), W - 170 - radius);
+      const qr = heroQr?.getBoundingClientRect();
+      if (qr && qr.width && qr.left > b.right) x = Math.min(x, qr.left - radius - 14);
+      const cy = (b.top + b.bottom) / 2 - scale * 0.29;      // a little above the block's middle
+      return { x, y: H - cy, visible: cy - radius >= top0 && cy + radius <= bottom0, name };
     }
-    box.height = box.bottom - box.top;
-    let x = Math.min(Math.max(box.right + 36 + radius, 150 + radius), W - 170 - radius);
-    // in the hero, stay between the headline and the QR panel set into the same card
-    const qrBox = name === 'hero' ? heroQr?.getBoundingClientRect() : null;
-    if (qrBox && qrBox.width && qrBox.left > box.right) x = Math.min(x, qrBox.left - radius - 14);
-    // a little above the title's middle, so the hands and beam stay clear of the content below
-    const top = Math.min(Math.max(box.top + box.height / 2 - radius * 0.3, 120 + radius), H - 70 - radius);
-    return { x, y: H - top };
+    const title = el.querySelector('h1, h2');
+    if (!title) return none;
+    const tb = textBox(title);
+    // what sits around the title: its neighbours in the header, and the blocks before and after it
+    const row = title.parentElement;
+    const rects = [...row.children, row.previousElementSibling, row.nextElementSibling]
+      .filter((n) => n && n !== title)
+      .map((n) => n.getBoundingClientRect())
+      .filter((r) => r.width && r.height);
+    let rowRight = W - 10;                                   // free width to the right of the title
+    for (const r of rects) if (r.bottom > tb.top && r.top < tb.bottom && r.left >= tb.right) rowRight = Math.min(rowRight, r.left - 10);
+    const spot = { name, rects, rowTop: tb.top, rowBottom: tb.bottom, rowRight, top0, bottom0, x: tb.right + 28 + radius, y: pos.y, visible: false };
+    const band = freeBand(spot, spot.x - radius - 6, spot.x + radius + 6);
+    if (!band || spot.x + radius > rowRight || band.bottom - band.top < radius * 2) return spot;
+    const cy = Math.min(Math.max((tb.top + tb.bottom) / 2, band.top + radius), band.bottom - radius);
+    spot.y = H - cy;
+    // in view: a heading's text box starts above its letters, so it may tuck 10px under the menu bar
+    spot.visible = tb.top >= top0 - 18 && tb.bottom <= bottom0;
+    return spot;
+  }
+  // Free vertical room in the column x1..x2 around a title row: between the blocks above and below it,
+  // the menu bar and the bottom of the screen. null when something sits in the title row there.
+  function freeBand(spot, x1, x2) {
+    let top = spot.top0, bottom = spot.bottom0;
+    for (const r of spot.rects) {
+      if (r.right <= x1 || r.left >= x2) continue;
+      if (r.bottom <= spot.rowTop + 2) top = Math.max(top, r.bottom + 8);
+      else if (r.top >= spot.rowBottom - 2) bottom = Math.min(bottom, r.top - 8);
+      else return null;
+    }
+    return { top, bottom };
+  }
+  // The current section's title when it is in view; otherwise the nearest title in view (the robot
+  // waits beside it); otherwise none.
+  function anchorFor(name) {
+    const own = spotFor(name);
+    if (own.visible || W < 700) return own;
+    let best = own, bestD = Infinity;
+    for (const other of SECTIONS) {
+      if (other === name) continue;
+      const spot = spotFor(other);
+      const d = Math.abs(H - spot.y - H * 0.4);
+      if (spot.visible && d < bestD) { best = spot; bestD = d; }
+    }
+    return best;
   }
   // ---- fireworks: rockets from the robot that burst into sparks in its colours ----
   const sparks = [];
@@ -350,8 +402,39 @@ async function start() {
   }
   let pendingGreet = 'hero';
   let followDirty = true;                    // recompute the hover spot (first frame, scroll, resize)
+  // away: out of view because no title it can sit beside is on screen. It fades out, and fades back
+  // in right beside a title, so it never flies across or rests on the content.
+  let away = true, anchorName = null, spotNow = null, lastSY = scrollY, bubbleMax = null;
+  layer.classList.add('away');
+  function goAway() {
+    if (away) return;
+    away = true;
+    layer.classList.add('away');
+    bubble.classList.remove('show');
+    scanPop.classList.remove('show');
+  }
+  function appearAt(spot) {
+    if (anchorName && spot.name !== anchorName) bubble.classList.remove('show');   // that line was about the last title
+    pos.set(spot.x, spot.y);
+    vx = 0; yVel = 0; angVel = 0; angle = 0;
+    layer.style.transition = 'none';
+    layer.classList.add('away');
+    void layer.offsetWidth;                  // start hidden, then fade in where it now is
+    layer.style.transition = '';
+    layer.classList.remove('away');
+    away = false;
+    anchorName = spot.name;
+    if (mode === 'drive') mode = 'idle';
+  }
+  // greet a section only once it is visible beside that section's own title
+  const canGreet = () => !away && (W < 700 || spotNow?.name === pendingGreet);
   addEventListener('scroll', () => { followDirty = true; }, { passive: true });
   addEventListener('resize', () => { followDirty = true; });
+  // Sections slide into place as they are revealed (and images and fonts load) without any scroll:
+  // re-measure when an animation ends, and every quarter second as a safety net.
+  document.addEventListener('transitionend', () => { followDirty = true; }, true);
+  document.addEventListener('animationend', () => { followDirty = true; }, true);
+  let remeasureAt = 0;
   // Current section: the last one whose top has passed 40% of the screen; at the very bottom of the
   // page, the last section (a short final section may never reach that line).
   function currentSection() {
@@ -508,13 +591,13 @@ async function start() {
       glide(dt, reducedMotion ? 0 : Math.max(-650, Math.min(650, dx * 2.4)));
       if (reducedMotion) pos.y = restY;
       // speak as it arrives, not only once it has fully settled
-      if (pendingGreet && Math.abs(targetX - pos.x) < 60) { greet(pendingGreet); pendingGreet = null; }
+      if (pendingGreet && Math.abs(targetX - pos.x) < 60 && canGreet()) { greet(pendingGreet); pendingGreet = null; }
       if (Math.abs(targetX - pos.x) < 3 && Math.abs(vx) < 12) mode = 'idle';
       anim.wave = 0; anim.point = 0;
       float(dt, t);
     } else {
       anim.point = 0;
-      if (pendingGreet) { greet(pendingGreet); pendingGreet = null; }
+      if (pendingGreet && canGreet()) { greet(pendingGreet); pendingGreet = null; }
       glide(dt, 0);
       float(dt, t);
     }
@@ -545,15 +628,26 @@ async function start() {
     // (a negative step flings the robot off-screen on load).
     const dt = Math.max(0, Math.min(0.033, (now - last) / 1000));
     last = now;
+    // The page scrolls under the robot: move with it, so it stays beside its title instead of
+    // sliding over the content (desktop; on phones it sits on the bottom edge).
+    const sy = scrollY, dy = sy - lastSY;
+    lastSY = sy;
+    if (dy && W >= 700 && (mode === 'idle' || mode === 'drive')) { pos.y += dy; restY += dy; }
+    // while it is on screen, re-measure every frame (sections slide into place as they are revealed)
+    if (!away || now > remeasureAt) { remeasureAt = now + 250; followDirty = true; }
     if (!hidden) {
-      // keep hovering beside the current section's title while the page scrolls
+      // keep beside a title while the page scrolls
       if (followDirty) {
         followDirty = false;
         const name = currentSection();
         if (name !== section) { section = name; applyTheme(name); pendingGreet = name; }
         if (mode === 'idle' || mode === 'drive') {
-          setSpot(spotFor(section));
-          if (mode === 'idle') mode = 'drive';
+          const spot = anchorFor(section);
+          spotNow = spot;
+          setSpot(spot);
+          if (!spot.visible) goAway();
+          else if (away || spot.name !== anchorName) appearAt(spot);
+          else if (mode === 'idle') mode = 'drive';
         }
       }
       step(dt);
@@ -575,20 +669,38 @@ async function start() {
       const size = radius * 2.1;
       hit.style.transform = `translate(${pos.x - size / 2}px, ${-(pos.y - size / 2)}px)`;
       hit.style.width = hit.style.height = `${size}px`;
-      const bx = Math.min(Math.max(pos.x - 30, 12), W - 292);
-      bubble.style.transform = `translate(${bx}px, ${-(pos.y + radius + 12)}px)`;
-      // When silent for a moment (below the hero, on a large screen), pop up "Scan me" beside it.
+      hit.style.visibility = away ? 'hidden' : '';
+      // Speech bubble: beside the robot in its title's row (sections), else above it (hero, phones).
+      const cyNow = H - pos.y, side = pos.x + radius + 12;
+      let bx = side, by = null;
+      const room = spotNow?.rects ? spotNow.rowRight - side : 0;
+      if (room >= 200) {
+        const mw = Math.min(340, Math.floor(room));
+        if (bubbleMax !== mw) { bubble.style.maxWidth = `${mw}px`; bubbleMax = mw; }
+        const bw = bubble.offsetWidth, bh = bubble.offsetHeight;
+        const band = freeBand(spotNow, bx, bx + bw);
+        if (band) by = Math.max(band.top, Math.min(cyNow - bh / 2, band.bottom - bh));
+      }
+      if (by === null) {
+        if (bubbleMax !== null) { bubble.style.maxWidth = ''; bubbleMax = null; }
+        bx = Math.min(Math.max(pos.x - 30, 12), W - 292);
+        by = cyNow - radius - 12 - bubble.offsetHeight;
+      }
+      bubble.style.transform = `translate(${Math.round(bx)}px, ${Math.round(by + bubble.offsetHeight - H)}px)`;
+      // When silent for a moment beside a section title (large screens), pop up "Scan me" beside it,
+      // only where the title row is empty.
       const talking = bubble.classList.contains('show');
       if (talking) lastTalkAt = now;
-      const showScan = !talking && section !== 'hero' && W >= 700 && (mode === 'idle' || mode === 'drive') && now - lastTalkAt > 1200;
-      scanPop.classList.toggle('show', showScan);
+      let showScan = !talking && !away && W >= 700 && !!spotNow?.rects && (mode === 'idle' || mode === 'drive') && now - lastTalkAt > 1200;
       if (showScan) {
-        // beside the robot in the title's row (empty space), on the left if the right has no room
-        const popW = 110, popH = 128;
-        const right = pos.x + radius + 12 + popW <= W - 10;
-        const sx = right ? pos.x + radius + 12 : Math.max(12, pos.x - radius - 12 - popW);
-        scanPop.style.transform = `translate(${Math.round(sx)}px, ${Math.round(-(pos.y - popH / 2))}px)`;
+        const pw = scanPop.offsetWidth, ph = scanPop.offsetHeight;
+        const band = side + pw <= spotNow.rowRight ? freeBand(spotNow, side, side + pw) : null;
+        if (band && band.bottom - band.top >= ph) {
+          const sTop = Math.max(band.top, Math.min(cyNow - ph / 2, band.bottom - ph));
+          scanPop.style.transform = `translate(${Math.round(side)}px, ${Math.round(sTop + ph - H)}px)`;
+        } else showScan = false;
       }
+      scanPop.classList.toggle('show', showScan);
 
     }
     requestAnimationFrame(frame);
@@ -599,7 +711,7 @@ async function start() {
   });
 
   if (hidden) setHidden(true);
-  else { showBtn.hidden = true; pos.x = -radius; mode = 'drive'; targetX = spotFor('hero'); }
+  else showBtn.hidden = true;
   requestAnimationFrame(frame);
   window.valekRobot = { say, setHidden };
 }

@@ -438,6 +438,7 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
   }));
   shadow.rotation.x = -Math.PI / 2;
   shadow.position.y = 0.002;
+  shadow.visible = !minimal;            // the orb floats beside text: no ground shadow under it
   root.add(shadow);
   const hoverGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.4), new THREE.MeshBasicMaterial({
     map: radialTexture(...WHITE_GLOW), color: palette.glow, transparent: true, depthWrite: false, opacity: 0, toneMapped: false,
@@ -541,7 +542,12 @@ export function createRobot({ look = DEFAULT_LOOK } = {}) {
     });
   }
 
-  return { root, update, setTheme, height: 1.45, sparks: palette.sparks };
+  // center: height of the visible body's centre; reach: its radius (both in robot units)
+  return {
+    root, update, setTheme, height: 1.45, sparks: palette.sparks,
+    center: minimal ? BASE_Y : 0.725,
+    reach: minimal ? R : 0.725,
+  };
 }
 
 /**
